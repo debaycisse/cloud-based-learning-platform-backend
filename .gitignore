@@ -3,9 +3,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
-*.so
-
 # Distribution / packaging
 .Python
 build/
@@ -136,6 +133,7 @@ ENV/
 env.bak/
 venv.bak/
 
+
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -172,3 +170,6 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Configuration file for environment variables
+config.py
