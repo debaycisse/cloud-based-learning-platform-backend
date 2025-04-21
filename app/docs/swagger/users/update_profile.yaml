@@ -1,0 +1,79 @@
+summary: Update user profile
+description: Updates the profile information of the currently authenticated user
+tags:
+  - Users
+security:
+  - Bearer: []
+parameters:
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: "newemail@example.com"
+          description: New email address
+        username:
+          type: string
+          example: "newusername"
+          description: New username
+responses:
+  200:
+    description: Profile updated successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Profile updated successfully"
+        profile:
+          type: object
+          properties:
+            id:
+              type: string
+              example: "5f8d0d55b54764421b7156a1"
+            email:
+              type: string
+              example: "newemail@example.com"
+            username:
+              type: string
+              example: "newusername"
+            role:
+              type: string
+              enum: [user, admin]
+              example: "user"
+            created_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+            updated_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T15:45:00Z"
+  400:
+    description: Invalid input
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid input data"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  404:
+    description: User not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "User not found"

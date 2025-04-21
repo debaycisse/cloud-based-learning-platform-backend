@@ -1,0 +1,45 @@
+summary: Get recommended courses
+description: Returns personalized course recommendations for the authenticated user
+tags:
+  - Courses
+  - Recommendations
+security:
+  - Bearer: []
+responses:
+  200:
+    description: Recommended courses retrieved successfully
+    schema:
+      type: object
+      properties:
+        recommended_courses:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+                example: "5f8d0d55b54764421b7156a1"
+              title:
+                type: string
+                example: "Introduction to Python"
+              description:
+                type: string
+                example: "A comprehensive introduction to Python programming language"
+              category:
+                type: string
+                example: "programming"
+              difficulty:
+                type: string
+                enum: [beginner, intermediate, advanced]
+                example: "beginner"
+        count:
+          type: integer
+          example: 5
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"

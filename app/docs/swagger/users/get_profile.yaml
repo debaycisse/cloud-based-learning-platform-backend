@@ -1,0 +1,52 @@
+summary: Get user profile
+description: Returns the profile information of the currently authenticated user
+tags:
+  - Users
+security:
+  - Bearer: []
+responses:
+  200:
+    description: User profile retrieved successfully
+    schema:
+      type: object
+      properties:
+        profile:
+          type: object
+          properties:
+            id:
+              type: string
+              example: "5f8d0d55b54764421b7156a1"
+            email:
+              type: string
+              example: "user@example.com"
+            username:
+              type: string
+              example: "johndoe"
+            role:
+              type: string
+              enum: [user, admin]
+              example: "user"
+            created_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+            updated_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  404:
+    description: User not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "User not found"

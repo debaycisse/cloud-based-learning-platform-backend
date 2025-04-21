@@ -1,0 +1,81 @@
+summary: Update a subsection
+description: Updates a subsection's information (admin only)
+tags:
+  - Courses
+  - Sections
+  - Subsections
+security:
+  - Bearer: []
+parameters:
+  - name: course_id
+    in: path
+    required: true
+    type: string
+    description: ID of the course
+  - name: section_id
+    in: path
+    required: true
+    type: string
+    description: ID of the section
+  - name: subsection_id
+    in: path
+    required: true
+    type: string
+    description: ID of the subsection
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          example: "Python Installation Guide"
+          description: New subsection title
+        order:
+          type: integer
+          example: 2
+          description: New order of the subsection
+responses:
+  200:
+    description: Subsection updated successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Subsection updated successfully"
+  400:
+    description: Failed to update subsection
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Failed to update subsection"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  403:
+    description: Forbidden - Admin privileges required
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Admin privileges required"
+  404:
+    description: Subsection not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Subsection not found"

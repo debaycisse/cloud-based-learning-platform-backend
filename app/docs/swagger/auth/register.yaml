@@ -1,0 +1,69 @@
+summary: Register a new user
+description: Creates a new user account with the provided email, username, and password
+tags:
+  - Authentication
+parameters:
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - email
+        - username
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+          description: User's email address
+        username:
+          type: string
+          example: "johndoe"
+          description: User's username (3-20 characters, alphanumeric and underscores only)
+        password:
+          type: string
+          format: password
+          example: "Password123"
+          description: User's password (min 8 characters, at least one digit and one uppercase)
+responses:
+  201:
+    description: User registered successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "User registered successfully"
+        access_token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              example: "5f8d0d55b54764421b7156a1"
+            email:
+              type: string
+              example: "user@example.com"
+            username:
+              type: string
+              example: "johndoe"
+  400:
+    description: Invalid input or user already exists
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Email already registered"
+  429:
+    description: Rate limit exceeded
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Rate limit exceeded. Try again later."

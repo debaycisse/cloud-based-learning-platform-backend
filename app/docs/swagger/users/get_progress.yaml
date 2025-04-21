@@ -1,0 +1,68 @@
+summary: Get user learning progress
+description: Returns the learning progress of the currently authenticated user
+tags:
+  - Users
+security:
+  - Bearer: []
+responses:
+  200:
+    description: User progress retrieved successfully
+    schema:
+      type: object
+      properties:
+        progress:
+          type: object
+          properties:
+            completed_courses:
+              type: array
+              items:
+                type: string
+                example: "5f8d0d55b54764421b7156a2"
+            in_progress_courses:
+              type: array
+              items:
+                type: string
+                example: "5f8d0d55b54764421b7156a3"
+            completed_assessments:
+              type: array
+              items:
+                type: string
+                example: "5f8d0d55b54764421b7156a4"
+        assessment_results:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+                example: "5f8d0d55b54764421b7156a5"
+              assessment_id:
+                type: string
+                example: "5f8d0d55b54764421b7156a4"
+              score:
+                type: number
+                format: float
+                example: 0.85
+              passed:
+                type: boolean
+                example: true
+              created_at:
+                type: string
+                format: date-time
+                example: "2023-01-15T14:30:00Z"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  404:
+    description: User not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "User not found"

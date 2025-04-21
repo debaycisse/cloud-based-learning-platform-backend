@@ -5,6 +5,7 @@ from app.services.recommendation import RecommendationService
 from app.services.content_service import ContentService
 from app.utils.auth import admin_required
 from app.utils.validation import validate_json, sanitize_input, validate_content_structure
+from app.utils.swagger_utils import yaml_from_file
 
 courses_bp = Blueprint('courses', __name__)
 
@@ -21,6 +22,7 @@ Retrieves a list of courses
 - JWT required
 '''
 @courses_bp.route('', methods=['GET'])
+@yaml_from_file('docs/swagger/courses/get_courses.yaml')
 def get_courses():
     limit = int(request.args.get('limit', 20))
     skip = int(request.args.get('skip', 0))
@@ -44,6 +46,7 @@ Retrieves a specific course by ID
 - Response: JSON with course details
 '''
 @courses_bp.route('/<course_id>', methods=['GET'])
+@yaml_from_file('docs/swagger/courses/get_course.yaml')
 def get_course(course_id):
     course = Course.find_by_id(course_id)
     
@@ -60,6 +63,7 @@ Retrieves personalized course recommendations for the logged-in user
 '''
 @courses_bp.route('/recommended', methods=['GET'])
 @jwt_required()
+@yaml_from_file('docs/swagger/courses/get_recommended_courses.yaml')
 def get_recommended_courses():
     user_id = get_jwt_identity()
     
@@ -83,6 +87,7 @@ Creates a new course
 @jwt_required()
 @admin_required
 @validate_json('title', 'description', 'category')
+@yaml_from_file('docs/swagger/courses/create_course.yaml')
 def create_course():
     data = sanitize_input(request.get_json())
     
@@ -121,6 +126,7 @@ Retrieves sections of a specific course
 - Response: JSON with list of sections and count
 '''
 @courses_bp.route('/<course_id>/sections', methods=['GET'])
+@yaml_from_file('docs/swagger/courses/get_course_sections.yaml')
 def get_course_sections(course_id):
     course = Course.find_by_id(course_id)
     
@@ -146,6 +152,7 @@ Adds a new section to a specific course
 @jwt_required()
 @admin_required
 @validate_json('title')
+@yaml_from_file('docs/swagger/courses/create_course_section_admin_only.yaml')
 def add_course_section(course_id):
     data = sanitize_input(request.get_json())
     
@@ -169,6 +176,7 @@ Retrieves a specific section of a course
 - Response: JSON with section details
 '''
 @courses_bp.route('/<course_id>/sections/<section_id>', methods=['GET'])
+@yaml_from_file('docs/swagger/courses/get_course_section.yaml')
 def get_section(course_id, section_id):
     section = Course.get_section(course_id, section_id)
     
@@ -189,6 +197,7 @@ Updates a specific section of a course
 @jwt_required()
 @admin_required
 @validate_json('title')
+@yaml_from_file('docs/swagger/courses/update_course_section_admin_only.yaml')
 def update_section(course_id, section_id):
     data = sanitize_input(request.get_json())
     
@@ -215,6 +224,7 @@ Deletes a specific section of a course
 @courses_bp.route('/<course_id>/sections/<section_id>', methods=['DELETE'])
 @jwt_required()
 @admin_required
+@yaml_from_file('docs/swagger/courses/delete_course_section_admin_only.yaml')
 def delete_section(course_id, section_id):
     updated_course = Course.delete_section(course_id, section_id)
     
@@ -231,6 +241,7 @@ Retrieves subsections of a specific section in a course
 - Response: JSON with list of subsections and count
 '''
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections', methods=['GET'])
+@yaml_from_file('docs/swagger/courses/get_course_section_subsections.yaml')
 def get_subsections(course_id, section_id):
     section = Course.get_section(course_id, section_id)
     
@@ -256,6 +267,7 @@ Adds a new subsection to a specific section in a course
 @jwt_required()
 @admin_required
 @validate_json('title')
+@yaml_from_file('docs/swagger/courses/create_course_section_subsection_admin_only.yaml')
 def add_subsection(course_id, section_id):
     data = sanitize_input(request.get_json())
     
@@ -281,6 +293,7 @@ Retrieves a specific subsection of a section in a course
 - Response: JSON with subsection details
 '''
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>', methods=['GET'])
+@yaml_from_file('docs/swagger/courses/get_course_section_subsection.yaml')
 def get_subsection(course_id, section_id, subsection_id):
     subsection = Course.get_subsection(course_id, section_id, subsection_id)
     
@@ -301,6 +314,7 @@ Updates a specific subsection of a section in a course
 @jwt_required()
 @admin_required
 @validate_json('title')
+@yaml_from_file('docs/swagger/courses/update_course_section_subsection_admin_only.yaml')
 def update_subsection(course_id, section_id, subsection_id):
     data = sanitize_input(request.get_json())
     
@@ -329,6 +343,7 @@ Deletes a specific subsection of a section in a course
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>', methods=['DELETE'])
 @jwt_required()
 @admin_required
+@yaml_from_file('docs/swagger/courses/delete_course_section_subsection_admin_only.yaml')
 def delete_subsection(course_id, section_id, subsection_id):
     updated_course = Course.delete_subsection(
         course_id=course_id,
@@ -355,6 +370,7 @@ Adds content data to a specific subsection in a course
 @jwt_required()
 @admin_required
 @validate_json('type', 'content')
+@yaml_from_file('docs/swagger/courses/create_course_section_subsection_content_admin_only.yaml')
 def add_content_data(course_id, section_id, subsection_id):
     data = sanitize_input(request.get_json())
     
@@ -402,6 +418,7 @@ Updates a specific content data in a subsection of a course
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>/content/<data_id>', methods=['PUT'])
 @jwt_required()
 @admin_required
+@yaml_from_file('docs/swagger/courses/update_course_section_subsection_content_admin_only.yaml')
 def update_content_data(course_id, section_id, subsection_id, data_id):
     data = sanitize_input(request.get_json())
     
@@ -431,6 +448,7 @@ Deletes a specific content data in a subsection of a course
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>/content/<data_id>', methods=['DELETE'])
 @jwt_required()
 @admin_required
+@yaml_from_file('docs/swagger/courses/delete_course_section_subsection_content_admin_only.yaml')
 def delete_content_data(course_id, section_id, subsection_id, data_id):
     success = Course.delete_content_data(
         course_id=course_id,

@@ -1,0 +1,66 @@
+summary: Get subsections of a section
+description: Returns all subsections within a specific section
+tags:
+  - Courses
+  - Sections
+  - Subsections
+parameters:
+  - name: course_id
+    in: path
+    required: true
+    type: string
+    description: ID of the course
+  - name: section_id
+    in: path
+    required: true
+    type: string
+    description: ID of the section
+responses:
+  200:
+    description: Subsections retrieved successfully
+    schema:
+      type: object
+      properties:
+        subsections:
+          type: array
+          items:
+            type: object
+            properties:
+              subsection_id:
+                type: string
+                example: "5f8d0d55b54764421b7156a4"
+              title:
+                type: string
+                example: "Installation"
+              order:
+                type: integer
+                example: 1
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    data_id:
+                      type: string
+                      example: "5f8d0d55b54764421b7156a5"
+                    type:
+                      type: string
+                      enum: [text, image, video, code]
+                      example: "text"
+                    content:
+                      type: string
+                      example: "To install Python, visit python.org and download the latest version."
+                    order:
+                      type: integer
+                      example: 1
+        count:
+          type: integer
+          example: 3
+  404:
+    description: Section not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Section not found"

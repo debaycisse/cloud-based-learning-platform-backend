@@ -1,0 +1,58 @@
+summary: Get user preferences
+description: Returns the learning preferences of the currently authenticated user
+tags:
+  - Users
+security:
+  - Bearer: []
+responses:
+  200:
+    description: User preferences retrieved successfully
+    schema:
+      type: object
+      properties:
+        preferences:
+          type: object
+          properties:
+            categories:
+              type: array
+              items:
+                type: string
+                example: "programming"
+            skills:
+              type: array
+              items:
+                type: string
+                example: "python"
+            difficulty:
+              type: string
+              enum: [beginner, intermediate, advanced]
+              example: "beginner"
+            learning_style:
+              type: string
+              enum: [visual, auditory, reading, kinesthetic]
+              example: "visual"
+            time_commitment:
+              type: string
+              enum: [low, medium, high]
+              example: "medium"
+            goals:
+              type: array
+              items:
+                type: string
+                example: "web_development"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  404:
+    description: User not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "User not found"

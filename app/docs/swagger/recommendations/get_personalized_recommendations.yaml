@@ -1,0 +1,80 @@
+summary: Get recommendations based on user preferences
+description: Returns course recommendations based on explicitly provided user preferences such as categories, skills, and difficulty level
+tags:
+  - Recommendations
+security:
+  - Bearer: []
+parameters:
+  - name: limit
+    in: query
+    type: integer
+    default: 4
+    description: Maximum number of recommendations to return
+  - name: body
+    in: body
+    required: false
+    schema:
+      type: object
+      properties:
+        categories:
+          type: array
+          items:
+            type: string
+            example: "programming"
+          description: Categories of interest
+        skills:
+          type: array
+          items:
+            type: string
+            example: "python"
+          description: Skills the user wants to learn
+        difficulty:
+          type: string
+          enum: [beginner, intermediate, advanced]
+          example: "beginner"
+          description: Preferred difficulty level
+responses:
+  200:
+    description: Successful operation
+    schema:
+      type: object
+      properties:
+        recommended_courses:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+                example: "5f8d0d55b54764421b7156a3"
+              title:
+                type: string
+                example: "Introduction to Python Programming"
+              description:
+                type: string
+                example: "Learn the basics of Python programming language"
+              category:
+                type: string
+                example: "programming"
+              difficulty:
+                type: string
+                example: "beginner"
+              content:
+                type: object
+                properties:
+                  tags:
+                    type: array
+                    items:
+                      type: string
+                      example: "python"
+        count:
+          type: integer
+          example: 4
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"

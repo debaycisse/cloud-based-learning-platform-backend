@@ -1,0 +1,71 @@
+summary: Add a new subsection
+description: Creates a new subsection within a section (admin only)
+tags:
+  - Courses
+  - Sections
+  - Subsections
+security:
+  - Bearer: []
+parameters:
+  - name: course_id
+    in: path
+    required: true
+    type: string
+    description: ID of the course
+  - name: section_id
+    in: path
+    required: true
+    type: string
+    description: ID of the section
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          example: "Installation"
+          description: Subsection title
+        order:
+          type: integer
+          example: 1
+          description: Order of the subsection (optional)
+responses:
+  201:
+    description: Subsection added successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Subsection added successfully"
+        subsection_id:
+          type: string
+          example: "5f8d0d55b54764421b7156a4"
+  400:
+    description: Failed to add subsection
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Failed to add subsection"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  403:
+    description: Forbidden - Admin privileges required
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Admin privileges required"

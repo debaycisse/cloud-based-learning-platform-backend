@@ -1,4 +1,5 @@
 from datetime import datetime
+from bson import ObjectId
 from app import db
 
 assessments_collection = db.assessments
@@ -33,7 +34,7 @@ class Assessment:
     @staticmethod
     def find_by_id(assessment_id):
         """Find an assessment by ID"""
-        return assessments_collection.find_one({'_id': assessment_id})
+        return assessments_collection.find_one({'_id': ObjectId(assessment_id)})
     
     @staticmethod
     def find_by_course_id(course_id):
@@ -46,10 +47,10 @@ class Assessment:
         """Update an assessment"""
         update_data['updated_at'] = datetime.utcnow()
         assessments_collection.update_one(
-            {'_id': assessment_id},
+            {'_id': ObjectId(assessment_id)},
             {'$set': update_data}
         )
-        return assessments_collection.find_one({'_id': assessment_id})
+        return assessments_collection.find_one({'_id': ObjectId(assessment_id)})
 
 '''
 Assessment Result Model

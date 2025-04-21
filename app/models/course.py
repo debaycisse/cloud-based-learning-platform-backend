@@ -76,7 +76,7 @@ class Course:
                 course_id = ObjectId(course_id)
             except:
                 return None
-        return courses_collection.find_one({'_id': course_id})
+        return courses_collection.find_one({'_id': ObjectId(course_id)})
     
     '''
     A static method that finds courses by category.
@@ -159,10 +159,10 @@ class Course:
                 return None
         update_data['updated_at'] = datetime.utcnow()
         courses_collection.update_one(
-            {'_id': course_id},
+            {'_id': ObjectId(course_id)},
             {'$set': update_data}
         )
-        return courses_collection.find_one({'_id': course_id})
+        return courses_collection.find_one({'_id': ObjectId(course_id)})
     
     '''
     A static method that adds a new section to a course.
@@ -181,7 +181,7 @@ class Course:
             
         # Get the current highest order if not specified
         if order is None:
-            course = courses_collection.find_one({'_id': course_id})
+            course = courses_collection.find_one({'_id': ObjectId(course_id)})
             if course and 'content' in course and 'sections' in course['content']:
                 sections = course['content']['sections']
                 order = max([s.get('order', 0) for s in sections] + [0]) + 1
@@ -192,7 +192,7 @@ class Course:
         
         # Add the new section
         courses_collection.update_one(
-            {'_id': course_id},
+            {'_id': ObjectId(course_id)},
             {
                 '$push': {
                     'content.sections': {
@@ -225,14 +225,14 @@ class Course:
         update_data['updated_at'] = datetime.utcnow()
         
         courses_collection.update_one(
-            {'_id': course_id, 'content.sections.section_id': section_id},
+            {'_id': ObjectId(course_id), 'content.sections.section_id': section_id},
             {'$set': {
                 'content.sections.$.title': update_data.get('title'),   # $ - placeholder for the matched section
                 'content.sections.$.order': update_data.get('order'),
                 'updated_at': datetime.utcnow()
             }}
         )
-        return courses_collection.find_one({'_id': course_id})
+        return courses_collection.find_one({'_id': ObjectId(course_id)})
     
     '''
     A static method that deletes a section by its ID.
@@ -249,7 +249,7 @@ class Course:
             course_id = ObjectId(course_id)
             
         courses_collection.update_one(
-            {'_id': course_id},
+            {'_id': ObjectId(course_id)},
             {
                 '$pull': {
                     'content.sections': {'section_id': section_id}
@@ -257,7 +257,7 @@ class Course:
                 '$set': {'updated_at': datetime.utcnow()} # $set updates the updated_at field of the course
             }
         )
-        return courses_collection.find_one({'_id': course_id})
+        return courses_collection.find_one({'_id': ObjectId(course_id)})
     
     '''
     A static method that adds a new subsection to a section.
@@ -278,7 +278,7 @@ class Course:
         # Get the current highest order if not specified
         if order is None:
             course = courses_collection.find_one(
-                {'_id': course_id, 'content.sections.section_id': section_id}
+                {'_id': ObjectId(course_id), 'content.sections.section_id': section_id}
             )
             if course:
                 for section in course.get('content', {}).get('sections', []):
@@ -293,7 +293,7 @@ class Course:
         
         # Add the new subsection
         courses_collection.update_one(
-            {'_id': course_id, 'content.sections.section_id': section_id},
+            {'_id': ObjectId(course_id), 'content.sections.section_id': section_id},
             {
                 '$push': {
                     'content.sections.$.sub_sections': {
@@ -326,7 +326,7 @@ class Course:
             
         courses_collection.update_one(
             {
-                '_id': course_id,
+                '_id': ObjectId(course_id),
                 'content.sections.section_id': section_id,
                 'content.sections.sub_sections.subsection_id': subsection_id
             },
@@ -349,7 +349,7 @@ class Course:
         This allows us to update the specific subsection in the array without having to pull
         it out and push it back in.
         This is a MongoDB feature that allows us to update array elements in place.'''
-        return courses_collection.find_one({'_id': course_id})
+        return courses_collection.find_one({'_id': ObjectId(course_id)})
     
     '''
     A static method that deletes a subsection by its ID.
@@ -367,7 +367,7 @@ class Course:
             course_id = ObjectId(course_id)
             
         courses_collection.update_one(
-            {'_id': course_id, 'content.sections.section_id': section_id},
+            {'_id': ObjectId(course_id), 'content.sections.section_id': section_id},
             {
                 '$pull': {
                     'content.sections.$.sub_sections': {'subsection_id': subsection_id}
@@ -375,7 +375,7 @@ class Course:
                 '$set': {'updated_at': datetime.utcnow()}
             }
         )
-        return courses_collection.find_one({'_id': course_id})
+        return courses_collection.find_one({'_id': ObjectId(course_id)})
     
     '''
     A static method that adds a data object to a subsection.
@@ -395,7 +395,7 @@ class Course:
             
         # Find the section and subsection
         course = courses_collection.find_one({
-            '_id': course_id,
+            '_id': ObjectId(course_id),
             'content.sections.section_id': section_id
         })
         
@@ -424,7 +424,7 @@ class Course:
         # Add the data object
         result = courses_collection.update_one(
             {
-                '_id': course_id,
+                '_id': ObjectId(course_id),
                 'content.sections.section_id': section_id,
                 'content.sections.sub_sections.subsection_id': subsection_id
             },
@@ -462,7 +462,7 @@ class Course:
         # Update the data object
         result = courses_collection.update_one(
             {
-                '_id': course_id,
+                '_id': ObjectId(course_id),
                 'content.sections.section_id': section_id,
                 'content.sections.sub_sections.subsection_id': subsection_id,
                 'content.sections.sub_sections.data.data_id': data_id
@@ -503,7 +503,7 @@ class Course:
         # Delete the data object
         result = courses_collection.update_one(
             {
-                '_id': course_id,
+                '_id': ObjectId(course_id),
                 'content.sections.section_id': section_id,
                 'content.sections.sub_sections.subsection_id': subsection_id
             },
@@ -536,7 +536,7 @@ class Course:
             course_id = ObjectId(course_id)
             
         course = courses_collection.find_one(
-            {'_id': course_id, 'content.sections.section_id': section_id},
+            {'_id': ObjectId(course_id), 'content.sections.section_id': section_id},
             {'content.sections.$': 1}
         )
         
@@ -562,7 +562,7 @@ class Course:
             
         # This requires MongoDB 3.6+ for the aggregation pipeline
         pipeline = [
-            {'$match': {'_id': course_id}},
+            {'$match': {'_id': ObjectId(course_id)}},
             {'$unwind': '$content.sections'},
             {'$match': {'content.sections.section_id': section_id}},
             {'$unwind': '$content.sections.sub_sections'},

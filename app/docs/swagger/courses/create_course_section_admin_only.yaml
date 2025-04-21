@@ -1,0 +1,65 @@
+summary: Add a new section to a course
+description: Creates a new section within a course (admin only)
+tags:
+  - Courses
+  - Sections
+security:
+  - Bearer: []
+parameters:
+  - name: course_id
+    in: path
+    required: true
+    type: string
+    description: ID of the course
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          example: "Getting Started"
+          description: Section title
+        order:
+          type: integer
+          example: 1
+          description: Order of the section (optional)
+responses:
+  201:
+    description: Section added successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Section added successfully"
+        section_id:
+          type: string
+          example: "5f8d0d55b54764421b7156a3"
+  400:
+    description: Failed to add section
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Failed to add section"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  403:
+    description: Forbidden - Admin privileges required
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Admin privileges required"

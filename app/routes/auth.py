@@ -15,6 +15,7 @@ from app.utils.validation import (
     sanitize_input
 )
 from app import limiter, db
+from app.utils.swagger_utils import yaml_from_file
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -33,6 +34,7 @@ Registers a new user
 @auth_bp.route('/register', methods=['POST'])
 @limiter.limit("5 per minute")
 @validate_json('email', 'username', 'password')
+@yaml_from_file('docs/swagger/auth/register.yaml')
 def register():
     data = sanitize_input(request.get_json())
     email = data.get('email')
@@ -82,6 +84,7 @@ Logs in a user
 @auth_bp.route('/login', methods=['POST'])
 @limiter.limit("5 per minute")
 @validate_json('email', 'password')
+@yaml_from_file('docs/swagger/auth/login.yaml')
 def login():
     data = sanitize_input(request.get_json())
     email = data.get('email')
@@ -116,6 +119,7 @@ Logs out a user
 '''
 @auth_bp.route('/logout', methods=['POST'])
 @jwt_required()
+@yaml_from_file('docs/swagger/auth/logout.yaml')
 def logout():
     # Get the unique identifier (jti) of the token
     jti = get_jwt()['jti']
@@ -137,6 +141,7 @@ Retrieves the current user's profile
 '''
 @auth_bp.route('/user', methods=['GET'])
 @jwt_required()
+@yaml_from_file('docs/swagger/auth/get_user.yaml')
 def get_user():
     user_id = get_jwt_identity()
     user = User.find_by_id(user_id)

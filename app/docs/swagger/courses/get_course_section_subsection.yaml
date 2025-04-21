@@ -1,0 +1,66 @@
+summary: Get a specific subsection
+description: Returns detailed information about a specific subsection
+tags:
+  - Courses
+  - Sections
+  - Subsections
+parameters:
+  - name: course_id
+    in: path
+    required: true
+    type: string
+    description: ID of the course
+  - name: section_id
+    in: path
+    required: true
+    type: string
+    description: ID of the section
+  - name: subsection_id
+    in: path
+    required: true
+    type: string
+    description: ID of the subsection
+responses:
+  200:
+    description: Subsection retrieved successfully
+    schema:
+      type: object
+      properties:
+        subsection:
+          type: object
+          properties:
+            subsection_id:
+              type: string
+              example: "5f8d0d55b54764421b7156a4"
+            title:
+              type: string
+              example: "Installation"
+            order:
+              type: integer
+              example: 1
+            data:
+              type: array
+              items:
+                type: object
+                properties:
+                  data_id:
+                    type: string
+                    example: "5f8d0d55b54764421b7156a5"
+                  type:
+                    type: string
+                    enum: [text, image, video, code]
+                    example: "text"
+                  content:
+                    type: string
+                    example: "To install Python, visit python.org and download the latest version."
+                  order:
+                    type: integer
+                    example: 1
+  404:
+    description: Subsection not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Subsection not found"

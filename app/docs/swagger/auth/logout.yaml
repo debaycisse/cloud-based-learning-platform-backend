@@ -1,0 +1,23 @@
+summary: Logout user
+description: Logs out the currently authenticated user
+tags:
+  - Authentication
+security:
+  - Bearer: []
+responses:
+  200:
+    description: Logout successful
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Logout successful"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"

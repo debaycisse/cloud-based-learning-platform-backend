@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.user import User
 from app.models.assessment import AssessmentResult
 from app.utils.validation import validate_json, sanitize_input
+from app.utils.swagger_utils import yaml_from_file
 
 users_bp = Blueprint('users', __name__)
 
@@ -19,6 +20,7 @@ Retrieves user profile
 '''
 @users_bp.route('/profile', methods=['GET'])
 @jwt_required()
+@yaml_from_file('docs/swagger/users/get_profile.yaml')
 def get_profile():
     user_id = get_jwt_identity()
     user = User.find_by_id(user_id)
@@ -50,6 +52,7 @@ Updates user profile
 @users_bp.route('/profile', methods=['PUT'])
 @jwt_required()
 @validate_json()
+@yaml_from_file('docs/swagger/users/update_profile.yaml')
 def update_profile():
     user_id = get_jwt_identity()
     data = sanitize_input(request.get_json())
@@ -81,6 +84,7 @@ Retrieves user progress
 '''
 @users_bp.route('/progress', methods=['GET'])
 @jwt_required()
+@yaml_from_file('docs/swagger/users/get_progress.yaml')
 def get_progress():
     user_id = get_jwt_identity()
     user = User.find_by_id(user_id)
@@ -112,6 +116,7 @@ Retrieves user preferences
 '''
 @users_bp.route('/preferences', methods=['GET'])
 @jwt_required()
+@yaml_from_file('docs/swagger/users/get_preferences.yaml')
 def get_preferences():
     user_id = get_jwt_identity()
     user = User.find_by_id(user_id)
@@ -143,6 +148,7 @@ Updates user preferences
 @users_bp.route('/preferences', methods=['PUT'])
 @jwt_required()
 @validate_json()
+@yaml_from_file('docs/swagger/users/update_preferences.yaml')
 def update_preferences():
     user_id = get_jwt_identity()
     data = sanitize_input(request.get_json())

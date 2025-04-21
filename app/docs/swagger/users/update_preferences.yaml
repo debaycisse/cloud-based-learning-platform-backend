@@ -1,0 +1,101 @@
+summary: Update user preferences
+description: Updates the learning preferences of the currently authenticated user
+tags:
+  - Users
+security:
+  - Bearer: []
+parameters:
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      properties:
+        categories:
+          type: array
+          items:
+            type: string
+            example: "programming"
+          description: Preferred learning categories
+        skills:
+          type: array
+          items:
+            type: string
+            example: "python"
+          description: Skills the user wants to learn
+        difficulty:
+          type: string
+          enum: [beginner, intermediate, advanced]
+          example: "intermediate"
+          description: Preferred content difficulty level
+        learning_style:
+          type: string
+          enum: [visual, auditory, reading, kinesthetic]
+          example: "visual"
+          description: User's preferred learning style
+        time_commitment:
+          type: string
+          enum: [low, medium, high]
+          example: "medium"
+          description: User's available time commitment
+        goals:
+          type: array
+          items:
+            type: string
+            example: "web_development"
+          description: User's learning goals
+responses:
+  200:
+    description: Preferences updated successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Preferences updated successfully"
+        preferences:
+          type: object
+          properties:
+            categories:
+              type: array
+              items:
+                type: string
+                example: "programming"
+            skills:
+              type: array
+              items:
+                type: string
+                example: "python"
+            difficulty:
+              type: string
+              enum: [beginner, intermediate, advanced]
+              example: "intermediate"
+            learning_style:
+              type: string
+              enum: [visual, auditory, reading, kinesthetic]
+              example: "visual"
+            time_commitment:
+              type: string
+              enum: [low, medium, high]
+              example: "medium"
+            goals:
+              type: array
+              items:
+                type: string
+                example: "web_development"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  404:
+    description: User not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "User not found"

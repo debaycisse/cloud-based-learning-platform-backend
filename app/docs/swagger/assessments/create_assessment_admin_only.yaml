@@ -1,0 +1,125 @@
+summary: Create Assessment
+description: Creates a new assessment for a course (admin only)
+tags:
+  - Assessments
+security:
+  - Bearer: []
+parameters:
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - title
+        - course_id
+        - questions
+      properties:
+        title:
+          type: string
+          example: "Python Basics Assessment"
+          description: Title of the assessment
+        course_id:
+          type: string
+          example: 5f8d0d55b54764421b7156a2
+          description: ID of the course this assessment belongs to
+        questions:
+          type: array
+          description: Array of questions for the assessment
+          items:
+            type: object
+            required:
+              - question
+              - options
+              - correct_answer
+            properties:
+              question:
+                type: string
+                example: "What is the output of print(1 + 1)?"
+              options:
+                type: array
+                items:
+                  type: string
+                  example: "2"
+              correct_answer:
+                type: string
+                example: "2"
+              concepts:
+                type: array
+                items:
+                  type: string
+                  example: "python_basics"
+responses:
+  201:
+    description: Assessment created successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Assessment created successfully"
+        assessment:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: 5f8d0d55b54764421b7156a3
+            title:
+              type: string
+              example: "Python Basics Assessment"
+            course_id:
+              type: string
+              example: 5f8d0d55b54764421b7156a2
+            questions:
+              type: array
+              items:
+                type: object
+                properties:
+                  question:
+                    type: string
+                    example: "What is the output of print(1 + 1)?"
+                  options:
+                    type: array
+                    items:
+                      type: string
+                      example: "2"
+                  correct_answer:
+                    type: string
+                    example: "2"
+                  concepts:
+                    type: array
+                    items:
+                      type: string
+                      example: "python_basics"
+            created_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+            updated_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+  400:
+    description: Invalid input
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Missing required fields: title, course_id, questions"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  403:
+    description: Forbidden - Admin privileges required
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Admin privileges required"

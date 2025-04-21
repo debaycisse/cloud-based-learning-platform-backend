@@ -2,11 +2,13 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.recommendation import RecommendationService
 from app.utils.validation import validate_json, sanitize_input
+from app.utils.swagger_utils import yaml_from_file
 
 recommendations_bp = Blueprint('recommendations', __name__)
 
 @recommendations_bp.route('/courses', methods=['GET'])
 @jwt_required()
+@yaml_from_file('docs/swagger/recommendations/get_courses_recommendations.yaml')
 def get_course_recommendations():
     """Get personalized course recommendations"""
     user_id = get_jwt_identity()
@@ -22,6 +24,7 @@ def get_course_recommendations():
 
 @recommendations_bp.route('/learning-paths', methods=['GET'])
 @jwt_required()
+@yaml_from_file('docs/swagger/recommendations/get_learning_paths_recommendations.yaml')
 def get_learning_path_recommendations():
     """Get personalized learning path recommendations"""
     user_id = get_jwt_identity()
@@ -37,6 +40,7 @@ def get_learning_path_recommendations():
 
 @recommendations_bp.route('/personalized', methods=['POST'])
 @jwt_required()
+@yaml_from_file('docs/swagger/recommendations/get_personalized_recommendations.yaml')
 def get_personalized_recommendations():
     """Get recommendations based on user preferences"""
     user_id = get_jwt_identity()
@@ -54,6 +58,7 @@ def get_personalized_recommendations():
     }), 200
 
 @recommendations_bp.route('/similar/<course_id>', methods=['GET'])
+@yaml_from_file('docs/swagger/recommendations/get_similar_courses.yaml')
 def get_similar_courses(course_id):
     """Get courses similar to a given course"""
     limit = int(request.args.get('limit', 3))

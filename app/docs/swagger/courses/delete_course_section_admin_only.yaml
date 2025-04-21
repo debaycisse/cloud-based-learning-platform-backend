@@ -1,0 +1,51 @@
+summary: Delete a section
+description: Deletes a section from a course (admin only)
+tags:
+  - Courses
+  - Sections
+security:
+  - Bearer: []
+parameters:
+  - name: course_id
+    in: path
+    required: true
+    type: string
+    description: ID of the course
+  - name: section_id
+    in: path
+    required: true
+    type: string
+    description: ID of the section
+responses:
+  200:
+    description: Section deleted successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Section deleted successfully"
+  400:
+    description: Failed to delete section
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Failed to delete section"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  403:
+    description: Forbidden - Admin privileges required
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Admin privileges required"

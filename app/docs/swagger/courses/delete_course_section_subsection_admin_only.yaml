@@ -1,0 +1,57 @@
+summary: Delete a subsection
+description: Deletes a subsection from a section (admin only)
+tags:
+  - Courses
+  - Sections
+  - Subsections
+security:
+  - Bearer: []
+parameters:
+  - name: course_id
+    in: path
+    required: true
+    type: string
+    description: ID of the course
+  - name: section_id
+    in: path
+    required: true
+    type: string
+    description: ID of the section
+  - name: subsection_id
+    in: path
+    required: true
+    type: string
+    description: ID of the subsection
+responses:
+  200:
+    description: Subsection deleted successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Subsection deleted successfully"
+  400:
+    description: Failed to delete subsection
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Failed to delete subsection"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  403:
+    description: Forbidden - Admin privileges required
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Admin privileges required"

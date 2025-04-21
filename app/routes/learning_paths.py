@@ -4,11 +4,13 @@ from app.models.learning_path import LearningPath
 from app.services.recommendation import RecommendationService
 from app.utils.auth import admin_required
 from app.utils.validation import validate_json, sanitize_input
+from app.utils.swagger_utils import yaml_from_file
 
 learning_paths_bp = Blueprint('learning_paths', __name__)
 
 @learning_paths_bp.route('/recommended', methods=['GET'])
 @jwt_required()
+@yaml_from_file('docs/swagger/learning_paths/get_recommended_paths.yaml')
 def get_recommended_paths():
     user_id = get_jwt_identity()
     
@@ -21,6 +23,7 @@ def get_recommended_paths():
     }), 200
 
 @learning_paths_bp.route('/<path_id>', methods=['GET'])
+@yaml_from_file('docs/swagger/learning_paths/get_learning_path.yaml')
 def get_learning_path(path_id):
     path = LearningPath.find_by_id(path_id)
     
@@ -30,6 +33,7 @@ def get_learning_path(path_id):
     return jsonify({"learning_path": path}), 200
 
 @learning_paths_bp.route('', methods=['GET'])
+@yaml_from_file('docs/swagger/learning_paths/get_learning_paths.yaml')
 def get_learning_paths():
     limit = int(request.args.get('limit', 20))
     skip = int(request.args.get('skip', 0))
@@ -51,6 +55,7 @@ def get_learning_paths():
 @jwt_required()
 @admin_required
 @validate_json('title', 'description', 'courses')
+@yaml_from_file('docs/swagger/learning_paths/create_learning_path_admin_only.yaml')
 def create_learning_path():
     data = sanitize_input(request.get_json())
     

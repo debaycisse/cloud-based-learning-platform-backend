@@ -1,0 +1,46 @@
+summary: Get course sections
+description: Returns all sections of a specific course
+tags:
+  - Courses
+  - Sections
+parameters:
+  - name: course_id
+    in: path
+    required: true
+    type: string
+    description: ID of the course
+responses:
+  200:
+    description: Course sections retrieved successfully
+    schema:
+      type: object
+      properties:
+        sections:
+          type: array
+          items:
+            type: object
+            properties:
+              section_id:
+                type: string
+                example: "5f8d0d55b54764421b7156a3"
+              title:
+                type: string
+                example: "Getting Started"
+              order:
+                type: integer
+                example: 1
+              sub_sections:
+                type: array
+                items:
+                  type: object
+        count:
+          type: integer
+          example: 5
+  404:
+    description: Course not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Course not found"

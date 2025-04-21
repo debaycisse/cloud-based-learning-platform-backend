@@ -1,0 +1,124 @@
+summary: Create a new course
+description: Creates a new course with the provided details (admin only)
+tags:
+  - Courses
+security:
+  - Bearer: []
+parameters:
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - title
+        - description
+        - category
+      properties:
+        title:
+          type: string
+          example: "Introduction to Python"
+          description: Course title
+        description:
+          type: string
+          example: "A comprehensive introduction to Python programming language"
+          description: Course description
+        category:
+          type: string
+          example: "programming"
+          description: Course category
+        prerequisites:
+          type: array
+          items:
+            type: string
+            example: "5f8d0d55b54764421b7156a2"
+          description: List of prerequisite course IDs
+        content:
+          type: object
+          description: Course content structure
+          properties:
+            sections:
+              type: array
+              items:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    example: "Getting Started"
+                  order:
+                    type: integer
+                    example: 1
+                  sub_sections:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                          example: "Installation"
+                        order:
+                          type: integer
+                          example: 1
+                        data:
+                          type: array
+                          items:
+                            type: object
+        difficulty:
+          type: string
+          enum: [beginner, intermediate, advanced]
+          example: "beginner"
+          description: Course difficulty level
+        tags:
+          type: array
+          items:
+            type: string
+            example: "python"
+          description: Course tags for categorization and search
+responses:
+  201:
+    description: Course created successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Course created successfully"
+        course:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: "5f8d0d55b54764421b7156a1"
+            title:
+              type: string
+              example: "Introduction to Python"
+            description:
+              type: string
+              example: "A comprehensive introduction to Python programming language"
+            category:
+              type: string
+              example: "programming"
+  400:
+    description: Invalid input
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid content structure"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  403:
+    description: Forbidden - Admin privileges required
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Admin privileges required"

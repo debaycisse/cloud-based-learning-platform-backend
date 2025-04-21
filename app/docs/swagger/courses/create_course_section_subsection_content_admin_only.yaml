@@ -1,0 +1,96 @@
+summary: Add content to a subsection
+description: Adds a new content item to a subsection (admin only)
+tags:
+  - Courses
+  - Sections
+  - Subsections
+  - Content
+security:
+  - Bearer: []
+parameters:
+  - name: course_id
+    in: path
+    required: true
+    type: string
+    description: ID of the course
+  - name: section_id
+    in: path
+    required: true
+    type: string
+    description: ID of the section
+  - name: subsection_id
+    in: path
+    required: true
+    type: string
+    description: ID of the subsection
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - type
+        - content
+      properties:
+        type:
+          type: string
+          enum: [text, image, video, code]
+          example: "text"
+          description: Type of content
+        content:
+          type: string
+          example: "To install Python, visit python.org and download the latest version."
+          description: Content data
+        order:
+          type: integer
+          example: 1
+          description: Order of the content (optional)
+        url:
+          type: string
+          example: "https://example.com/image.jpg"
+          description: URL for image or video content (required for image type)
+        alt_text:
+          type: string
+          example: "Python installation screenshot"
+          description: Alternative text for image content
+        caption:
+          type: string
+          example: "Python installation process"
+          description: Caption for image or video content
+        language:
+          type: string
+          example: "python"
+          description: Programming language for code content
+responses:
+  201:
+    description: Content added successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Content data added successfully"
+  400:
+    description: Failed to add content data
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Failed to add content data"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  403:
+    description: Forbidden - Admin privileges required
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Admin privileges required"

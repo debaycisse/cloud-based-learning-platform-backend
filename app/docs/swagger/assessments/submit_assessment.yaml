@@ -1,0 +1,64 @@
+tags:
+  - Assessments
+security:
+  - Bearer: []
+parameters:
+  - name: assessment_id
+    in: path
+    required: true
+    type: string
+    description: ID of the assessment to submit
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - answers
+      properties:
+        answers:
+          type: array
+          description: Array of answers corresponding to assessment questions
+          items:
+            type: string
+            example: "2"
+responses:
+  200:
+    description: Assessment submitted successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Assessment submitted successfully"
+        result:
+          type: object
+          properties:
+            score:
+              type: number
+              format: float
+              example: 0.85
+            passed:
+              type: boolean
+              example: true
+            knowledge_gaps:
+              type: array
+              items:
+                type: string
+                example: "python_loops"
+  400:
+    description: Invalid input or assessment submission error
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "You have already passed this assessment"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"

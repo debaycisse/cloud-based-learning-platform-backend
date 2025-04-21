@@ -1,0 +1,75 @@
+summary: Update a section
+description: Updates a section's information (admin only)
+tags:
+  - Courses
+  - Sections
+security:
+  - Bearer: []
+parameters:
+  - name: course_id
+    in: path
+    required: true
+    type: string
+    description: ID of the course
+  - name: section_id
+    in: path
+    required: true
+    type: string
+    description: ID of the section
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          example: "Getting Started with Python"
+          description: New section title
+        order:
+          type: integer
+          example: 2
+          description: New order of the section
+responses:
+  200:
+    description: Section updated successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Section updated successfully"
+  400:
+    description: Failed to update section
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Failed to update section"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  403:
+    description: Forbidden - Admin privileges required
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Admin privileges required"
+  404:
+    description: Section not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Section not found"

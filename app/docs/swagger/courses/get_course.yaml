@@ -1,0 +1,82 @@
+summary: Get course by ID
+description: Returns detailed information about a specific course
+tags:
+  - Courses
+parameters:
+  - name: course_id
+    in: path
+    required: true
+    type: string
+    description: ID of the course to retrieve
+responses:
+  200:
+    description: Course retrieved successfully
+    schema:
+      type: object
+      properties:
+        course:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: "5f8d0d55b54764421b7156a1"
+            title:
+              type: string
+              example: "Introduction to Python"
+            description:
+              type: string
+              example: "A comprehensive introduction to Python programming language"
+            category:
+              type: string
+              example: "programming"
+            prerequisites:
+              type: array
+              items:
+                type: string
+                example: "5f8d0d55b54764421b7156a2"
+            content:
+              type: object
+              properties:
+                sections:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      section_id:
+                        type: string
+                        example: "5f8d0d55b54764421b7156a3"
+                      title:
+                        type: string
+                        example: "Getting Started"
+                      order:
+                        type: integer
+                        example: 1
+                      sub_sections:
+                        type: array
+                        items:
+                          type: object
+                tags:
+                  type: array
+                  items:
+                    type: string
+                    example: "python"
+            difficulty:
+              type: string
+              enum: [beginner, intermediate, advanced]
+              example: "beginner"
+            created_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+            updated_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+  404:
+    description: Course not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Course not found"

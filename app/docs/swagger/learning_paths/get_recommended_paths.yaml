@@ -1,0 +1,65 @@
+summary: Get recommended learning paths
+description: Returns personalized learning path recommendations for the authenticated user
+tags:
+  - Learning Paths
+  - Recommendations
+security:
+  - Bearer: []
+responses:
+  200:
+    description: Recommended learning paths retrieved successfully
+    schema:
+      type: object
+      properties:
+        recommended_paths:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+                example: "5f8d0d55b54764421b7156a3"
+              title:
+                type: string
+                example: "Full Stack Web Development"
+              description:
+                type: string
+                example: "A comprehensive path to learn full stack web development"
+              courses:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                      example: "5f8d0d55b54764421b7156a4"
+                    title:
+                      type: string
+                      example: "JavaScript Fundamentals"
+                    description:
+                      type: string
+                      example: "Learn the basics of JavaScript programming"
+              target_skills:
+                type: array
+                items:
+                  type: string
+                  example: "javascript"
+              relevance_score:
+                type: number
+                format: float
+                example: 0.85
+                description: Score indicating how relevant this path is to the user's needs
+              match_reason:
+                type: string
+                example: "Based on your knowledge gaps in JavaScript"
+        count:
+          type: integer
+          example: 3
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"

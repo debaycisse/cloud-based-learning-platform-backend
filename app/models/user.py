@@ -1,6 +1,7 @@
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
+from bson import ObjectId
 
 users_collection = db.users
 
@@ -46,29 +47,29 @@ class User:
     @staticmethod
     def find_by_id(user_id):
         """Find a user by ID"""
-        return users_collection.find_one({'_id': user_id})
+        return users_collection.find_one({'_id': ObjectId(user_id)})
     
     @staticmethod
     def update_profile(user_id, update_data):
         """Update user profile"""
         update_data['updated_at'] = datetime.utcnow()
         users_collection.update_one(
-            {'_id': user_id},
+            {'_id': ObjectId(user_id)},
             {'$set': update_data}
         )
-        return users_collection.find_one({'_id': user_id})
+        return users_collection.find_one({'_id': ObjectId(user_id)})
     
     @staticmethod
     def update_progress(user_id, progress_data):
         """Update user learning progress"""
         users_collection.update_one(
-            {'_id': user_id},
+            {'_id': ObjectId(user_id)},
             {'$set': {
                 'progress': progress_data,
                 'updated_at': datetime.utcnow()
             }}
         )
-        return users_collection.find_one({'_id': user_id})
+        return users_collection.find_one({'_id': ObjectId(user_id)})
     
     @staticmethod
     def update_preferences(user_id, preferences_data):
@@ -99,11 +100,11 @@ class User:
             valid_preferences['updated_at'] = datetime.utcnow()
             
             users_collection.update_one(
-                {'_id': user_id},
+                {'_id': ObjectId(user_id)},
                 {'$set': valid_preferences}
             )
         
-        return users_collection.find_one({'_id': user_id})
+        return users_collection.find_one({'_id': ObjectId(user_id)})
     
     @staticmethod
     def check_password(user, password):

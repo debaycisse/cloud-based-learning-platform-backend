@@ -1,0 +1,75 @@
+summary: Reorder subsections in a section
+description: Updates the order of subsections within a section (admin only)
+tags:
+  - Courses
+  - Sections
+  - Subsections
+security:
+  - Bearer: []
+parameters:
+  - name: course_id
+    in: path
+    required: true
+    type: string
+    description: ID of the course
+  - name: section_id
+    in: path
+    required: true
+    type: string
+    description: ID of the section
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - subsection_order
+      properties:
+        subsection_order:
+          type: array
+          description: Array of subsection IDs with their new order
+          items:
+            type: object
+            required:
+              - subsection_id
+              - order
+            properties:
+              subsection_id:
+                type: string
+                example: "5f8d0d55b54764421b7156a4"
+              order:
+                type: integer
+                example: 2
+responses:
+  200:
+    description: Subsections reordered successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Subsections reordered successfully"
+  400:
+    description: Failed to reorder subsections
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Failed to reorder subsections"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  403:
+    description: Forbidden - Admin privileges required
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Admin privileges required"

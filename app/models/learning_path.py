@@ -1,4 +1,5 @@
 from datetime import datetime
+from bson import ObjectId
 from app import db
 
 learning_paths_collection = db.learning_paths
@@ -28,7 +29,7 @@ class LearningPath:
     @staticmethod
     def find_by_id(path_id):
         """Find a learning path by ID"""
-        return learning_paths_collection.find_one({'_id': path_id})
+        return learning_paths_collection.find_one({'_id': ObjectId(path_id)})
     
     @staticmethod
     def find_by_skill(skill, limit=20, skip=0):
@@ -43,7 +44,7 @@ class LearningPath:
         """Update a learning path"""
         update_data['updated_at'] = datetime.utcnow()
         learning_paths_collection.update_one(
-            {'_id': path_id},
+            {'_id': ObjectId(path_id)},
             {'$set': update_data}
         )
-        return learning_paths_collection.find_one({'_id': path_id})
+        return learning_paths_collection.find_one({'_id': ObjectId(path_id)})

@@ -1,0 +1,82 @@
+summary: Update content data
+description: Updates an existing content item in a subsection (admin only)
+tags:
+  - Courses
+  - Sections
+  - Subsections
+  - Content
+security:
+  - Bearer: []
+parameters:
+  - name: course_id
+    in: path
+    required: true
+    type: string
+    description: ID of the course
+  - name: section_id
+    in: path
+    required: true
+    type: string
+    description: ID of the section
+  - name: subsection_id
+    in: path
+    required: true
+    type: string
+    description: ID of the subsection
+  - name: data_id
+    in: path
+    required: true
+    type: string
+    description: ID of the content data
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      properties:
+        content:
+          type: string
+          example: "To install Python, first visit python.org and download the latest version for your operating system."
+          description: Updated content data
+        type:
+          type: string
+          enum: [text, image, video, code]
+          example: "text"
+          description: Updated type of content
+        order:
+          type: integer
+          example: 2
+          description: Updated order of the content
+responses:
+  200:
+    description: Content data updated successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Content data updated successfully"
+  400:
+    description: Failed to update content data
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Failed to update content data"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  403:
+    description: Forbidden - Admin privileges required
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Admin privileges required"

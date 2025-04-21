@@ -1,0 +1,63 @@
+summary: Get a specific learning path
+description: Returns detailed information about a specific learning path
+tags:
+  - Learning Paths
+parameters:
+  - name: path_id
+    in: path
+    required: true
+    type: string
+    description: ID of the learning path
+responses:
+  200:
+    description: Learning path retrieved successfully
+    schema:
+      type: object
+      properties:
+        learning_path:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: "5f8d0d55b54764421b7156a3"
+            title:
+              type: string
+              example: "Full Stack Web Development"
+            description:
+              type: string
+              example: "A comprehensive path to learn full stack web development"
+            courses:
+              type: array
+              items:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    example: "5f8d0d55b54764421b7156a4"
+                  title:
+                    type: string
+                    example: "JavaScript Fundamentals"
+                  description:
+                    type: string
+                    example: "Learn the basics of JavaScript programming"
+            target_skills:
+              type: array
+              items:
+                type: string
+                example: "javascript"
+            created_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T08:30:00Z"
+            updated_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T08:30:00Z"
+  404:
+    description: Learning path not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Learning path not found"

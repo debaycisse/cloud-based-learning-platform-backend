@@ -1,0 +1,69 @@
+summary: Reorder sections in a course
+description: Updates the order of sections within a course (admin only)
+tags:
+  - Courses
+  - Sections
+security:
+  - Bearer: []
+parameters:
+  - name: course_id
+    in: path
+    required: true
+    type: string
+    description: ID of the course
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - section_order
+      properties:
+        section_order:
+          type: array
+          description: Array of section IDs with their new order
+          items:
+            type: object
+            required:
+              - section_id
+              - order
+            properties:
+              section_id:
+                type: string
+                example: "5f8d0d55b54764421b7156a3"
+              order:
+                type: integer
+                example: 2
+responses:
+  200:
+    description: Sections reordered successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Sections reordered successfully"
+  400:
+    description: Failed to reorder sections
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Failed to reorder sections"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  403:
+    description: Forbidden - Admin privileges required
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Admin privileges required"

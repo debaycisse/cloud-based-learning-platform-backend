@@ -5,12 +5,13 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from pymongo import MongoClient
 from config import Config
+from app.swagger import setup_swagger
 
 # Initialize extensions
 jwt = JWTManager()
 limiter = Limiter(
     key_func=get_remote_address,
-    default_limits=["100 per minute"]
+    default_limits=["100 per minute"],
 )
 mongo_client = None
 db = None
@@ -48,5 +49,8 @@ def create_app(config_class=Config):
     app.register_blueprint(courses_bp, url_prefix='/api/courses')
     app.register_blueprint(assessments_bp, url_prefix='/api/assessments')
     app.register_blueprint(learning_paths_bp, url_prefix='/api/learning-paths')
+
+    # Setup Swagger UI
+    setup_swagger(app)
     
     return app

@@ -1,0 +1,100 @@
+summary: Create a new learning path
+description: Creates a new learning path (admin only)
+tags:
+  - Learning Paths
+security:
+  - Bearer: []
+parameters:
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - title
+        - description
+        - courses
+      properties:
+        title:
+          type: string
+          example: "Data Science Fundamentals"
+          description: Title of the learning path
+        description:
+          type: string
+          example: "A comprehensive introduction to data science concepts and tools"
+          description: Description of the learning path
+        courses:
+          type: array
+          description: Array of course IDs included in the learning path
+          items:
+            type: string
+            example: "5f8d0d55b54764421b7156a4"
+        target_skills:
+          type: array
+          description: Array of skills that will be acquired through this learning path
+          items:
+            type: string
+            example: "python"
+responses:
+  201:
+    description: Learning path created successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Learning path created successfully"
+        learning_path:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: "5f8d0d55b54764421b7156a3"
+            title:
+              type: string
+              example: "Data Science Fundamentals"
+            description:
+              type: string
+              example: "A comprehensive introduction to data science concepts and tools"
+            courses:
+              type: array
+              items:
+                type: string
+                example: "5f8d0d55b54764421b7156a4"
+            target_skills:
+              type: array
+              items:
+                type: string
+                example: "python"
+            created_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T08:30:00Z"
+            updated_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T08:30:00Z"
+  400:
+    description: Invalid request data
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Missing required fields: title, description, courses"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  403:
+    description: Forbidden - Admin privileges required
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Admin privileges required"

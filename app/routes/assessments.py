@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from app.utils.swagger_utils import yaml_from_file
 from app.models.assessment import Assessment, AssessmentResult
 from app.services.assessment import AssessmentService
 from app.utils.auth import admin_required
@@ -9,6 +10,7 @@ assessments_bp = Blueprint('assessments', __name__)
 
 @assessments_bp.route('/<course_id>', methods=['GET'])
 @jwt_required()
+@yaml_from_file('docs/swagger/assessments/get_assessments.yaml')
 def get_assessment_for_course(course_id):
     assessments = Assessment.find_by_course_id(course_id)
     
@@ -25,6 +27,7 @@ def get_assessment_for_course(course_id):
 @assessments_bp.route('/<assessment_id>/submit', methods=['POST'])
 @jwt_required()
 @validate_json('answers')
+@yaml_from_file('docs/swagger/assessments/submit_assessment.yaml')
 def submit_assessment(assessment_id):
     user_id = get_jwt_identity()
     data = sanitize_input(request.get_json())
@@ -49,6 +52,7 @@ def submit_assessment(assessment_id):
 
 @assessments_bp.route('/results', methods=['GET'])
 @jwt_required()
+@yaml_from_file('docs/swagger/assessments/get_assessment_results.yaml')
 def get_assessment_results():
     user_id = get_jwt_identity()
     limit = int(request.args.get('limit', 20))
@@ -68,6 +72,7 @@ def get_assessment_results():
 @jwt_required()
 @admin_required
 @validate_json('title', 'course_id', 'questions')
+@yaml_from_file('docs/swagger/assessments/create_assessment_admin_only.yaml')
 def create_assessment():
     data = sanitize_input(request.get_json())
     

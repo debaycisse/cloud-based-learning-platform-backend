@@ -1,0 +1,80 @@
+tags:
+  - Assessments
+security:
+  - Bearer: []
+parameters:
+  - name: limit
+    in: query
+    required: false
+    type: integer
+    default: 20
+    description: Maximum number of results to return
+  - name: skip
+    in: query
+    required: false
+    type: integer
+    default: 0
+    description: Number of results to skip (for pagination)
+responses:
+  200:
+    description: Assessment results for the user
+    schema:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+                example: 5f8d0d55b54764421b7156a3
+              user_id:
+                type: string
+                example: 5f8d0d55b54764421b7156a1
+              assessment_id:
+                type: string
+                example: 5f8d0d55b54764421b7156a2
+              answers:
+                type: array
+                items:
+                  type: string
+                  example: "2"
+              score:
+                type: number
+                format: float
+                example: 0.85
+              passed:
+                type: boolean
+                example: true
+              knowledge_gaps:
+                type: array
+                items:
+                  type: string
+                  example: "python_loops"
+              demonstrated_strengths:
+                type: array
+                items:
+                  type: string
+                  example: "python_basics"
+              created_at:
+                type: string
+                format: date-time
+                example: "2023-01-15T14:30:00Z"
+        count:
+          type: integer
+          example: 5
+        skip:
+          type: integer
+          example: 0
+        limit:
+          type: integer
+          example: 20
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
