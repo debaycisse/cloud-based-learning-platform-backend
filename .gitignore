@@ -170,6 +170,3 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
-
-# Configuration file for environment variables
-config.py
