@@ -8,9 +8,36 @@ from app.utils.validation import validate_json, sanitize_input
 
 assessments_bp = Blueprint('assessments', __name__)
 
-@assessments_bp.route('/<course_id>', methods=['GET'])
+@assessments_bp.route('/<assessment_id>', methods=['GET'])
 @jwt_required()
-@yaml_from_file('docs/swagger/assessments/get_assessments.yaml')
+@yaml_from_file('docs/swagger/assessments/get_assessment.yaml')
+def get_an_assessment(assessment_id):
+    assessments = Assessment.find_by_id(assessment_id)
+    
+    if not assessments:
+        return jsonify({"error": "No assessments found for the given ID"}), 404
+    
+    # For security, remove correct answers from the response
+    # for assessment in assessments:
+    #     for question in assessment.get('questions', []):
+    #         question.pop('correct_answer', None)
+    
+    return jsonify({
+        "assessment": {
+            "id": str(assessments['_id']),
+            "title": assessments['title'],
+            "course_id": assessments['course_id'],
+            "questions": assessments.get('questions', []),
+            "created_at": assessments.get('created_at').isoformat() if assessments.get('created_at') else None,
+            "updated_at": assessments.get('updated_at').isoformat() if assessments.get('updated_at') else None
+        }
+    }), 200
+
+# 
+
+@assessments_bp.route('/course/<course_id>', methods=['GET'])
+@jwt_required()
+@yaml_from_file('docs/swagger/assessments/get_course_assessments.yaml')
 def get_assessment_for_course(course_id):
     assessments = Assessment.find_by_course_id(course_id)
     
@@ -23,6 +50,10 @@ def get_assessment_for_course(course_id):
             question.pop('correct_answer', None)
     
     return jsonify({"assessments": assessments}), 200
+
+
+# 
+
 
 @assessments_bp.route('/<assessment_id>/submit', methods=['POST'])
 @jwt_required()

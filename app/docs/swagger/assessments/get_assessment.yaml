@@ -1,0 +1,66 @@
+tags:
+  - Assessments
+security:
+  - Bearer: []
+parameters:
+  - name: assessment_id
+    in: path
+    required: true
+    type: string
+    description: ID of the assessment to get
+responses:
+  200:
+    description: An assessment whose ID matches the provided assessment_id
+    schema:
+      type: object
+      properties:
+        assessments:
+          type: object
+          properties:
+            id:
+              type: string
+              example: 5f8d0d55b54764421b7156a1
+            title:
+              type: string
+              example: "Python Basics Assessment"
+            course_id:
+              type: string
+              example: 5f8d0d55b54764421b7156a2
+            questions:
+              type: array
+              items:
+                type: object
+                properties:
+                  question:
+                    type: string
+                    example: "What is the output of print(1 + 1)?"
+                  options:
+                    type: array
+                    items:
+                      type: string
+                      example: ["3", "2", "7"]
+                  # Note: correct_answer is removed for security
+            created_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+            updated_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+  404:
+    description: No assessments found for the provided assessment_id
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "No assessments found for the given ID"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
