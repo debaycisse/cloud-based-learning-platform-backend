@@ -1,0 +1,45 @@
+summary: Deletes an Assessment
+description: Deletes an assessment whose ID was provided (admin only)
+tags:
+  - Assessments
+security:
+  - Bearer: []
+parameters:
+  - name: assessment_id
+    in: path
+    required: true
+    type: string
+    description: ID of the assessment to delete
+responses:
+  200:
+    description: Assessment deleted successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Assessment deleted successfully"
+  404:
+    description: No assessments found for the provided assessment_id
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "No assessments found for the given ID"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Unauthorized"
+  403:
+    description: Forbidden
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Forbidden"

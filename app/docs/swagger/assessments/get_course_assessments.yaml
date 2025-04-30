@@ -1,3 +1,5 @@
+summary: Gets Course Assessments
+description: Retrieves all assessments for a specific course.
 tags:
   - Assessments
 security:

@@ -118,3 +118,42 @@ def create_assessment():
         "message": "Assessment created successfully",
         "assessment": assessment
     }), 201
+
+@assessments_bp.route('/<assessment_id>', methods=['PUT'])
+@jwt_required()
+@admin_required
+@validate_json('title', 'course_id', 'questions')
+@yaml_from_file('docs/swagger/assessments/update_assessment_admin_only.yaml')
+def update_assessment(assessment_id):
+    data = sanitize_input(request.get_json())
+    
+    # Update assessment
+    assessment = Assessment.update(
+        assessment_id,
+        title=data.get('title'),
+        course_id=data.get('course_id'),
+        questions=data.get('questions')
+    )
+    
+    if not assessment:
+        return jsonify({"error": "Assessment not found"}), 404
+    
+    return jsonify({
+        "message": "Assessment updated successfully",
+        "assessment": assessment
+    }), 200
+
+@assessments_bp.route('/<assessment_id>', methods=['DELETE'])
+@jwt_required()
+@admin_required
+@yaml_from_file('docs/swagger/assessments/delete_assessment_admin_only.yaml')
+def delete_assessment(assessment_id):
+    # Delete assessment
+    result = Assessment.delete(assessment_id)
+    
+    if not result:
+        return jsonify({"error": "Assessment not found"}), 404
+    
+    return jsonify({
+        "message": "Assessment deleted successfully"
+    }), 200

@@ -1,0 +1,71 @@
+summary: Updates an Assessment
+description: Updates an assessment whose ID was provided (admin only)
+tags:
+  - Assessments
+security:
+  - Bearer: []
+parameters:
+  - name: assessment_id
+    in: path
+    required: true
+    type: string
+    description: ID of the assessment to update
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      properties:
+        title:
+          type: string
+          example: "Updated Assessment Title"
+        questions:
+          type: array
+          items:
+            type: object
+            properties:
+              question:
+                type: string
+                example: "What is the output of print(1 + 1)?"
+              options:
+                type: array
+                items:
+                  type: string
+                  example: ["3", "2", "7"]
+              correct_answer:
+                type: string
+                example: "2"
+              # Note: correct_answer is included for admin-only access
+responses:
+  200:
+    description: Assessment updated successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Assessment updated successfully"
+  404:
+    description: No assessments found for the provided assessment_id
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "No assessments found for the given ID"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Unauthorized access"
+  403:
+    description: Forbidden
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "You do not have permission to update this assessment"

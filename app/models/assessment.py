@@ -51,6 +51,12 @@ class Assessment:
             {'$set': update_data}
         )
         return assessments_collection.find_one({'_id': ObjectId(assessment_id)})
+    
+    @staticmethod
+    def delete(assessment_id):
+        """Delete an assessment"""
+        result = assessments_collection.delete_one({'_id': ObjectId(assessment_id)})
+        return result.deleted_count > 0
 
 '''
 Assessment Result Model

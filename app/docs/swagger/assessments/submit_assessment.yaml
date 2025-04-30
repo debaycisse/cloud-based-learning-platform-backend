@@ -1,3 +1,5 @@
+summary: Submits an Assessment
+description: Submits the answers for a specific assessment.
 tags:
   - Assessments
 security:

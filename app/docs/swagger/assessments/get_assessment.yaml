@@ -1,3 +1,6 @@
+summary: Get an assessment by ID
+description: 
+  Retrieves an assessment by its ID.
 tags:
   - Assessments
 security:
@@ -39,7 +42,9 @@ responses:
                     items:
                       type: string
                       example: ["3", "2", "7"]
-                  # Note: correct_answer is removed for security
+                  correct_answer:
+                    type: string
+                    example: "2"
             created_at:
               type: string
               format: date-time

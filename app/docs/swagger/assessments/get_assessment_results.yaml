@@ -1,3 +1,5 @@
+summary: Gets Assessment Results
+description: Retrieves the assessment results for a specific user.
 tags:
   - Assessments
 security:
