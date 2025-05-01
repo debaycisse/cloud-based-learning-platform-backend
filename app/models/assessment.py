@@ -43,6 +43,12 @@ class Assessment:
         return list(cursor)
     
     @staticmethod
+    def find_all(limit=20, skip=0):
+        """Find all assessments with pagination"""
+        cursor = assessments_collection.find().sort('created_at', -1).skip(skip).limit(limit)
+        return list(cursor)
+    
+    @staticmethod
     def update(assessment_id, update_data):
         """Update an assessment"""
         update_data['updated_at'] = datetime.utcnow()

@@ -33,7 +33,34 @@ def get_an_assessment(assessment_id):
         }
     }), 200
 
-# 
+'''
+Get all assessments with pagination
+- Parameters:
+    - limit: Number of assessments to return (default: 20)
+    - skip: Number of assessments to skip (default: 0)
+- Returns:
+    - assessments: List of assessments
+    - count: Total number of assessments
+    - skip: Number of assessments skipped
+    - limit: Number of assessments returned
+'''
+@assessments_bp.route('', methods=['GET'])
+@jwt_required()
+@admin_required
+@yaml_from_file('docs/swagger/assessments/get_assessments_admin.yaml')
+def get_assessments():
+    limit = int(request.args.get('limit', 20))
+    skip = int(request.args.get('skip', 0))
+    
+    # Get all assessments with pagination
+    assessments = Assessment.find_all(limit, skip)
+    
+    return jsonify({
+        "assessments": assessments,
+        "count": len(assessments),
+        "skip": skip,
+        "limit": limit
+    }), 200
 
 @assessments_bp.route('/course/<course_id>', methods=['GET'])
 @jwt_required()
