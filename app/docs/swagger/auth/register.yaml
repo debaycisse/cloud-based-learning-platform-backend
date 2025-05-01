@@ -13,6 +13,10 @@ parameters:
         - username
         - password
       properties:
+        name:
+          type: string
+          example: "John Doe"
+          description: User's full name
         email:
           type: string
           format: email
@@ -45,6 +49,9 @@ responses:
             id:
               type: string
               example: "5f8d0d55b54764421b7156a1"
+            name:
+              type: string
+              example: "John Doe"
             email:
               type: string
               example: "user@example.com"

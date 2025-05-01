@@ -1,0 +1,43 @@
+summary: Marks a course as completed for a user
+description: 
+  Marks a course as completed for a user.
+tags:
+  - Courses
+security:
+  - Bearer: []
+parameters:
+  - name: course_id
+    in: path
+    required: true
+    type: string
+    description: ID of the course to mark as completed
+  - name: user_id
+    in: path
+    required: true
+    type: string
+    description: ID of the user who completed the course
+responses:
+  200:
+    description: Course marked as completed successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Course marked as completed successfully"
+  404:
+    description: Course or user not found
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Course or user not found"
+  400:
+    description: Bad request
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Bad request"

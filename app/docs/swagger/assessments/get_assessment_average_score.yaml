@@ -1,0 +1,43 @@
+summary: Gets the average score of an assessment
+description: 
+  This endpoint retrieves the average score of an assessment based on the provided assessment ID.
+  The average score is calculated by aggregating the scores of all users who have completed the assessment.
+tags:
+  - Assessments
+security:
+  - Bearer: []
+parameters:
+  - name: assessment_id
+    in: path
+    required: true
+    type: string
+    description: The ID of the assessment for which to retrieve the average score.
+responses:
+  200:
+    description: Average score of the assessment
+    schema:
+      type: object
+      properties:
+        average_score:
+          type: number
+          format: float
+          example: 0.75
+        total_responses:
+          type: float
+          example: 0.91
+  400:
+    description: Bad request, invalid assessment ID
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid assessment ID"
+  404:
+    description: Assessment not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Assessment not found"
