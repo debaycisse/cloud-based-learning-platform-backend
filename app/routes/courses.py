@@ -463,3 +463,35 @@ def delete_content_data(course_id, section_id, subsection_id, data_id):
     return jsonify({
         "message": "Content data deleted successfully"
     }), 200
+
+
+'''
+Enrolls a user in a course if the user is currently not enrolled in one course at least
+- POST /api/courses/enroll
+- Request body: JSON with course ID
+- Response: JSON with success message
+- JWT required
+'''
+@courses_bp.route('/enroll', methods=['POST'])
+@jwt_required()
+@validate_json('course_id')
+@yaml_from_file('docs/swagger/courses/enroll_user_in_a_course.yaml')
+def enroll_user_in_course():
+    data = sanitize_input(request.get_json())
+    
+    user_id = get_jwt_identity()
+    course_id = data.get('course_id')
+    
+    # Check if user's in_progress_courses length is 0
+    user = Course.get_user_by_id(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    if len(user.get('progress', {}).get('in_progress_courses', [])) > 0:
+        return jsonify({"error": "User is already enrolled in a course"}), 400
+    # Enroll user in the given course
+    success = Course.enroll_user(course_id=course_id, user_id=user_id)
+    if not success:
+        return jsonify({"error": "Failed to enroll in course"}), 400
+    return jsonify({
+        "message": "User enrolled in course successfully"
+    }), 200

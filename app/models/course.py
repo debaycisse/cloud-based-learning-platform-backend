@@ -39,7 +39,9 @@ class Course:
             },
             'difficulty': difficulty or 'beginner',
             'created_at': datetime.utcnow(),
-            'updated_at': datetime.utcnow()
+            'updated_at': datetime.utcnow(),
+            'enrollment_count': 0,
+            'enrolled_users': []
         }
         result = courses_collection.insert_one(course)
         course['_id'] = result.inserted_id
@@ -103,8 +105,8 @@ class Course:
     @staticmethod
     def find_popular_courses(limit=10):
         """Find popular courses based on enrollment count"""
-        # We will just use newest courses for now
-        cursor = courses_collection.find().sort('created_at', -1).limit(limit)
+        # We will use the enrollment_count field to determine popularity
+        cursor = courses_collection.find().sort('enrollment_count', -1).limit(limit)
         return list(cursor)
     
     '''
@@ -576,3 +578,35 @@ class Course:
             return result[0]['subsection']
         
         return None
+    
+    '''
+    A static method that enrolls a user in a course.
+    Args:
+        course_id (str): ID of the course to enroll the user in.
+        user_id (str): ID of the user to enroll.
+    Returns:
+        bool: True if the user was enrolled successfully, False otherwise.
+    '''
+    @staticmethod
+    def enroll_user(course_id, user_id):
+        """Enroll a user in a course"""
+        if isinstance(course_id, str):
+            course_id = ObjectId(course_id)
+        
+        # Increment the enrollment count
+        courses_collection.update_one(
+            {'_id': ObjectId(course_id)},
+            {'$inc': {'enrollment_count': 1}}
+        )
+        
+        # Add the user to the course's enrolled users
+        courses_collection.update_one(
+            {'_id': ObjectId(course_id)},
+            {'$addToSet': {'enrolled_users': user_id}}
+        )
+
+        # Check if the user was enrolled successfully
+        course = courses_collection.find_one({'_id': ObjectId(course_id)})
+        if course and 'enrolled_users' in course:
+            return user_id in course['enrolled_users']
+        return False
