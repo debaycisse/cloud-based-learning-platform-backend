@@ -14,8 +14,8 @@ class User:
             'email': email,
             'username': username,
             'password_hash': generate_password_hash(password),
-            'created_at': datetime.utcnow(),
-            'updated_at': datetime.utcnow(),
+            'created_at': datetime.now(timezone.utc),
+            'updated_at': datetime.now(timezone.utc),
             'role': 'user',
             'progress': {
                 'completed_courses': [],
@@ -58,7 +58,7 @@ class User:
     @staticmethod
     def update_profile(user_id, update_data):
         """Update user profile"""
-        update_data['updated_at'] = datetime.utcnow()
+        update_data['updated_at'] = datetime.now(timezone.utc)
         users_collection.update_one(
             {'_id': ObjectId(user_id)},
             {'$set': update_data}
@@ -72,7 +72,7 @@ class User:
             {'_id': ObjectId(user_id)},
             {'$set': {
                 'progress': progress_data,
-                'updated_at': datetime.utcnow()
+                'updated_at': datetime.now(timezone.utc)
             }}
         )
         return users_collection.find_one({'_id': ObjectId(user_id)})
@@ -103,7 +103,7 @@ class User:
         
         # Only update if we have valid preferences
         if valid_preferences:
-            valid_preferences['updated_at'] = datetime.utcnow()
+            valid_preferences['updated_at'] = datetime.now(timezone.utc)
             
             users_collection.update_one(
                 {'_id': ObjectId(user_id)},

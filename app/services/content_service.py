@@ -1,5 +1,4 @@
 from app.models.course import Course
-from datetime import datetime
 
 
 '''

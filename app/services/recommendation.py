@@ -3,7 +3,6 @@ from app.models.course import Course
 from app.models.learning_path import LearningPath
 from app.models.user import User
 from collections import Counter
-from datetime import datetime, timedelta
 
 
 '''

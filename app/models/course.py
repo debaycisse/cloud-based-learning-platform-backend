@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from bson import ObjectId
 from app import db
 
@@ -38,8 +38,8 @@ class Course:
                 'tags': tags or []
             },
             'difficulty': difficulty or 'beginner',
-            'created_at': datetime.utcnow(),
-            'updated_at': datetime.utcnow(),
+            'created_at': datetime.now(timezone.utc),
+            'updated_at': datetime.now(timezone.utc),
             'enrollment_count': 0,
             'enrolled_users': [],
             'completed_users': [],
@@ -160,7 +160,7 @@ class Course:
                 course_id = ObjectId(course_id)
             except:
                 return None
-        update_data['updated_at'] = datetime.utcnow()
+        update_data['updated_at'] = datetime.now(timezone.utc)
         courses_collection.update_one(
             {'_id': ObjectId(course_id)},
             {'$set': update_data}
@@ -205,7 +205,7 @@ class Course:
                         'sub_sections': []
                     }
                 },
-                '$set': {'updated_at': datetime.utcnow()}
+                '$set': {'updated_at': datetime.now(timezone.utc)}
             }
         )
         return section_id
@@ -225,14 +225,14 @@ class Course:
         if isinstance(course_id, str):
             course_id = ObjectId(course_id)
             
-        update_data['updated_at'] = datetime.utcnow()
+        update_data['updated_at'] = datetime.now(timezone.utc)
         
         courses_collection.update_one(
             {'_id': ObjectId(course_id), 'content.sections.section_id': section_id},
             {'$set': {
                 'content.sections.$.title': update_data.get('title'),   # $ - placeholder for the matched section
                 'content.sections.$.order': update_data.get('order'),
-                'updated_at': datetime.utcnow()
+                'updated_at': datetime.now(timezone.utc)
             }}
         )
         return courses_collection.find_one({'_id': ObjectId(course_id)})
@@ -257,7 +257,7 @@ class Course:
                 '$pull': {
                     'content.sections': {'section_id': section_id}
                 }, # $pull removes the section from the array
-                '$set': {'updated_at': datetime.utcnow()} # $set updates the updated_at field of the course
+                '$set': {'updated_at': datetime.now(timezone.utc)} # $set updates the updated_at field of the course
             }
         )
         return courses_collection.find_one({'_id': ObjectId(course_id)})
@@ -306,7 +306,7 @@ class Course:
                         'data': []
                     }
                 }, # $push adds the subsection to the array
-                '$set': {'updated_at': datetime.utcnow()}
+                '$set': {'updated_at': datetime.now(timezone.utc)} # $set updates the updated_at field of the course
             }
         )
         return subsection_id
@@ -337,7 +337,7 @@ class Course:
                 '$set': {
                     'content.sections.$[section].sub_sections.$[subsection].title': update_data.get('title'),
                     'content.sections.$[section].sub_sections.$[subsection].order': update_data.get('order'),
-                    'updated_at': datetime.utcnow()
+                    'updated_at': datetime.now(timezone.utc)
                 }
             },
             array_filters=[
@@ -375,7 +375,7 @@ class Course:
                 '$pull': {
                     'content.sections.$.sub_sections': {'subsection_id': subsection_id}
                 },
-                '$set': {'updated_at': datetime.utcnow()}
+                '$set': {'updated_at': datetime.now(timezone.utc)}
             }
         )
         return courses_collection.find_one({'_id': ObjectId(course_id)})
@@ -435,7 +435,7 @@ class Course:
                 '$push': {
                     'content.sections.$[section].sub_sections.$[subsection].data': data_object
                 },
-                '$set': {'updated_at': datetime.utcnow()}
+                '$set': {'updated_at': datetime.now(timezone.utc)}
             },
             array_filters=[
                 {'section.section_id': section_id},
@@ -475,7 +475,7 @@ class Course:
                     'content.sections.$[section].sub_sections.$[subsection].data.$[data].content': update_data.get('content'),
                     'content.sections.$[section].sub_sections.$[subsection].data.$[data].order': update_data.get('order'),
                     'content.sections.$[section].sub_sections.$[subsection].data.$[data].type': update_data.get('type'),
-                    'updated_at': datetime.utcnow()
+                    'updated_at': datetime.now(timezone.utc)
                 }
             },
             array_filters=[
@@ -514,7 +514,7 @@ class Course:
                 '$pull': {
                     'content.sections.$[section].sub_sections.$[subsection].data': {'data_id': data_id}
                 },
-                '$set': {'updated_at': datetime.utcnow()}
+                '$set': {'updated_at': datetime.now(timezone.utc)}
             },
             array_filters=[
                 {'section.section_id': section_id},

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from bson import ObjectId
 from app import db
 
@@ -24,8 +24,9 @@ class Assessment:
             'title': title,
             'course_id': course_id,
             'questions': questions,
-            'created_at': datetime.utcnow(),
-            'updated_at': datetime.utcnow()
+            'time_limit': 25,  # Default time limit in minutes
+            'created_at': datetime.now(timezone.utc),
+            'updated_at': datetime.now(timezone.utc),
         }
         result = assessments_collection.insert_one(assessment)
         assessment['_id'] = result.inserted_id
@@ -51,7 +52,7 @@ class Assessment:
     @staticmethod
     def update(assessment_id, update_data):
         """Update an assessment"""
-        update_data['updated_at'] = datetime.utcnow()
+        update_data['updated_at'] = datetime.now(timezone.utc)
         assessments_collection.update_one(
             {'_id': ObjectId(assessment_id)},
             {'$set': update_data}
@@ -89,7 +90,7 @@ class AssessmentResult:
             'passed': passed,
             'knowledge_gaps': knowledge_gaps or [],
             'demonstrated_strengths': demonstrated_strengths or [],
-            'created_at': datetime.utcnow()
+            'created_at': datetime.now(timezone.utc),
         }
         result_id = results_collection.insert_one(result).inserted_id
         result['_id'] = result_id

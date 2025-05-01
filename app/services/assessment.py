@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from app import db
 from app.models.assessment import Assessment, AssessmentResult
 from config import Config
@@ -29,8 +29,8 @@ class AssessmentService:
         cooldown_hours = Config.ASSESSMENT_COOLDOWN_HOURS
         cooldown_time = latest_result['created_at'] + timedelta(hours=cooldown_hours)
         
-        if datetime.utcnow() < cooldown_time:
-            hours_remaining = (cooldown_time - datetime.utcnow()).total_seconds() / 3600
+        if datetime.now(timezone.utc) < cooldown_time:
+            hours_remaining = (cooldown_time - datetime.now(timezone.utc)).total_seconds() / 3600
             return False, f"You can retake this assessment in {int(hours_remaining)} hours"
         
         return True, None
