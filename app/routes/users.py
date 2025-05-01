@@ -13,17 +13,17 @@ User Management routes for profile retrieval, update, and progress tracking.
 These routes include JWT authentication, input validation, and data sanitization.
 '''
 
+'''
+Retrieves all users
+- GET /api/users/all
+- Response: JSON with list of users
+- JWT required
+- Admin role required'''
 @users_bp.route('/all', methods=['GET'])
 @jwt_required()
-@admin_required()
+@admin_required
 @yaml_from_file('docs/swagger/users/get_all_users.yaml')
 def get_all_users():
-    """
-    Retrieves all users
-    - GET /api/users/all
-    - Response: JSON with list of users
-    - JWT required
-    """
     users = User.find_all_users()
 
     if not users:
