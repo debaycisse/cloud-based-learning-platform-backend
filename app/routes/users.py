@@ -18,7 +18,8 @@ Retrieves all users
 - GET /api/users/all
 - Response: JSON with list of users
 - JWT required
-- Admin role required'''
+- Admin role required
+'''
 @users_bp.route('/all', methods=['GET'])
 @jwt_required()
 @admin_required
@@ -36,7 +37,51 @@ def get_all_users():
     return jsonify({"users": users}), 200
 
 '''
-Retrieves user profile
+Retrieves a specific user by ID
+- GET /api/users/<user_id>
+- Response: JSON with user information
+- JWT required
+- Admin role required
+'''
+@users_bp.route('/<user_id>', methods=['GET'])
+@jwt_required()
+@admin_required
+@yaml_from_file('docs/swagger/users/get_user.yaml')
+def get_user(user_id):
+    user = User.find_by_id(user_id)
+    
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    
+    # Remove sensitive information
+    user.pop('password_hash', None)
+    
+    return jsonify({
+        "user": {
+            "id": str(user['_id']),
+            "email": user['email'],
+            "username": user['username'],
+            "role": user.get('role', 'user'),
+            "progress": user.get('progress', {
+                'completed_courses': [],
+                'in_progress_courses': [],
+                'completed_assessments': []
+            }),
+            "preferences": user.get('preferences', {
+                'categories': [],
+                'skills': [],
+                'difficulty': 'beginner',
+                'learning_style': 'textual',
+                'time_commitment': 'medium',
+                'goals': []
+            }),
+            "created_at": user.get('created_at').isoformat() if user.get('created_at') else None,
+            "updated_at": user.get('updated_at').isoformat() if user.get('updated_at') else None
+        }
+    }), 200
+
+'''
+Retrieves user's profile
 - GET /api/users/profile
 - Response: JSON with user profile information
 - JWT required
