@@ -1,0 +1,114 @@
+summary: Gets a user by ID
+description: Returns the user information for the specified user ID
+tags:
+  - Users
+security:
+  - Bearer: []
+parameters:
+  - name: user_id
+    in: path
+    required: true
+    type: string
+    description: The ID of the user to retrieve
+responses:
+  200:
+    description: User retrieved successfully
+    schema:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              example: "5f8d0d55b54764421b7156a1"
+            email:
+              type: string
+              example: "john.doe@example.com"
+            username:
+              type: string
+              example: "johndoe"
+            role:
+              type: string
+              enum: [user, others]
+              example: "user"
+            created_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+            updated_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+            progress:
+              type: object
+              properties:
+                completed_courses:
+                  type: array
+                  items:
+                    type: string
+                    example: "Course ID"
+                in_progress_courses:
+                  type: array
+                  items:
+                    type: string
+                    example: "Course ID"
+                completed_assessments:
+                  type: array
+                  items:
+                    type: string
+                    example: "Assessment ID"
+            preferences:
+              type: object
+              properties:
+                categories:
+                  type: array
+                  items:
+                    type: string
+                    example: "Python"
+                skills:
+                  type: array
+                  items:
+                    type: string
+                    example: "Data Science"
+                difficulty:
+                  type: string
+                  enum: [easy, medium, hard]
+                  example: "medium"
+                learning_style:
+                  type: string
+                  enum: [visual, auditory, textual]
+                  example: "textual"
+                time_commitment:
+                  type: string
+                  enum: [short, medium, long]
+                  example: "medium"
+                goals:
+                  type: array
+                  items:
+                    type: string
+                    example: "Become a data scientist"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  403:
+    description: Forbidden
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "You do not have permission to access this resource"
+  404:
+    description: User not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "User not found"
