@@ -41,7 +41,8 @@ class Course:
             'created_at': datetime.utcnow(),
             'updated_at': datetime.utcnow(),
             'enrollment_count': 0,
-            'enrolled_users': []
+            'enrolled_users': [],
+            'completed_users': [],
         }
         result = courses_collection.insert_one(course)
         course['_id'] = result.inserted_id
@@ -610,3 +611,38 @@ class Course:
         if course and 'enrolled_users' in course:
             return user_id in course['enrolled_users']
         return False
+
+    '''
+    A static method that marks a course as completed for a user, only if 
+    the user has not completed the course before. If the user has completed
+    the course before, it will not be marked again and it will return nothing.
+    This method also inserts the user's ID in to the course's completed_users array.
+    Args:
+        course_id (str): ID of the course to mark as completed.
+        user_id (str): ID of the user who completed the course.
+    Returns:
+        bool: True if the course was marked as completed successfully, False otherwise.
+    '''
+    @staticmethod
+    def mark_course_as_completed(course_id, user_id):
+        """Mark a course as completed for a user"""
+        if isinstance(course_id, str):
+            course_id = ObjectId(course_id)
+        
+        # Check if the user has already completed the course
+        course = courses_collection.find_one(
+            {'_id': ObjectId(course_id), 'completed_users': user_id}
+        )
+        
+        if course:
+            return  # User has already completed the course before, do nothing
+        
+        # Checks if the update was successful
+        result = courses_collection.update_one(
+            {'_id': ObjectId(course_id)},
+            {'$addToSet': {'completed_users': user_id}}
+        )
+        if result.modified_count == 0:
+            return False
+                
+        return True

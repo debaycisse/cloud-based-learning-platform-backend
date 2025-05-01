@@ -184,3 +184,25 @@ def delete_assessment(assessment_id):
     return jsonify({
         "message": "Assessment deleted successfully"
     }), 200
+
+'''
+Gets assessment result"s average score
+- Parameters:
+    - assessment_id: ID of the assessment result
+- Returns:
+    - average_score: Average score of the assessment result
+'''
+@assessments_bp.route('/<assessment_id>/average_score', methods=['GET'])
+@jwt_required()
+@admin_required
+@yaml_from_file('docs/swagger/assessments/get_assessment_average_score.yaml')
+def get_assessment_average_score(assessment_id):
+    # Get average score for the assessment
+    average_score = AssessmentResult.find_average_score(assessment_id)
+    
+    if average_score is None:
+        return jsonify({"error": "No results found for this assessment"}), 404
+    
+    return jsonify({
+        "average_score": average_score
+    }), 200

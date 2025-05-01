@@ -7,9 +7,10 @@ users_collection = db.users
 
 class User:
     @staticmethod
-    def create(email, username, password):
+    def create(name, email, username, password):
         """Create a new user"""
         user = {
+            'name': name,
             'email': email,
             'username': username,
             'password_hash': generate_password_hash(password),

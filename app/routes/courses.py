@@ -99,6 +99,7 @@ def create_course():
     content_structure = data.get('content')
     difficulty = data.get('difficulty', 'beginner')
     tags = data.get('tags', [])
+    completed_count = 0
     
     # Validate content structure if provided
     if content_structure and not validate_content_structure(content_structure):
@@ -110,7 +111,9 @@ def create_course():
         description=description,
         category=category,
         prerequisites=prerequisites,
-        content_structure=content_structure
+        content_structure=content_structure,
+        difficulty=difficulty,
+        tags=tags,
     )
     
     return jsonify({
@@ -466,7 +469,7 @@ def delete_content_data(course_id, section_id, subsection_id, data_id):
 
 
 '''
-Enrolls a user in a course if the user is currently not enrolled in one course at least
+Enrolls a user in a course if the user has no in-progress courses
 - POST /api/courses/enroll
 - Request body: JSON with course ID
 - Response: JSON with success message
@@ -494,4 +497,30 @@ def enroll_user_in_course():
         return jsonify({"error": "Failed to enroll in course"}), 400
     return jsonify({
         "message": "User enrolled in course successfully"
+    }), 200
+
+'''
+Marks a course as completed for the user
+- POST /api/courses/complete
+- Request body: JSON with course ID
+- Response: JSON with success message
+- JWT required
+'''
+@courses_bp.route('/complete', methods=['POST'])
+@jwt_required()
+@validate_json('course_id')
+@yaml_from_file('docs/swagger/courses/mark_course_as_completed.yaml')
+def mark_course_as_completed():
+    data = sanitize_input(request.get_json())
+    
+    user_id = get_jwt_identity()
+    course_id = data.get('course_id')
+    
+    # Mark the course as completed for the user
+    success = Course.mark_course_as_completed(course_id=course_id, user_id=user_id)
+    if not success:
+        return jsonify({"error": "Failed to mark course as completed"}), 400
+    
+    return jsonify({
+        "message": "Course marked as completed successfully"
     }), 200

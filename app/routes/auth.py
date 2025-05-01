@@ -9,6 +9,7 @@ from flask_jwt_extended import (
 from app.models.user import User
 from app.utils.validation import (
     validate_json,
+    validate_full_name,
     validate_email,
     validate_password,
     validate_username,
@@ -33,15 +34,19 @@ Registers a new user
 '''
 @auth_bp.route('/register', methods=['POST'])
 @limiter.limit("5 per minute")
-@validate_json('email', 'username', 'password')
+@validate_json('name', 'email', 'username', 'password')
 @yaml_from_file('docs/swagger/auth/register.yaml')
 def register():
     data = sanitize_input(request.get_json())
+    name = data.get('name')
     email = data.get('email')
     username = data.get('username')
     password = data.get('password')
     
     # Validate input
+    if not validate_full_name(name):
+        return jsonify({"error": "Name must contain only letters and spaces"}), 400
+
     if not validate_email(email):
         return jsonify({"error": "Invalid email format"}), 400
     
@@ -69,6 +74,7 @@ def register():
         "access_token": access_token,
         "user": {
             "id": str(user['_id']),
+            "name": user['name'],
             "email": user['email'],
             "username": user['username']
         }
@@ -105,6 +111,7 @@ def login():
         "access_token": access_token,
         "user": {
             "id": str(user['_id']),
+            "name": user['name'],
             "email": user['email'],
             "username": user['username']
         }
@@ -152,6 +159,7 @@ def get_user():
     return jsonify({
         "user": {
             "id": str(user['_id']),
+            "name": user['name'],
             "email": user['email'],
             "username": user['username'],
             "role": user.get('role', 'user'),

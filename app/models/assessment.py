@@ -118,3 +118,23 @@ class AssessmentResult:
             {'user_id': user_id, 'assessment_id': assessment_id},
             sort=[('created_at', -1)]
         )
+    
+    '''
+    Finds the average score for a specific assessment
+    Args:
+        assessment_id (str): ID of the assessment
+    Returns:
+        float: Average score of the assessment
+    '''
+    @staticmethod
+    def find_average_score(assessment_id):
+        """Find the average score for a specific assessment"""
+        pipeline = [
+            {'$match': {'assessment_id': assessment_id}},
+            {'$group': {
+                '_id': None,
+                'average_score': {'$avg': '$score'}
+            }}
+        ]
+        result = results_collection.aggregate(pipeline)
+        return list(result)[0]['average_score'] if result else 0.0

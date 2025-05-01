@@ -32,14 +32,17 @@ class ContentService:
         ValueError: If the content structure is invalid
     '''
     @staticmethod
-    def create_course_with_content(title, description, category, prerequisites=None, content_structure=None):
+    def create_course_with_content(title, description, category, prerequisites=None,
+                                   content_structure=None, difficulty=None, tags=None):
         # Create the course with basic structure
         course = Course.create(
             title=title,
             description=description,
             category=category,
             prerequisites=prerequisites or [],
-            content={'sections': []}
+            content={'sections': []},
+            difficulty=difficulty,
+            tags=tags or [],
         )
         
         # If content structure is provided, populate the course with sections, subsections, and content

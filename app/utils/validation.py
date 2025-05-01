@@ -8,6 +8,27 @@ These utilities include input validation for email, password,
 username, and JSON request data.
 '''
 
+'''
+Validates full name format
+- 3-50 characters
+- Alphabets and spaces only
+Args:
+    name (str): The full name to validate
+Returns:
+    bool: True if valid, False otherwise'''
+def validate_full_name(name):
+    """
+    Validate full name
+    - 3-50 characters
+    - Alphabets and spaces only
+    """
+    # Check length
+    if len(name) < 3 or len(name) > 50:
+        return False
+    
+    # Check for alphabets and spaces only
+    pattern = r'^[a-zA-Z\s]{3,50}$'
+    return re.match(pattern, name) is not None
 
 '''
 Validates email format
