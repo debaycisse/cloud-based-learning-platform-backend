@@ -1,0 +1,107 @@
+summary: Gets all assessments
+description: |
+  Gets all assessments. This endpoint is only available to admin users.
+  The response will include all assessments, regardless of their status.
+  The assessments are returned in a paginated format, with a default page size of 10.
+tags:
+  - Assessments
+security:
+  - Bearer: []
+parameters:
+  - name: limit
+    in: query
+    required: false
+    type: integer
+    description: The number of assessments to return per page. Default is 10.
+    default: 10
+  - name: skip
+    in: query
+    required: false
+    type: integer
+    description: The number of assessments to skip. Default is 0.
+    default: 0
+responses:
+  200:
+    description: A list of assessments
+    schema:
+      type: object
+      properties:
+        assessments:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: 5f8d0d55b54764421b7156a1
+              title:
+                type: string
+                example: "Python Basics Assessment"
+              course_id:
+                type: string
+                example: 5f8d0d55b54764421b7156a2
+              questions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    question:
+                      type: string
+                      example: "What is the output of print(1 + 1)?"
+                    options:
+                      type: array
+                      items:
+                        type: string
+                        example: ["3", "2", "7"]
+                    correct_answer:
+                      type: string
+                      example: "2"
+              created_at:
+                type: string
+                format: date-time
+                example: "2023-01-15T14:30:00Z"
+              updated_at:
+                type: string
+                format: date-time
+                example: "2023-01-15T14:30:00Z"
+        count:
+          type: integer
+          example: 100
+        skip:
+          type: integer
+          example: 0
+        limit:
+          type: integer
+          example: 10
+  400:
+    description: Bad request. The request parameters are invalid.
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Bad request. The request parameters are invalid." 
+  401:
+    description: Unauthorized access. Admin privileges are required.
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Unauthorized access. Admin privileges are required."
+  403:
+    description: Forbidden. The user does not have permission to access this resource.
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Forbidden. You do not have permission to access this resource."
+  404:
+    description: No assessments found.
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "No assessments found."

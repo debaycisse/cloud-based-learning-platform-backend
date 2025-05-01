@@ -1,0 +1,43 @@
+summary: Enroll a user in a course
+description: 
+  Enrolls a user in a course by their ID. The user must have no incomplete courses to be enrolled in a new course.
+tags:
+  - Courses
+security:
+  - Bearer: []
+parameters:
+  - name: course_id
+    in: path
+    required: true
+    type: string
+    description: ID of the course to enroll the user in
+  - name: user_id
+    in: path
+    required: true
+    type: string
+    description: ID of the user to enroll in the course
+responses:
+  200:
+    description: User successfully enrolled in the course
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "User successfully enrolled in the course"
+  400:
+    description: Bad request, user has incomplete courses
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "User has incomplete courses and cannot be enrolled in a new course"
+  404:
+    description: Course or user not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Course or user not found"
