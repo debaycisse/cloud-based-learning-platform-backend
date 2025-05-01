@@ -4,6 +4,7 @@ from app.models.user import User
 from app.models.assessment import AssessmentResult
 from app.utils.validation import validate_json, sanitize_input
 from app.utils.swagger_utils import yaml_from_file
+from app.utils.auth import admin_required
 
 users_bp = Blueprint('users', __name__)
 
@@ -11,6 +12,28 @@ users_bp = Blueprint('users', __name__)
 User Management routes for profile retrieval, update, and progress tracking.
 These routes include JWT authentication, input validation, and data sanitization.
 '''
+
+@users_bp.route('/all', methods=['GET'])
+@jwt_required()
+@admin_required()
+@yaml_from_file('docs/swagger/users/get_all_users.yaml')
+def get_all_users():
+    """
+    Retrieves all users
+    - GET /api/users/all
+    - Response: JSON with list of users
+    - JWT required
+    """
+    users = User.find_all_users()
+
+    if not users:
+        return jsonify({"error": "No users found"}), 404
+    
+    # Remove sensitive information
+    for user in users:
+        user.pop('password_hash', None)
+    
+    return jsonify({"users": users}), 200
 
 '''
 Retrieves user profile

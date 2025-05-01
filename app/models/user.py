@@ -50,6 +50,11 @@ class User:
         return users_collection.find_one({'_id': ObjectId(user_id)})
     
     @staticmethod
+    def find_all_users():
+        """Find all users"""
+        return list(users_collection.find())
+    
+    @staticmethod
     def update_profile(user_id, update_data):
         """Update user profile"""
         update_data['updated_at'] = datetime.utcnow()
