@@ -18,13 +18,12 @@ Assessment Model
 '''
 class Assessment:
     @staticmethod
-    def create(title, course_id, questions):
+    def create(title, course_id, time_limit=25):
         """Create a new assessment"""
         assessment = {
             'title': title,
             'course_id': course_id,
-            'questions': questions,
-            'time_limit': 25,  # Default time limit in minutes
+            'time_limit': time_limit,  # Default time limit in minutes
             'created_at': datetime.now(timezone.utc),
             'updated_at': datetime.now(timezone.utc),
         }

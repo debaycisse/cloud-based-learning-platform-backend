@@ -45,12 +45,14 @@ def create_app(config_class=Config):
     from app.routes.users import users_bp
     from app.routes.courses import courses_bp
     from app.routes.assessments import assessments_bp
+    from app.routes.questions import questions_bp
     from app.routes.learning_paths import learning_paths_bp
     
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(users_bp, url_prefix='/api/users')
     app.register_blueprint(courses_bp, url_prefix='/api/courses')
     app.register_blueprint(assessments_bp, url_prefix='/api/assessments')
+    app.register_blueprint(questions_bp, url_prefix='/api/questions')
     app.register_blueprint(learning_paths_bp, url_prefix='/api/learning-paths')
 
     # Setup Swagger UI

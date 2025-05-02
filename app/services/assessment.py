@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from app import db
 from app.models.assessment import Assessment, AssessmentResult
+from app.models.question import Question
 from config import Config
 
 class AssessmentService:
@@ -14,7 +15,7 @@ class AssessmentService:
         """
         Check if a user can take an assessment
         - Users can't retake a passed assessment
-        - Failed assessments have a cooldown period
+        - Failed assessments whose cooldown period has not expired cannot be retaken
         """
         latest_result = AssessmentResult.find_latest_by_user_and_assessment(
             user_id, assessment_id
@@ -107,3 +108,32 @@ class AssessmentService:
         )
         
         return assessment_result, None
+    
+    # @staticmethod
+    # def add_question(assessment_id, question_id):
+    #     '''
+    #     Adds question to assessment
+    #     - CHecks if the question exists
+    #     - Checks if the assessment exists
+    #     '''
+    #     assessment = Assessment.find_by_id(assessment_id)
+
+    #     if not assessment:
+    #         return None
+
+    #     question = Question.find_by_id(question_id)
+
+    #     if not question:
+    #         return None
+        
+    #     # Update the questions (array) field of the assessment
+    #     updated_data = {
+    #         'questions': assessment.get('questions', []) + [question_id]
+    #     }
+
+    #     # Update the assessment with the updated data
+    #     updated_assessment = Assessment.update(assessment_id, updated_data)
+
+    #     if updated_assessment:
+    #         return True
+    #     return False

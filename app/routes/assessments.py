@@ -28,6 +28,7 @@ def get_an_assessment(assessment_id):
             "title": assessments['title'],
             "course_id": assessments['course_id'],
             "questions": assessments.get('questions', []),
+            "time_limit": assessments.get('time_limit', 25),  # Default time limit in minutes
             "created_at": assessments.get('created_at').isoformat() if assessments.get('created_at') else None,
             "updated_at": assessments.get('updated_at').isoformat() if assessments.get('updated_at') else None
         }
@@ -129,7 +130,7 @@ def get_assessment_results():
 @assessments_bp.route('', methods=['POST'])
 @jwt_required()
 @admin_required
-@validate_json('title', 'course_id', 'questions')
+@validate_json('title', 'time_limit', 'course_id', 'questions')
 @yaml_from_file('docs/swagger/assessments/create_assessment_admin_only.yaml')
 def create_assessment():
     data = sanitize_input(request.get_json())
@@ -137,6 +138,7 @@ def create_assessment():
     # Create new assessment
     assessment = Assessment.create(
         title=data.get('title'),
+        time_limit=data.get('time_limit', 25),
         course_id=data.get('course_id'),
         questions=data.get('questions')
     )
@@ -158,6 +160,7 @@ def update_assessment(assessment_id):
     assessment = Assessment.update(
         assessment_id,
         title=data.get('title'),
+        time_limit=data.get('time_limit', 25),
         course_id=data.get('course_id'),
         questions=data.get('questions')
     )
