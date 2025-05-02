@@ -1,0 +1,90 @@
+summary: Updates a question whose id matches the provided question_id
+description: 
+  Updates a question whose id matches the provided question_id.
+tags:
+  - Questions
+security:
+  - Bearer: []
+parameters:
+  - name: question_id
+    in: path
+    required: true
+    type: string
+    description: ID of the question to update
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      properties:
+        question_text:
+          type: string
+          example: "What is the output of print(1 + 1)?"
+        options:
+          type: array
+          items:
+            type: string
+            example: ["3", "2", "7"]
+        correct_answer:
+          type: string
+          example: "2"
+        tags:
+          type: array
+          items:
+            type: string
+            example: ["python", "basics"]
+responses:
+  200:
+    description: A question whose ID matches the provided question_id
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Question updated successfully"
+        question:
+          type: object
+          properties:
+            id:
+              type: string
+              example: 5f8d0d55b54764421b7156a1
+            question_text:
+              type: string
+              example: "What is the output of print(1 + 1)?"
+            options:
+              type: array
+              items:
+                type: string
+                example: ["3", "2", "7"]
+            correct_answer:
+              type: string
+              example: "2"
+            tags:
+              type: array
+              items:
+                type: string
+                example: ["python", "basics"]
+            created_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+            updated_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+  404:
+    description: No questions found for the provided question_id
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "No questions found for the provided question_id"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Unauthorized access"

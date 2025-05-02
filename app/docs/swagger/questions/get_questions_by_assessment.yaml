@@ -1,0 +1,51 @@
+summary: Gets questions by assessment ID
+description: 
+  Retrieves questions associated with a specific assessment ID.
+tags:
+  - Questions
+security:
+  - Bearer: []
+parameters:
+  - name: assessment_id
+    in: path
+    required: true
+    type: string
+    description: ID of the assessment to get questions for
+responses:
+  200:
+    description: A list of questions associated with the provided assessment_id
+    schema:
+      type: object
+      properties:
+        questions:
+          type: array
+          items:
+            type: object
+            properties:
+              question_text:
+                type: string
+                example: "What is the output of print(1 + 1)?"
+              options:
+                type: array
+                items:
+                  type: string
+                  example: ["3", "2", "7"]
+              correct_answer:
+                type: string
+                example: "2"
+              created_at:
+                type: string
+                format: date-time
+                example: "2023-01-15T14:30:00Z"
+              updated_at:
+                type: string
+                format: date-time
+                example: "2023-01-15T14:30:00Z"
+  404:
+    description: No questions found for the provided assessment_id
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "No questions found for the provided assessment ID."

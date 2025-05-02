@@ -34,7 +34,7 @@ responses:
               items:
                 type: object
                 properties:
-                  question:
+                  question_text:
                     type: string
                     example: "What is the output of print(1 + 1)?"
                   options:
@@ -45,14 +45,14 @@ responses:
                   correct_answer:
                     type: string
                     example: "2"
-            created_at:
-              type: string
-              format: date-time
-              example: "2023-01-15T14:30:00Z"
-            updated_at:
-              type: string
-              format: date-time
-              example: "2023-01-15T14:30:00Z"
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2023-01-15T14:30:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2023-01-15T14:30:00Z"
   404:
     description: No assessments found for the provided assessment_id
     schema:

@@ -1,0 +1,61 @@
+summary: Gets a question by ID
+description: Returns a question object with the specified ID.
+tags:
+  - Questions
+security:
+  - bearerAuth: []
+parameters:
+  - name: id
+    in: path
+    required: true
+    description: The ID of the question to retrieve.
+responses:
+  200:
+    description: A question object with the specified ID.
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+              example: "5f8d0d55b54764421b7156a1"
+            question_text:
+              type: string
+              example: "What is the output of print(1 + 1)?"
+            options:
+              type: array
+              items:
+                type: string
+                example: ["3", "2", "7"]
+            correct_answer:
+              type: string
+              example: "2"
+            tags:
+              type: array
+              items:
+                type: string
+                example: ["Python", "Basics"]
+            assessment_ids:
+              type: array
+              items:
+                type: string
+                example: ["5f8d0d55b54764421b7156a2"]
+            created_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+            updated_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+  404:
+    description: Question not found.
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Question not found."

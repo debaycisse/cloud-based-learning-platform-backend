@@ -1,0 +1,30 @@
+summary: Deletes a question by ID
+description: 
+  Deletes a question by its ID.
+tags:
+  - Questions
+security:
+  - Bearer: []
+parameters:
+  - name: question_id
+    in: path
+    required: true
+    type: string
+    description: ID of the question to delete
+responses:
+  200:
+    description: Question deleted successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Question deleted successfully"
+  404:
+    description: No question found for the provided question_id
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "No question found with the provided ID"

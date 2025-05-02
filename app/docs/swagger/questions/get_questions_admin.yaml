@@ -1,0 +1,73 @@
+summary: Gets all questions in the system
+description: 
+  Retrieves all questions in the system.
+tags:
+  - Questions
+security:
+  - Bearer: []
+parameters:
+  - name: skip
+    in: query
+    required: false
+    type: integer
+    description: Number of questions to skip (for pagination)
+    default: 0
+  - name: limit
+    in: query
+    required: false
+    type: integer
+    description: Maximum number of questions to return (for pagination)
+    default: 10
+responses:
+  200:
+    description: A list of questions in the system
+    schema:
+      type: object
+      properties:
+        questions:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: 5f8d0d55b54764421b7156a1
+              question_text:
+                type: string
+                example: "What is the output of print(1 + 1)?"
+              options:
+                type: array
+                items:
+                  type: string
+                  example: ["3", "2", "7"]
+              correct_answer:
+                type: string
+                example: "2"
+              created_at:
+                type: string
+                format: date-time
+                example: "2023-01-15T14:30:00Z"
+              updated_at:
+                type: string
+                format: date-time
+                example: "2023-01-15T14:30:00Z"
+        count:
+          type: integer
+          example: 100
+        skip:
+          type: integer
+          example: 0
+        limit:
+          type: integer
+          example: 10
+  404:
+    description: No questions found in the system
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "No questions found."
+        status:
+          type: integer
+          example: 404

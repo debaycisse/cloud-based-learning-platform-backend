@@ -1,0 +1,35 @@
+summary: Removes a question from an assessment
+description: 
+  Removes a question from an assessment by its ID.
+tags:
+  - Questions
+security:
+  - Bearer: []
+parameters:
+  - name: assessment_id
+    in: path
+    required: true
+    type: string
+    description: ID of the assessment to remove the question from
+  - name: question_id
+    in: path
+    required: true
+    type: string
+    description: ID of the question to remove from the assessment
+responses:
+  200:
+    description: Question removed successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Question removed successfully"
+  404:
+    description: Assessment or question not found
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Assessment or question not found"

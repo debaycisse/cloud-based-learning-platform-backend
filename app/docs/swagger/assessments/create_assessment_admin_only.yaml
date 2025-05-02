@@ -12,6 +12,7 @@ parameters:
       type: object
       required:
         - title
+        - time_limit
         - course_id
         - questions
       properties:
@@ -19,6 +20,10 @@ parameters:
           type: string
           example: "Python Basics Assessment"
           description: Title of the assessment
+        time_limit:
+          type: integer
+          example: 60
+          description: Time limit for the assessment in minutes
         course_id:
           type: string
           example: 5f8d0d55b54764421b7156a2
@@ -67,6 +72,9 @@ responses:
             title:
               type: string
               example: "Python Basics Assessment"
+            time_limit:
+              type: integer
+              example: 60
             course_id:
               type: string
               example: 5f8d0d55b54764421b7156a2

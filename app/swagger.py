@@ -73,8 +73,13 @@ def setup_swagger(app):
             {
                 "name": "Recommendations",
                 "description": "Personalized recommendation operations"
-            }
+            },
+            {
+                "name": "Questions",
+                "description": "Question management operations"
+            },
         ]
     }
+    
 
     Swagger(app, config=swagger_config, template=swagger_template)

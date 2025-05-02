@@ -19,6 +19,11 @@ parameters:
         title:
           type: string
           example: "Updated Assessment Title"
+          description: Title of the assessment
+        time_limit:
+          type: integer
+          example: 60
+          description: Time limit for the assessment in minutes
         questions:
           type: array
           items:
@@ -27,14 +32,17 @@ parameters:
               question:
                 type: string
                 example: "What is the output of print(1 + 1)?"
+                description: The question text
               options:
                 type: array
                 items:
                   type: string
                   example: ["3", "2", "7"]
+                  description: List of answer options for the question
               correct_answer:
                 type: string
                 example: "2"
+                description: The correct answer for the question
               # Note: correct_answer is included for admin-only access
 responses:
   200:

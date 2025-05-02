@@ -1,0 +1,85 @@
+summary: Creates a new question
+description: 
+  Creates a new question for a specific assessment.
+tags:
+  - Questions
+security:
+  - Bearer: []
+parameters:
+  - name: question_text
+    in: body
+    required: true
+    schema:
+      type: object
+      properties:
+        question_text:
+          type: string
+          example: "What is the output of print(1 + 1)?"
+        options:
+          type: array
+          items:
+            type: string
+            example: ["3", "2", "7"]
+        correct_answer:
+          type: string
+          example: "2"
+        tags:
+          type: array
+          items:
+            type: string
+            example: ["python", "basics"]
+responses:
+  201:
+    description: Question created successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Question created successfully."
+        question:
+          type: object
+          properties:
+            id:
+              type: string
+              example: "5f8d0d55b54764421b7156a1"
+            question_text:
+              type: string
+              example: "What is the output of print(1 + 1)?"
+            options:
+              type: array
+              items:
+                type: string
+                example: ["3", "2", "7"]
+            correct_answer:
+              type: string
+              example: "2"
+            tags:
+              type: array
+              items:
+                type: string
+                example: ["python", "basics"]
+            created_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+            updated_at:
+              type: string
+              format: date-time
+              example: "2023-01-15T14:30:00Z"
+  400:
+    description: Invalid input data
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid question data provided."
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Unauthorized access."

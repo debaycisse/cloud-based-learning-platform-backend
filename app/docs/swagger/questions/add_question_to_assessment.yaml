@@ -1,0 +1,43 @@
+summary: Adds a question to an assessment
+description: 
+  Adds a question to an existing assessment.
+tags:
+  - Questions
+security:
+  - Bearer: []
+parameters:
+  - name: assessment_id
+    in: path
+    required: true
+    type: string
+    description: ID of the assessment to which the question will be added
+  - name: question_id
+    in: path
+    required: true
+    type: string
+    description: ID of the question to be added
+responses:
+  200:
+    description: Question added to the assessment successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Question added to the assessment successfully"
+  404:
+    description: Assessment or question not found
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Assessment or question not found"
+  400:
+    description: Bad request
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Invalid request data"
