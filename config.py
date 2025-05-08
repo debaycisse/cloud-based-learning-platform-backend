@@ -12,3 +12,4 @@ class Config:
     ASSESSMENT_COOLDOWN_HOURS = 72
     DATABASE_NAME = os.environ.get('DATABASE_NAME')
     FLASK_ENV = os.environ.get('FLASK_ENV')
+    ASSESSMENT_PASS_THRESHOLD = float(os.environ.get('ASSESSMENT_PASS_THRESHOLD', 0.5))  # 50%

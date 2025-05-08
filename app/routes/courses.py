@@ -9,18 +9,7 @@ from app.utils.swagger_utils import yaml_from_file
 
 courses_bp = Blueprint('courses', __name__)
 
-'''
-Course Management routes for retrieving, creating, and managing course content.
-These routes include JWT authentication, input validation, and data sanitization.
-'''
-
-'''
-Retrieves a list of courses
-- GET /api/courses
-- Query parameters: limit, skip, category
-- Response: JSON with list of courses, count, skip, and limit
-- JWT required
-'''
+# GET /api/courses
 @courses_bp.route('', methods=['GET'])
 @yaml_from_file('docs/swagger/courses/get_courses.yaml')
 def get_courses():
@@ -40,11 +29,7 @@ def get_courses():
         "limit": limit
     }), 200
 
-'''
-Retrieves a specific course by ID
-- GET /api/courses/<course_id>
-- Response: JSON with course details
-'''
+# GET /api/courses/<course_id>
 @courses_bp.route('/<course_id>', methods=['GET'])
 @yaml_from_file('docs/swagger/courses/get_course.yaml')
 def get_course(course_id):
@@ -55,13 +40,8 @@ def get_course(course_id):
     
     return jsonify({"course": course}), 200
 
-'''
-Retrieves personalized course recommendations for the logged-in user
-- GET /api/courses/recommended
-- Response: JSON with list of recommended courses
-- JWT required
-'''
-@courses_bp.route('/recommended', methods=['GET'])
+# GET /api/courses/recommended
+@courses_bp.route('/recommended', methods=['GET'], endpoint='get_recommended_courses')
 @jwt_required()
 @yaml_from_file('docs/swagger/courses/get_recommended_courses.yaml')
 def get_recommended_courses():
@@ -75,14 +55,30 @@ def get_recommended_courses():
         "count": len(recommended_courses)
     }), 200
 
-'''
-Creates a new course
-- POST /api/courses
-- Request body: JSON with course details
-- Response: JSON with success message and course details
-- JWT required
-- Admin privileges required
-'''
+# GET /api/courses/popular
+@courses_bp.route('/popular', methods=['GET'], endpoint='get_popular_courses')
+@yaml_from_file('docs/swagger/courses/get_popular_courses.yaml')
+def get_popular_courses():
+    # Get query parameters
+    limit = int(request.args.get('limit', 20))  # Default limit is 20
+    sort = request.args.get('sort', 'popular')  # Default sort is "popular"
+
+    # Fetch popular courses based on the sort value
+    courses = Course.find_popular(limit=limit, sort=sort)
+
+    # If no courses are found, return a 404 response
+    if not courses:
+        return jsonify({"error": "No popular courses found"}), 404
+
+    # Return the list of popular courses
+    return jsonify({
+        "courses": courses,
+        "count": len(courses),
+        "limit": limit,
+        "sort": sort
+    }), 200
+
+# POST /api/courses
 @courses_bp.route('', methods=['POST'])
 @jwt_required()
 @admin_required
@@ -99,7 +95,6 @@ def create_course():
     content_structure = data.get('content')
     difficulty = data.get('difficulty', 'beginner')
     tags = data.get('tags', [])
-    completed_count = 0
     
     # Validate content structure if provided
     if content_structure and not validate_content_structure(content_structure):
@@ -121,13 +116,7 @@ def create_course():
         "course": course
     }), 201
 
-# New routes for managing course content structure
-
-'''
-Retrieves sections of a specific course
-- GET /api/courses/<course_id>/sections
-- Response: JSON with list of sections and count
-'''
+# GET /api/courses/<course_id>/sections
 @courses_bp.route('/<course_id>/sections', methods=['GET'])
 @yaml_from_file('docs/swagger/courses/get_course_sections.yaml')
 def get_course_sections(course_id):
@@ -143,14 +132,7 @@ def get_course_sections(course_id):
         "count": len(sections)
     }), 200
 
-'''
-Adds a new section to a specific course
-- POST /api/courses/<course_id>/sections
-- Request body: JSON with section details
-- Response: JSON with success message and section ID
-- JWT required
-- Admin privileges required
-'''
+# POST /api/courses/<course_id>/sections
 @courses_bp.route('/<course_id>/sections', methods=['POST'])
 @jwt_required()
 @admin_required
@@ -173,11 +155,7 @@ def add_course_section(course_id):
         "section_id": section_id
     }), 201
 
-'''
-Retrieves a specific section of a course
-- GET /api/courses/<course_id>/sections/<section_id>
-- Response: JSON with section details
-'''
+# GET /api/courses/<course_id>/sections/<section_id>
 @courses_bp.route('/<course_id>/sections/<section_id>', methods=['GET'])
 @yaml_from_file('docs/swagger/courses/get_course_section.yaml')
 def get_section(course_id, section_id):
@@ -188,14 +166,7 @@ def get_section(course_id, section_id):
     
     return jsonify({"section": section}), 200
 
-'''
-Updates a specific section of a course
-- PUT /api/courses/<course_id>/sections/<section_id>
-- Request body: JSON with section details
-- Response: JSON with success message
-- JWT required
-- Admin privileges required
-'''
+# PUT /api/courses/<course_id>/sections/<section_id>
 @courses_bp.route('/<course_id>/sections/<section_id>', methods=['PUT'])
 @jwt_required()
 @admin_required
@@ -217,13 +188,68 @@ def update_section(course_id, section_id):
         "message": "Section updated successfully"
     }), 200
 
-'''
-Deletes a specific section of a course
-- DELETE /api/courses/<course_id>/sections/<section_id>
-- Response: JSON with success message
-- JWT required
-- Admin privileges required
-'''
+# PUT /api/courses/<course_id>
+@courses_bp.route('/<course_id>', methods=['PUT'], endpoint='update_course')
+@jwt_required()
+@admin_required
+@validate_json('title', 'description', 'category')
+@yaml_from_file('docs/swagger/courses/update_course.yaml')
+def update_course(course_id):
+    data = sanitize_input(request.get_json())
+
+    # Extract only fields to update
+    update_data = {
+        'title': data.get('title'),
+        'description': data.get('description'),
+        'category': data.get('category'),
+        'prerequisites': data.get('prerequisites'),
+        'difficulty': data.get('difficulty'),
+        'tags': data.get('tags', []),
+    }
+
+    course = Course.find_by_id(course_id)
+    if not course:
+        return jsonify({
+            "error": "Course not found" 
+        }), 404
+
+    # Update the course in the database
+    updated_course = Course.update(course_id, update_data)
+
+    if not updated_course:
+        return jsonify({
+            "error": "Failed to update course"
+        }), 400
+    
+    # Return the updated course object
+    return jsonify({
+        "message": "Course updated successfully",
+        "course": updated_course
+    }), 200
+
+# DELETE /api/courses/<course_id>
+@courses_bp.route('/<course_id>', methods=['DELETE'], endpoint='delete_course')
+@jwt_required()
+@admin_required
+@yaml_from_file('docs/swagger/courses/delete_course_admin_only.yaml')
+def delete_course(course_id):
+    if not Course.find_by_id(course_id):
+        return jsonify({
+            "error": "Course not found"
+        }), 404
+
+    deleted_course = Course.remove_course(course_id)
+
+    if not deleted_course:
+        return jsonify({
+            "error": "Failed to delete course"
+        }), 400
+    
+    return jsonify({
+        "message": "Course deleted successfully"
+    }), 200
+
+# DELETE /api/courses/<course_id>/sections/<section_id>
 @courses_bp.route('/<course_id>/sections/<section_id>', methods=['DELETE'])
 @jwt_required()
 @admin_required
@@ -238,11 +264,7 @@ def delete_section(course_id, section_id):
         "message": "Section deleted successfully"
     }), 200
 
-'''
-Retrieves subsections of a specific section in a course
-- GET /api/courses/<course_id>/sections/<section_id>/subsections
-- Response: JSON with list of subsections and count
-'''
+# GET /api/courses/<course_id>/sections/<section_id>/subsections
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections', methods=['GET'])
 @yaml_from_file('docs/swagger/courses/get_course_section_subsections.yaml')
 def get_subsections(course_id, section_id):
@@ -258,14 +280,7 @@ def get_subsections(course_id, section_id):
         "count": len(subsections)
     }), 200
 
-'''
-Adds a new subsection to a specific section in a course
-- POST /api/courses/<course_id>/sections/<section_id>/subsections
-- Request body: JSON with subsection details
-- Response: JSON with success message and subsection ID
-- JWT required
-- Admin privileges required
-'''
+# POST /api/courses/<course_id>/sections/<section_id>/subsections
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections', methods=['POST'])
 @jwt_required()
 @admin_required
@@ -289,12 +304,7 @@ def add_subsection(course_id, section_id):
         "subsection_id": subsection_id
     }), 201
 
-'''
-Retrieves a specific subsection of a section in a course
-- GET /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>
-- Request body: JSON with subsection details
-- Response: JSON with subsection details
-'''
+# GET /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>', methods=['GET'])
 @yaml_from_file('docs/swagger/courses/get_course_section_subsection.yaml')
 def get_subsection(course_id, section_id, subsection_id):
@@ -305,14 +315,7 @@ def get_subsection(course_id, section_id, subsection_id):
     
     return jsonify({"subsection": subsection}), 200
 
-'''
-Updates a specific subsection of a section in a course
-- PUT /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>
-- Request body: JSON with subsection details
-- Response: JSON with success message
-- JWT required
-- Admin privileges required
-'''
+# PUT /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>', methods=['PUT'])
 @jwt_required()
 @admin_required
@@ -335,14 +338,7 @@ def update_subsection(course_id, section_id, subsection_id):
         "message": "Subsection updated successfully"
     }), 200
 
-'''
-Deletes a specific subsection of a section in a course
-- DELETE /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>
-- Request body: JSON with subsection details
-- Response: JSON with success message
-- JWT required
-- Admin privileges required
-'''
+# DELETE /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>', methods=['DELETE'])
 @jwt_required()
 @admin_required
@@ -361,14 +357,7 @@ def delete_subsection(course_id, section_id, subsection_id):
         "message": "Subsection deleted successfully"
     }), 200
 
-'''
-Adds content data to a specific subsection in a course
-- POST /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>/content
-- Request body: JSON with content data
-- Response: JSON with success message and content data ID
-- JWT required
-- Admin privileges required
-'''
+# POST /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>/content
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>/content', methods=['POST'])
 @jwt_required()
 @admin_required
@@ -410,14 +399,7 @@ def add_content_data(course_id, section_id, subsection_id):
         "message": "Content data added successfully"
     }), 201
 
-'''
-Updates a specific content data in a subsection of a course
-- PUT /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>/content/<data_id>
-- Request body: JSON with content data
-- Response: JSON with success message
-- JWT required
-- Admin privileges required
-'''
+# PUT /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>/content/<data_id>
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>/content/<data_id>', methods=['PUT'])
 @jwt_required()
 @admin_required
@@ -440,14 +422,7 @@ def update_content_data(course_id, section_id, subsection_id, data_id):
         "message": "Content data updated successfully"
     }), 200
 
-'''
-Deletes a specific content data in a subsection of a course
-- DELETE /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>/content/<data_id>
-- Request body: JSON with content data
-- Response: JSON with success message
-- JWT required
-- Admin privileges required
-'''
+# DELETE /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>/content/<data_id>
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>/content/<data_id>', methods=['DELETE'])
 @jwt_required()
 @admin_required
@@ -467,15 +442,8 @@ def delete_content_data(course_id, section_id, subsection_id, data_id):
         "message": "Content data deleted successfully"
     }), 200
 
-
-'''
-Enrolls a user in a course if the user has no in-progress courses
-- POST /api/courses/enroll
-- Request body: JSON with course ID
-- Response: JSON with success message
-- JWT required
-'''
-@courses_bp.route('/enroll', methods=['POST'])
+# POST /api/courses/enroll
+@courses_bp.route('/enroll', methods=['POST'], endpoint='enroll_course')
 @jwt_required()
 @validate_json('course_id')
 @yaml_from_file('docs/swagger/courses/enroll_user_in_a_course.yaml')
@@ -499,14 +467,8 @@ def enroll_user_in_course():
         "message": "User enrolled in course successfully"
     }), 200
 
-'''
-Marks a course as completed for the user
-- POST /api/courses/complete
-- Request body: JSON with course ID
-- Response: JSON with success message
-- JWT required
-'''
-@courses_bp.route('/complete', methods=['POST'])
+# POST /api/courses/complete
+@courses_bp.route('/complete', methods=['POST'], endpoint='complete_course')
 @jwt_required()
 @validate_json('course_id')
 @yaml_from_file('docs/swagger/courses/mark_course_as_completed.yaml')

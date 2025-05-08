@@ -39,7 +39,7 @@ class ContentService:
             description=description,
             category=category,
             prerequisites=prerequisites or [],
-            content={'sections': []},
+            content=content_structure,
             difficulty=difficulty,
             tags=tags or [],
         )

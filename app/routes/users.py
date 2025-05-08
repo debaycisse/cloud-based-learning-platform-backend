@@ -25,16 +25,25 @@ Retrieves all users
 @admin_required
 @yaml_from_file('docs/swagger/users/get_all_users.yaml')
 def get_all_users():
-    users = User.find_all_users()
+    limit = int(request.args.get('limit', 100))
+    skip = int(request.args.get('skip', 0))
+
+    users = User.find_all_users(limit, skip)
 
     if not users:
         return jsonify({"error": "No users found"}), 404
     
     # Remove sensitive information
     for user in users:
+        user['_id'] = str(user['_id'])
         user.pop('password_hash', None)
-    
-    return jsonify({"users": users}), 200
+
+    return jsonify({
+        "users": users,
+        "count": len(user),
+        "limit": limit,
+        "skip": skip
+        }), 200
 
 '''
 Retrieves a specific user by ID
@@ -101,12 +110,15 @@ def get_profile():
     
     return jsonify({
         "profile": {
-            "id": str(user['_id']),
-            "email": user['email'],
-            "username": user['username'],
+            "_id": str(user['_id']),
+            "name": str(user['name']),
+            "email": user.get('email'),
+            "username": user.get('username'),
             "role": user.get('role', 'user'),
             "created_at": user.get('created_at').isoformat() if user.get('created_at') else None,
-            "updated_at": user.get('updated_at').isoformat() if user.get('updated_at') else None
+            "updated_at": user.get('updated_at').isoformat() if user.get('updated_at') else None,
+            "progress": user.get('progress', [],),
+            "preferences": user.get('preferences', [],),
         }
     }), 200
 

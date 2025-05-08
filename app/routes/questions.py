@@ -23,10 +23,12 @@ def get_a_question(question_id):
     
     return jsonify({
         "question": {
-            "id": str(question['_id']),
+            "_id": str(question['_id']),
             "question_text": question['question_text'],
             "options": question['options'],
+            "correct_answer": question['correct_answer'],
             "tags": question.get('tags', []),
+            "assessment_ids": question.get('assessment_ids', []),
             "created_at": question.get('created_at').isoformat() if question.get('created_at') else None,
             "updated_at": question.get('updated_at').isoformat() if question.get('updated_at') else None
         }
@@ -93,6 +95,8 @@ def get_questions_by_tags():
 @jwt_required()
 @yaml_from_file('docs/swagger/questions/get_questions_by_assessment.yaml')
 def get_questions_by_assessment(assessment_id):
+    # limit = int(request.args.get('limit', 20))
+    # skip = int(request.args.get('skip', 0))
     questions = QuestionService.find_questions_by_assessment_id(assessment_id)
     
     if not questions:
@@ -100,6 +104,44 @@ def get_questions_by_assessment(assessment_id):
     
     return jsonify({
         "questions": questions
+    }), 200
+
+'''Gets questions by assessment id and tags
+- Parameters:
+    - assessment_id: ID of the assessment
+    - tags: List of tags to filter questions
+- Returns:
+    - questions: List of questions that match the assessment ID and tags
+    - count: Total number of questions
+    - skip: Number of questions skipped
+    - limit: Number of questions returned
+'''
+@questions_bp.route('/assessment/<assessment_id>/tags', methods=['GET'])
+@jwt_required()
+@yaml_from_file('docs/swagger/questions/get_questions_by_assessment_and_tags.yaml')
+def get_questions_by_assessment_and_tags(assessment_id):
+    tags = request.args.getlist('tags')
+    limit = int(request.args.get('limit', 20))
+    skip = int(request.args.get('skip', 0))
+    
+    # Validate tags
+    if not tags:
+        return jsonify({"error": "Tags are required"}), 400
+    
+    # Get questions by assessment ID and tags with pagination
+    questions = QuestionService.find_questions_by_assessment_id(assessment_id)
+    
+    if not questions:
+        return jsonify({"error": "No questions found for the given assessment ID"}), 404
+    
+    # Filter questions by tags
+    filtered_questions = [q for q in questions if any(tag in q.get('tags', []) for tag in tags)]
+    
+    return jsonify({
+        "questions": filtered_questions,
+        "count": len(filtered_questions),
+        "skip": skip,
+        "limit": limit
     }), 200
 
 @questions_bp.route('', methods=['POST'])
@@ -132,11 +174,55 @@ def create_question():
             "id": str(question['_id']),
             "question_text": question['question_text'],
             "options": question['options'],
+            "correct_answer": question['correct_answer'],
             "tags": question.get('tags', []),
             "assessment_ids": question.get('assessment_ids', []),
             "created_at": question.get('created_at').isoformat() if question.get('created_at') else None,
             "updated_at": question.get('updated_at').isoformat() if question.get('updated_at') else None
         }
+    }), 201
+
+# endpoint that creates questions by interating over a list of questions
+@questions_bp.route('/bulk/<assessment_id>', methods=['POST'])
+@jwt_required()
+@admin_required
+@validate_json('questions')
+@yaml_from_file('docs/swagger/questions/create_questions.yaml')
+def create_questions(assessment_id):
+    data = sanitize_input(request.get_json())
+    questions_data = data.get('questions')
+    
+    # Validate input
+    if not questions_data:
+        return jsonify({"error": "Questions data is required"}), 400
+    
+    # Create multiple questions
+    questions = []
+    for question_data in questions_data:
+        question_text = question_data.get('question_text')
+        options = question_data.get('options')
+        correct_answer = question_data.get('correct_answer')
+        tags = question_data.get('tags', [])
+        
+        # Validate input
+        if not question_text or not options or not correct_answer:
+            return jsonify({"error": "Question text, options, and correct answer are required"}), 400
+        
+        question = QuestionService.create_question(
+            question_text=question_text,
+            options=options,
+            correct_answer=correct_answer,
+            tags=tags
+        )
+        questions.append(question)
+    
+    # Add assessment's id to multiple questions
+    for question in questions:
+        AssessmentService.add_question(assessment_id, str(question['_id']))
+
+    return jsonify({
+        "message": "Questions created successfully",
+        "questions": questions,
     }), 201
 
 @questions_bp.route('/<question_id>', methods=['PUT'])
@@ -175,6 +261,7 @@ def update_question(question_id):
             "id": str(question['_id']),
             "question_text": question['question_text'],
             "options": question['options'],
+            "correct_answer": question['correct_answer'],
             "tags": question.get('tags', []),
             "assessment_ids": question.get('assessment_ids', []),
             "created_at": question.get('created_at').isoformat() if question.get('created_at') else None,
@@ -197,7 +284,7 @@ def delete_question(question_id):
         "message": "Question deleted successfully"
     }), 200
 
-@questions_bp.route('/<question_id>/assessment/<assessment_id>', methods=['POST'])
+@questions_bp.route('/<question_id>/assessments/<assessment_id>', methods=['POST'])
 @jwt_required()
 @admin_required
 @yaml_from_file('docs/swagger/questions/add_question_to_assessment.yaml')

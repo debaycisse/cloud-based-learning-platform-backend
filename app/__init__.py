@@ -9,6 +9,7 @@ from flask_limiter.util import get_remote_address
 from pymongo import MongoClient
 from config import Config
 from app.swagger import setup_swagger
+from flask_cors import CORS
 
 # Initialize extensions
 jwt = JWTManager()
@@ -22,6 +23,18 @@ db = None
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    # Configure JWT to exempt OPTIONS requests from authentication
+    app.config['JWT_EXEMPT_OPTIONS'] = True
+    
+    # Initialize CORS with more specific settings
+    CORS(app, 
+         resources={r"/api/*": {
+             "origins": "*",
+             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+             "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"]
+         }},
+         supports_credentials=True)
     
     # Initialize extensions with app
     jwt.init_app(app)
@@ -47,6 +60,7 @@ def create_app(config_class=Config):
     from app.routes.assessments import assessments_bp
     from app.routes.questions import questions_bp
     from app.routes.learning_paths import learning_paths_bp
+    from app.routes.recommendations import recommendations_bp
     
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(users_bp, url_prefix='/api/users')
@@ -54,6 +68,8 @@ def create_app(config_class=Config):
     app.register_blueprint(assessments_bp, url_prefix='/api/assessments')
     app.register_blueprint(questions_bp, url_prefix='/api/questions')
     app.register_blueprint(learning_paths_bp, url_prefix='/api/learning-paths')
+    app.register_blueprint(recommendations_bp, url_prefix='/api/recommendations')
+    
 
     # Setup Swagger UI
     setup_swagger(app)

@@ -64,7 +64,7 @@ def register():
         return jsonify({"error": "Username already taken"}), 400
     
     # Create user
-    user = User.create(email, username, password)
+    user = User.create(name, email, username, password)
     
     # Generate access token
     access_token = create_access_token(identity=str(user['_id']))
@@ -76,7 +76,12 @@ def register():
             "id": str(user['_id']),
             "name": user['name'],
             "email": user['email'],
-            "username": user['username']
+            "username": user['username'],
+            "role": user['role'],
+            "created_at": user['created_at'],
+            "updated_at": user['updated_at'],
+            "progress": user['progress'],
+            "preferences": user['preferences']
         }
     }), 201
 
@@ -92,30 +97,39 @@ Logs in a user
 @validate_json('email', 'password')
 @yaml_from_file('docs/swagger/auth/login.yaml')
 def login():
-    data = sanitize_input(request.get_json())
-    email = data.get('email')
-    password = data.get('password')
-    
-    # Find user by email
-    user = User.find_by_email(email)
-    
-    # Check password
-    if not user or not User.check_password(user, password):
-        return jsonify({"error": "Invalid email or password"}), 401
-    
-    # Generate access token
-    access_token = create_access_token(identity=str(user['_id']))
-    
-    return jsonify({
-        "message": "Login successful",
-        "access_token": access_token,
-        "user": {
-            "id": str(user['_id']),
-            "name": user['name'],
-            "email": user['email'],
-            "username": user['username']
-        }
-    }), 200
+    try:
+        data = sanitize_input(request.get_json())
+        email = data.get('email')
+        password = data.get('password')
+
+        # Find user by email
+        user = User.find_by_email(email)
+        
+        # Check password
+        if not user or not User.check_password(user, password):
+            return jsonify({"error": "Invalid email or password"}), 401
+
+        # Generate access token
+        access_token = create_access_token(identity=str(user['_id']))
+        
+        return jsonify({
+            "message": "Login successful",
+            "access_token": access_token,
+            "user": {
+                "_id": str(user['_id']),
+                "name": user['name'],
+                "email": user['email'],
+                "username": user['username'],
+                "role": user['role'],
+                "created_at": user['created_at'],
+                "updated_at": user['updated_at'],
+                "progress": user['progress'],
+                "preferences": user['preferences']
+            }
+        }), 200
+    except Exception as e:
+        print(f"Login error: {e}")
+        return jsonify({"error": "Server error"}), 500
 
 
 '''
@@ -158,11 +172,118 @@ def get_user():
     
     return jsonify({
         "user": {
-            "id": str(user['_id']),
+            "_id": str(user['_id']),
             "name": user['name'],
             "email": user['email'],
             "username": user['username'],
             "role": user.get('role', 'user'),
-            "created_at": user.get('created_at').isoformat() if user.get('created_at') else None
+            "created_at": user.get('created_at').isoformat() if user.get('created_at') else None,
+            "updated_at": user.get('updated_at').isoformat() if user.get('updated_at') else None,
+            "progress": user.get('progress'),
+            "preferences": user.get('preferences'),
         }
     }), 200
+
+'''
+Resets the user's password by sending a token, which will
+be verified and used to update the password.
+- POST /api/auth/reset_password
+- Request body: JSON with 'email'
+- Response: JSON with success message, http status code, and reset token
+- Rate limit: 5 requests per minute
+'''
+@auth_bp.route('/reset_password', methods=['POST'])
+@limiter.limit("5 per minute")
+@validate_json('email')
+@yaml_from_file('docs/swagger/auth/reset_password.yaml')
+def reset_password():
+    data = sanitize_input(request.get_json())
+    email = data.get('email')
+    
+    # Validate email
+    if not validate_email(email):
+        return jsonify({"error": "Invalid email format"}), 400
+    
+    # Find user by email
+    user = User.find_by_email(email)
+    
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    
+    # Generate reset token
+    reset_token = create_access_token(identity=str(user['_id']), expires_delta=timedelta(hours=1))
+    
+    # Send reset token to user's email (mocked here)
+    # @UPDATE: Optionally we can send an email with the reset link
+    # print(f"Reset token for {email}: {reset_token}")
+    
+    return jsonify({
+        "message": "Reset token was succesfully generated",
+        "reset_token": reset_token
+    }), 200
+
+'''
+Verifies the reset token and returns true if valid
+- GET /api/auth/verify_reset_token/<token>
+- Response: JSON with success message, is_valid, http status code
+- Rate limit: 5 requests per minute
+'''
+@auth_bp.route('/verify_reset_token/<token>', methods=['GET'])
+@limiter.limit("5 per minute")
+@yaml_from_file('docs/swagger/auth/verify_reset_token.yaml')
+def verify_reset_token(token):
+    # Verify the token
+    try:
+        identity = get_jwt_identity(token)
+        user = User.find_by_id(identity)
+        
+        if not user:
+            return jsonify({"error": "Invalid token"}), 401
+        
+        return jsonify({
+            "message": "Token is valid",
+            "is_valid": True
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "error": str(e),
+            "is_valid": False
+        }), 401
+
+'''
+Updates the user\'s password whose reset token was verified, using the provided new password
+- PUT /api/auth/update_password/<token>
+- Request body: JSON with 'new_password'
+- Response: JSON with success message, http status code
+- Rate limit: 5 requests per minute
+'''
+@auth_bp.route('/update_password/<token>', methods=['PUT'])
+@limiter.limit("5 per minute")
+@validate_json('new_password')
+@yaml_from_file('docs/swagger/auth/update_password.yaml')
+def update_password(token):
+    data = sanitize_input(request.get_json())
+    new_password = data.get('new_password')
+    
+    # Validate new password
+    if not validate_password(new_password):
+        return jsonify({"error": "Password must be at least 8 characters and contain at least one digit and one uppercase letter"}), 400
+    
+    # Verify the token
+    try:
+        identity = get_jwt_identity(token)
+        user = User.find_by_id(identity)
+        
+        if not user:
+            return jsonify({"error": "Invalid token"}), 401
+        
+        # Update password
+        User.update_password(user, new_password)
+        
+        return jsonify({
+            "message": "Password updated successfully"
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        }), 401

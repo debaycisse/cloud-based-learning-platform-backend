@@ -85,16 +85,18 @@ def get_assessment_for_course(course_id):
 
 @assessments_bp.route('/<assessment_id>/submit', methods=['POST'])
 @jwt_required()
-@validate_json('answers')
+@validate_json('answers', 'started_at', 'questions_id')
 @yaml_from_file('docs/swagger/assessments/submit_assessment.yaml')
 def submit_assessment(assessment_id):
     user_id = get_jwt_identity()
     data = sanitize_input(request.get_json())
-    answers = data.get('answers', [])
+    answers = data.get('answers')
+    started_at = data.get('started_at')
+    questions_id = data.get('questions_id')
     
     # Submit and score the assessment
     result, error_message = AssessmentService.submit_assessment(
-        user_id, assessment_id, answers
+        user_id, assessment_id, answers, started_at, questions_id
     )
     
     if error_message:
@@ -126,6 +128,19 @@ def get_assessment_results():
         "skip": skip,
         "limit": limit
     }), 200
+
+# # Get a single assessment result
+# @assessments_bp.route('/results/<assessment_result_id>', methods=['GET'])
+# @jwt_required()
+# @yaml_from_file('docs/swagger/assessments/get_assessment_result.yaml')
+# def get_assessment_result(assessment_result_id):
+
+#     result = AssessmentResult.find_by_id(assessment_result_id)
+    
+#     if not result:
+#         return jsonify({"error": "Assessment result not found"}), 404
+    
+#     return jsonify({"result": result}), 200
 
 @assessments_bp.route('', methods=['POST'])
 @jwt_required()
@@ -178,11 +193,13 @@ def update_assessment(assessment_id):
 @admin_required
 @yaml_from_file('docs/swagger/assessments/delete_assessment_admin_only.yaml')
 def delete_assessment(assessment_id):
-    # Delete assessment
-    result = Assessment.delete(assessment_id)
-    
-    if not result:
+    # Delete assessment    
+    if not Assessment.delete(assessment_id):
         return jsonify({"error": "Assessment not found"}), 404
+    
+    # After an assessment has been deleted, delete all results associated with it and confirm deletion
+    if not AssessmentResult.delete_by_assessment_id(assessment_id):
+        return jsonify({"error": "Failed to delete associated assessment results"}), 500
     
     return jsonify({
         "message": "Assessment deleted successfully"

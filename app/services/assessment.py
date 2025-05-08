@@ -80,7 +80,7 @@ class AssessmentService:
         }
     
     @staticmethod
-    def submit_assessment(user_id, assessment_id, answers):
+    def submit_assessment(user_id, assessment_id, answers, started_at, questions_id):
         """
         Submit and score an assessment
         - Checks if the user can take the assessment
@@ -96,6 +96,7 @@ class AssessmentService:
         if not result:
             return None, "Assessment not found"
         
+        questions = [Question.find_by_id(question_id) for question_id in questions_id]
         # Store the result
         assessment_result = AssessmentResult.create(
             user_id=user_id,
@@ -104,7 +105,9 @@ class AssessmentService:
             score=result['score'],
             passed=result['passed'],
             knowledge_gaps=result['knowledge_gaps'],
-            demonstrated_strengths=result['demonstrated_strengths']
+            demonstrated_strengths=result['demonstrated_strengths'],
+            started_at=started_at,
+            questions=questions,
         )
         
         return assessment_result, None

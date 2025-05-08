@@ -22,7 +22,7 @@ def get_course_recommendations():
         "count": len(recommended_courses)
     }), 200
 
-@recommendations_bp.route('/learning-paths', methods=['GET'])
+@recommendations_bp.route('/learning_paths', methods=['GET'])
 @jwt_required()
 @yaml_from_file('docs/swagger/recommendations/get_learning_paths_recommendations.yaml')
 def get_learning_path_recommendations():
