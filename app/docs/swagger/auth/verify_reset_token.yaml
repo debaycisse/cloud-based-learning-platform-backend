@@ -1,0 +1,40 @@
+summary: Verifies the reset password token
+description: Verifies a given or provided reset password token
+tags:
+  - Auth
+security:
+  - bearerAuth: []
+parameters:
+  - name: token
+    in: query
+    required: true
+    description: The reset password token to verify
+    schema:
+      type: string
+responses:
+  '200':
+    description: The reset password token is valid
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Token is valid
+            is_valid:
+              type: boolean
+              example: true
+  '401':
+    description: The reset password token is invalid
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: Token is invalid
+            is_valid:
+              type: boolean
+              example: false

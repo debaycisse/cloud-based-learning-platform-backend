@@ -17,6 +17,7 @@ parameters:
       type: object
       required:
         - answers
+        - started_at
       properties:
         answers:
           type: array
@@ -24,6 +25,11 @@ parameters:
           items:
             type: string
             example: "2"
+        started_at:
+          type: string
+          format: date-time
+          description: Timestamp when the assessment started
+          example: "2023-10-01T12:00:00Z"
 responses:
   200:
     description: Assessment submitted successfully

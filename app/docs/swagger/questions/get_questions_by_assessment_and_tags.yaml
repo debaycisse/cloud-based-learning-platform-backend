@@ -1,0 +1,94 @@
+summary: Gets questions by assessment and tags
+description: 
+  This endpoint retrieves questions based on the provided assessment ID and tags.
+  It allows filtering of questions by their associated tags, enabling users to
+  get a tailored set of questions that match specific criteria.
+tags:
+  - Questions
+security:
+  - Bearer: []
+parameters:
+  - name: assessment_id
+    in: path
+    required: true
+    description: The ID of the assessment to filter questions by.
+    schema:
+      type: string
+  - name: tags
+    in: query
+    required: false
+    description: A comma-separated list of tags to filter questions by.
+    schema:
+      type: string
+  - name: limit
+    in: query
+    required: false
+    description: The maximum number of questions to return.
+    schema:
+      type: integer
+      default: 10
+  - name: skip
+    in: query
+    required: false
+    description: The number of questions to skip for pagination.
+    schema:
+      type: integer
+      default: 0
+responses:
+  '200':
+    description: A list of questions matching the assessment and tags.
+    schema:
+      type: object
+      properties:
+        questions:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: "5f8d0d55b54764421b7156a1"
+              question_text:
+                type: string
+                example: "What is the output of print(1 + 1)?"
+              options:
+                type: array
+                items:
+                  type: string
+                  example: ["3", "2", "7"]
+              correct_answer:
+                type: string
+                example: "2"
+              created_at:
+                type: string
+                format: date-time
+                example: "2023-01-15T14:30:00Z"
+              updated_at:
+                type: string
+                format: date-time
+                example: "2023-01-15T14:30:00Z"
+        count:
+          type: integer
+          example: 100
+        skip:
+          type: integer
+          example: 0
+        limit:
+          type: integer
+          example: 10
+  '400':
+    description: Bad request, invalid parameters.
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid assessment ID or tags format."
+  '404':
+    description: No questions found for the given assessment and tags.
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "No questions found for the given assessment ID and tags."

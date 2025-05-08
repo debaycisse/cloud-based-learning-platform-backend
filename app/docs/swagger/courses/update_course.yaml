@@ -1,0 +1,120 @@
+summary: Update a course
+description: Updates a course's information (admin only)
+tags:
+  - Courses
+security:
+  - Bearer: []
+parameters:
+  - name: course_id
+    in: path
+    required: true
+    type: string
+    description: ID of the course
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - title
+        - description
+        - category
+        - prerequisites
+        - difficulty
+      properties:
+        title:
+          type: string
+          example: "Getting Started with Python"
+          description: New section title
+        category:
+          type: array
+          example: ["Python", "Robotics"]
+          description: The category information, found in the course
+        description:
+          type: string
+          example: "This course aims to teach the basic concept of Python"
+          description: Brief explanation of what the course entails
+        prerequisites:
+          type: array
+          example: ["course_id_123", "course_id_456"]
+          description: Contains a list of courses learner is assumed to have learnt
+        difficulty:
+          type: string
+          example: "beginner"
+          description: Difficulty level of the course
+        tags:
+          type: array
+          example: ["web3", "Machine learning"]
+          description: Various concepts, mentioned in the course
+responses:
+  200:
+    description: Section updated successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Section updated successfully"
+        course:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: "2494939edeabcc3939"
+              description: The ID of the course
+            title:
+              type: string
+              example: "Getting Started with Python"
+              description: New section title
+            category:
+              type: array
+              example: ["Python", "Robotics"]
+              description: The category information, found in the course
+            description:
+              type: string
+              example: "This course aims to teach the basic concept of Python"
+              description: Brief explanation of what the course entails
+            prerequisites:
+              type: array
+              example: ["course_id_123", "course_id_456"]
+              description: Contains a list of courses learner is assumed to have learnt
+            difficulty:
+              type: string
+              example: "beginner"
+              description: Difficulty level of the course
+            tags:
+              type: array
+              example: ["web3", "Machine learning"]
+              description: Various concepts, mentioned in the course
+  400:
+    description: Failed to update section
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Failed to update section"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  403:
+    description: Forbidden - Admin privileges required
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Admin privileges required"
+  404:
+    description: Section not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Section not found"

@@ -1,22 +1,25 @@
-summary: Get personalized course recommendations
-description: Returns a list of course recommendations personalized for the authenticated user based on their learning history, preferences, and assessment results
+summary: Get courses similar to a given course
+description: Returns a list of courses that are similar to the specified course based on category, tags, and content
 tags:
   - Recommendations
-security:
-  - Bearer: []
 parameters:
+  - name: course_id
+    in: path
+    required: true
+    type: string
+    description: ID of the course to find similar courses for
   - name: limit
     in: query
     type: integer
-    default: 4
-    description: Maximum number of recommendations to return
+    default: 3
+    description: Maximum number of similar courses to return
 responses:
   200:
     description: Successful operation
     schema:
       type: object
       properties:
-        recommended_courses:
+        similar_courses:
           type: array
           items:
             type: object
@@ -26,16 +29,16 @@ responses:
                 example: "5f8d0d55b54764421b7156a3"
               title:
                 type: string
-                example: "Introduction to Python Programming"
+                example: "Advanced Python Programming"
               description:
                 type: string
-                example: "Learn the basics of Python programming language"
+                example: "Take your Python skills to the next level"
               category:
                 type: string
                 example: "programming"
               difficulty:
                 type: string
-                example: "beginner"
+                example: "intermediate"
               content:
                 type: object
                 properties:
@@ -46,12 +49,12 @@ responses:
                       example: "python"
         count:
           type: integer
-          example: 4
-  401:
-    description: Unauthorized
+          example: 3
+  404:
+    description: Course not found
     schema:
       type: object
       properties:
-        msg:
+        error:
           type: string
-          example: "Missing Authorization Header"
+          example: "Course not found"

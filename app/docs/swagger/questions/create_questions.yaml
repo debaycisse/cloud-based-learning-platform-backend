@@ -1,0 +1,107 @@
+summary: Creates multiple questions at once
+description: Creates multiple questions at once and adds them to the specified assessment.
+tags:
+  - Questions
+security:
+  - Bearer: []
+parameters:
+  - name: questions
+    in: body
+    required: true
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          question_text:
+            type: string
+            example: "What is the output of print(1 + 1)?"
+          options:
+            type: array
+            items:
+              type: string
+              example: ["3", "2", "7"]
+          correct_answer:
+            type: string
+            example: "2"
+          tags:
+            type: array
+            items:
+              type: string
+              example: ["python", "basics"]
+responses:
+  201:
+    description: Questions created successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Questions created successfully."
+        questions:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: "5f8d0d55b54764421b7156a1"
+              question_text:
+                type: string
+                example: "What is the output of print(1 + 1)?"
+              options:
+                type: array
+                items:
+                  type: string
+                  example: ["3", "2", "7"]
+              correct_answer:
+                type: string
+                example: "2"
+              tags:
+                type: array
+                items:
+                  type: string
+                  example: ["python", "basics"]
+              created_at:
+                type: string
+                example: "2023-10-01T12:00:00Z"
+              updated_at:
+                type: string
+                example: "2023-10-01T12:00:00Z"
+              assessment_ids:
+                type: array
+                items:
+                  type: string
+                  example: ["assessment_id_1", "assessment_id_2"]
+  400:
+    description: Bad request
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Invalid input data."
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Authentication credentials were not provided."
+  403:
+    description: Forbidden
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "You do not have permission to perform this action."
+  404:
+    description: Not found
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Assessment not found."

@@ -1,0 +1,45 @@
+summary: Delete a course
+description: Deletes a course from teh database (admin only)
+tags:
+  - Courses
+security:
+  - Bearer: []
+parameters:
+- name: course_id
+  in: path
+  required: true
+  type: string
+  description: ID of the course
+responses:
+  200:
+    description: Course deleted successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Course deleted successfully"
+  400:
+    description: Failed to delete course
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Failed to delete course"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  403:
+    description: Forbidden - Admin privileges required
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Admin privileges required"
