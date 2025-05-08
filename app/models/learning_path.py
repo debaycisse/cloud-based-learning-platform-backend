@@ -13,8 +13,8 @@ class LearningPath:
             'description': description,
             'courses': courses,
             'target_skills': target_skills or [],
-            'created_at': datetime.now(timezone.utc),
-            'updated_at': datetime.now(timezone.utc)
+            'created_at': datetime.now(timezone.utc).isoformat(),
+            'updated_at': datetime.now(timezone.utc).isoformat()
         }
         result = learning_paths_collection.insert_one(path)
         path['_id'] = result.inserted_id
@@ -42,7 +42,7 @@ class LearningPath:
     @staticmethod
     def update(path_id, update_data):
         """Update a learning path"""
-        update_data['updated_at'] = datetime.now(timezone.utc)
+        update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
         learning_paths_collection.update_one(
             {'_id': ObjectId(path_id)},
             {'$set': update_data}

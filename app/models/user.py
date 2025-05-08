@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
 from bson import ObjectId
@@ -14,8 +14,8 @@ class User:
             'email': email,
             'username': username,
             'password_hash': generate_password_hash(password),
-            'created_at': datetime.now(timezone.utc),
-            'updated_at': datetime.now(timezone.utc),
+            'created_at': datetime.now(timezone.utc).isoformat(),
+            'updated_at': datetime.now(timezone.utc).isoformat(),
             'role': 'user',
             'progress': {
                 'completed_courses': [],
@@ -51,14 +51,14 @@ class User:
         return users_collection.find_one({'_id': ObjectId(user_id)})
     
     @staticmethod
-    def find_all_users():
+    def find_all_users(limit=20, skip=0):
         """Find all users"""
-        return list(users_collection.find())
+        return list(users_collection.find().limit(limit).skip(skip))
     
     @staticmethod
     def update_profile(user_id, update_data):
         """Update user profile"""
-        update_data['updated_at'] = datetime.now(timezone.utc)
+        update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
         users_collection.update_one(
             {'_id': ObjectId(user_id)},
             {'$set': update_data}
@@ -72,7 +72,7 @@ class User:
             {'_id': ObjectId(user_id)},
             {'$set': {
                 'progress': progress_data,
-                'updated_at': datetime.now(timezone.utc)
+                'updated_at': datetime.now(timezone.utc).isoformat()
             }}
         )
         return users_collection.find_one({'_id': ObjectId(user_id)})
@@ -103,7 +103,7 @@ class User:
         
         # Only update if we have valid preferences
         if valid_preferences:
-            valid_preferences['updated_at'] = datetime.now(timezone.utc)
+            valid_preferences['updated_at'] = datetime.now(timezone.utc).isoformat()
             
             users_collection.update_one(
                 {'_id': ObjectId(user_id)},
@@ -118,3 +118,16 @@ class User:
         if not user or not user.get('password_hash'):
             return False
         return check_password_hash(user['password_hash'], password)
+    
+    @staticmethod
+    def update_password(user, new_password):
+        """Update user password"""
+        hashed_password = generate_password_hash(new_password)
+        users_collection.update_one(
+            {'_id': user['_id']},
+            {'$set': {
+                'password_hash': hashed_password,
+                'updated_at': datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        return users_collection.find_one({'_id': user['_id']})

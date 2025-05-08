@@ -27,8 +27,8 @@ class Question:
             'correct_answer': correct_answer,
             'tags': tags or [],
             'assessment_ids': [],
-            'created_at': datetime.now(timezone.utc),
-            'updated_at': datetime.now(timezone.utc),
+            'created_at': datetime.now(timezone.utc).isoformat(),
+            'updated_at': datetime.now(timezone.utc).isoformat(),
         }
         result = questions_collection.insert_one(question)
         question['_id'] = result.inserted_id
@@ -61,7 +61,7 @@ class Question:
     @staticmethod
     def update(question_id, update_data):
         """Update a question"""
-        update_data['updated_at'] = datetime.now(timezone.utc)
+        update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
         questions_collection.update_one(
             {'_id': ObjectId(question_id)},
             {'$set': update_data}

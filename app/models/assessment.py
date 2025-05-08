@@ -4,6 +4,7 @@ from app import db
 
 assessments_collection = db.assessments
 results_collection = db.results
+questions_collection = db.questions
 
 '''
 Assessment Model
@@ -24,8 +25,8 @@ class Assessment:
             'title': title,
             'course_id': course_id,
             'time_limit': time_limit,  # Default time limit in minutes
-            'created_at': datetime.now(timezone.utc),
-            'updated_at': datetime.now(timezone.utc),
+            'created_at': datetime.now(timezone.utc).isoformat(),
+            'updated_at': datetime.now(timezone.utc).isoformat(),
         }
         result = assessments_collection.insert_one(assessment)
         assessment['_id'] = result.inserted_id
@@ -51,7 +52,7 @@ class Assessment:
     @staticmethod
     def update(assessment_id, update_data):
         """Update an assessment"""
-        update_data['updated_at'] = datetime.now(timezone.utc)
+        update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
         assessments_collection.update_one(
             {'_id': ObjectId(assessment_id)},
             {'$set': update_data}
@@ -79,7 +80,8 @@ Assessment Result Model
 '''
 class AssessmentResult:
     @staticmethod
-    def create(user_id, assessment_id, answers, score, passed, knowledge_gaps=None, demonstrated_strengths=None):
+    def create(user_id, assessment_id, answers, score, passed, started_at,
+               questions, knowledge_gaps=None, demonstrated_strengths=None):
         """Create a new assessment result with demonstrated strengths"""
         result = {
             'user_id': user_id,
@@ -89,7 +91,11 @@ class AssessmentResult:
             'passed': passed,
             'knowledge_gaps': knowledge_gaps or [],
             'demonstrated_strengths': demonstrated_strengths or [],
-            'created_at': datetime.now(timezone.utc),
+            'created_at': datetime.now(timezone.utc).isoformat(),
+            'completed_at': datetime.now(timezone.utc).isoformat(),
+            'started_at': datetime.fromisoformat(started_at).isoformat(),
+            'time_spent': (datetime.now(timezone.utc) - datetime.fromisoformat(started_at)).total_seconds() / 60,
+            'questions': questions,
         }
         result_id = results_collection.insert_one(result).inserted_id
         result['_id'] = result_id
@@ -138,3 +144,19 @@ class AssessmentResult:
         ]
         result = results_collection.aggregate(pipeline)
         return list(result)[0]['average_score'] if result else 0.0
+    
+    # Delete an assessment result
+    @staticmethod
+    def delete_by_assessment_id(assessment_result_id):
+        """Delete an assessment result"""
+        result = results_collection.delete_one({'_id': ObjectId(assessment_result_id)})
+        if result.deleted_count > 0:
+            # Update all questions that have the same assessment ID by removing the
+            # assessment id from the questions
+            clean_questions = questions_collection.update_many(
+                {'assessment_id': ObjectId(assessment_result_id)},
+                {'$pull': {'assessment_ids': ObjectId(assessment_result_id)}}
+            )
+            if clean_questions.modified_count > 0:
+                return True
+        return False

@@ -38,8 +38,8 @@ class Course:
                 'tags': tags or []
             },
             'difficulty': difficulty or 'beginner',
-            'created_at': datetime.now(timezone.utc),
-            'updated_at': datetime.now(timezone.utc),
+            'created_at': datetime.now(timezone.utc).isoformat(),
+            'updated_at': datetime.now(timezone.utc).isoformat(),
             'enrollment_count': 0,
             'enrolled_users': [],
             'completed_users': [],
@@ -160,12 +160,37 @@ class Course:
                 course_id = ObjectId(course_id)
             except:
                 return None
-        update_data['updated_at'] = datetime.now(timezone.utc)
+        update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
         courses_collection.update_one(
             {'_id': ObjectId(course_id)},
             {'$set': update_data}
         )
         return courses_collection.find_one({'_id': ObjectId(course_id)})
+    
+    '''
+    A static method that deletes a course whose ID is given
+    Args:
+        course_id (str): ID of the course to delete from the database
+    Returns:
+        bool: True if the course was successfully, False otherwise
+    '''
+    @staticmethod
+    def remove_course(course_id):
+        """Update a course id"""
+        if isinstance(course_id, str):
+            try:
+                course_id = ObjectId(course_id)
+            except:
+                return None
+
+        # Ensure the course exists
+        if not Course.find_by_id(course_id):
+            return None
+        
+        deleted_course = courses_collection.delete_one({'_id': course_id})
+
+        return deleted_course.modified_count > 0
+
     
     '''
     A static method that adds a new section to a course.
@@ -205,7 +230,7 @@ class Course:
                         'sub_sections': []
                     }
                 },
-                '$set': {'updated_at': datetime.now(timezone.utc)}
+                '$set': {'updated_at': datetime.now(timezone.utc).isoformat()}
             }
         )
         return section_id
@@ -225,14 +250,14 @@ class Course:
         if isinstance(course_id, str):
             course_id = ObjectId(course_id)
             
-        update_data['updated_at'] = datetime.now(timezone.utc)
+        update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
         
         courses_collection.update_one(
             {'_id': ObjectId(course_id), 'content.sections.section_id': section_id},
             {'$set': {
                 'content.sections.$.title': update_data.get('title'),   # $ - placeholder for the matched section
                 'content.sections.$.order': update_data.get('order'),
-                'updated_at': datetime.now(timezone.utc)
+                'updated_at': datetime.now(timezone.utc).isoformat()
             }}
         )
         return courses_collection.find_one({'_id': ObjectId(course_id)})
@@ -257,7 +282,7 @@ class Course:
                 '$pull': {
                     'content.sections': {'section_id': section_id}
                 }, # $pull removes the section from the array
-                '$set': {'updated_at': datetime.now(timezone.utc)} # $set updates the updated_at field of the course
+                '$set': {'updated_at': datetime.now(timezone.utc).isoformat()} # $set updates the updated_at field of the course
             }
         )
         return courses_collection.find_one({'_id': ObjectId(course_id)})
@@ -306,7 +331,7 @@ class Course:
                         'data': []
                     }
                 }, # $push adds the subsection to the array
-                '$set': {'updated_at': datetime.now(timezone.utc)} # $set updates the updated_at field of the course
+                '$set': {'updated_at': datetime.now(timezone.utc).isoformat()} # $set updates the updated_at field of the course
             }
         )
         return subsection_id
@@ -337,7 +362,7 @@ class Course:
                 '$set': {
                     'content.sections.$[section].sub_sections.$[subsection].title': update_data.get('title'),
                     'content.sections.$[section].sub_sections.$[subsection].order': update_data.get('order'),
-                    'updated_at': datetime.now(timezone.utc)
+                    'updated_at': datetime.now(timezone.utc).isoformat()
                 }
             },
             array_filters=[
@@ -375,7 +400,7 @@ class Course:
                 '$pull': {
                     'content.sections.$.sub_sections': {'subsection_id': subsection_id}
                 },
-                '$set': {'updated_at': datetime.now(timezone.utc)}
+                '$set': {'updated_at': datetime.now(timezone.utc).isoformat()}
             }
         )
         return courses_collection.find_one({'_id': ObjectId(course_id)})
@@ -435,7 +460,7 @@ class Course:
                 '$push': {
                     'content.sections.$[section].sub_sections.$[subsection].data': data_object
                 },
-                '$set': {'updated_at': datetime.now(timezone.utc)}
+                '$set': {'updated_at': datetime.now(timezone.utc).isoformat()}
             },
             array_filters=[
                 {'section.section_id': section_id},
@@ -475,7 +500,7 @@ class Course:
                     'content.sections.$[section].sub_sections.$[subsection].data.$[data].content': update_data.get('content'),
                     'content.sections.$[section].sub_sections.$[subsection].data.$[data].order': update_data.get('order'),
                     'content.sections.$[section].sub_sections.$[subsection].data.$[data].type': update_data.get('type'),
-                    'updated_at': datetime.now(timezone.utc)
+                    'updated_at': datetime.now(timezone.utc).isoformat()
                 }
             },
             array_filters=[
@@ -514,7 +539,7 @@ class Course:
                 '$pull': {
                     'content.sections.$[section].sub_sections.$[subsection].data': {'data_id': data_id}
                 },
-                '$set': {'updated_at': datetime.now(timezone.utc)}
+                '$set': {'updated_at': datetime.now(timezone.utc).isoformat()}
             },
             array_filters=[
                 {'section.section_id': section_id},
@@ -646,3 +671,25 @@ class Course:
             return False
                 
         return True
+
+    @staticmethod
+    def find_popular(limit=20, sort='popular'):
+        """
+        Fetch popular courses based on the sort value and limit.
+
+        Args:
+            limit (int): Maximum number of courses to return. Default is 20.
+            sort (str): Sorting criteria. Default is 'popular'. Popularity is based on number of enrollments
+                        Other possible values could be 'recent', etc.
+
+        Returns:
+            list: A list of popular courses.
+        """
+        # Determine the sorting field based on the sort parameter
+        sort_field = 'enrollment_count' if sort == 'popular' else 'created_at'
+
+        # Query the database to fetch courses sorted by the specified field
+        cursor = courses_collection.find().sort(sort_field, -1).limit(limit)
+
+        # Convert the cursor to a list and return it
+        return list(cursor)
