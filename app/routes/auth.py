@@ -73,15 +73,15 @@ def register():
         "message": "User registered successfully",
         "access_token": access_token,
         "user": {
-            "id": str(user['_id']),
-            "name": user['name'],
-            "email": user['email'],
-            "username": user['username'],
-            "role": user['role'],
-            "created_at": user['created_at'],
-            "updated_at": user['updated_at'],
-            "progress": user['progress'],
-            "preferences": user['preferences']
+            "id": str(user.get('_id', None)),
+            "name": user.get('name', None),
+            "email": user.get('email', None),
+            "username": user.get('username', None),
+            "role": user.get('role', None),
+            "created_at": user.get('created_at', None),
+            "updated_at": user.get('updated_at', None),
+            "progress": user.get('progress', {}),
+            "preferences": user.get('preferences', {})
         }
     }), 201
 
@@ -99,8 +99,8 @@ Logs in a user
 def login():
     try:
         data = sanitize_input(request.get_json())
-        email = data.get('email')
-        password = data.get('password')
+        email = data.get('email', '')
+        password = data.get('password', '')
 
         # Find user by email
         user = User.find_by_email(email)
@@ -177,8 +177,8 @@ def get_user():
             "email": user['email'],
             "username": user['username'],
             "role": user.get('role', 'user'),
-            "created_at": user.get('created_at').isoformat() if user.get('created_at') else None,
-            "updated_at": user.get('updated_at').isoformat() if user.get('updated_at') else None,
+            "created_at": user.get('created_at', None),
+            "updated_at": user.get('updated_at', None),
             "progress": user.get('progress'),
             "preferences": user.get('preferences'),
         }

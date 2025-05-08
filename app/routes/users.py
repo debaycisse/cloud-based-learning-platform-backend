@@ -64,12 +64,13 @@ def get_user(user_id):
     
     # Remove sensitive information
     user.pop('password_hash', None)
-    
+ 
     return jsonify({
         "user": {
-            "id": str(user['_id']),
-            "email": user['email'],
-            "username": user['username'],
+            "_id": str(user.get('_id', '')),
+            "name": user.get('name', ''),
+            "email": user.get('email', ''),
+            "username": user.get('username', ''),
             "role": user.get('role', 'user'),
             "progress": user.get('progress', {
                 'completed_courses': [],
@@ -84,8 +85,8 @@ def get_user(user_id):
                 'time_commitment': 'medium',
                 'goals': []
             }),
-            "created_at": user.get('created_at').isoformat() if user.get('created_at') else None,
-            "updated_at": user.get('updated_at').isoformat() if user.get('updated_at') else None
+            "created_at": user.get('created_at', None),
+            "updated_at": user.get('updated_at', None)
         }
     }), 200
 
@@ -115,8 +116,8 @@ def get_profile():
             "email": user.get('email'),
             "username": user.get('username'),
             "role": user.get('role', 'user'),
-            "created_at": user.get('created_at').isoformat() if user.get('created_at') else None,
-            "updated_at": user.get('updated_at').isoformat() if user.get('updated_at') else None,
+            "created_at": user.get('created_at', None),
+            "updated_at": user.get('updated_at', None),
             "progress": user.get('progress', [],),
             "preferences": user.get('preferences', [],),
         }
@@ -141,15 +142,19 @@ def update_profile():
     data.pop('password_hash', None)
     data.pop('role', None)
     data.pop('_id', None)
-    
+
     # Update user profile
     updated_user = User.update_profile(user_id, data)
+
     
     if not updated_user:
         return jsonify({"error": "User not found"}), 404
     
     # Remove sensitive information
     updated_user.pop('password_hash', None)
+
+    # Convert the id to string
+    updated_user['_id'] = str(updated_user.get('_id', None))
     
     return jsonify({
         "message": "Profile updated successfully",
