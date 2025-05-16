@@ -24,7 +24,11 @@ class LearningPath:
     def find_all(limit=20, skip=0):
         """Find all learning paths"""
         cursor = learning_paths_collection.find().skip(skip).limit(limit)
-        return list(cursor)
+        results = []
+        for course in cursor:
+            course['_id'] = str(course['_id'])
+            results.append(course)
+        return results
     
     @staticmethod
     def find_by_id(path_id):
@@ -37,7 +41,11 @@ class LearningPath:
         cursor = learning_paths_collection.find(
             {'target_skills': skill}
         ).skip(skip).limit(limit)
-        return list(cursor)
+        results = []
+        for course in cursor:
+            course['_id'] = str(course['_id'])
+            results.append(course)
+        return results
     
     @staticmethod
     def update(path_id, update_data):

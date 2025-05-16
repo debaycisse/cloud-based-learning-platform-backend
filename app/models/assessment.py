@@ -41,13 +41,21 @@ class Assessment:
     def find_by_course_id(course_id):
         """Find assessments for a specific course"""
         cursor = assessments_collection.find({'course_id': course_id})
-        return list(cursor)
+        results = []
+        for course in cursor:
+            course['_id'] = str(course['_id'])
+            results.append(course)
+        return results
     
     @staticmethod
     def find_all(limit=20, skip=0):
         """Find all assessments with pagination"""
         cursor = assessments_collection.find().sort('created_at', -1).skip(skip).limit(limit)
-        return list(cursor)
+        results = []
+        for course in cursor:
+            course['_id'] = str(course['_id'])
+            results.append(course)
+        return results
     
     @staticmethod
     def update(assessment_id, update_data):
@@ -57,7 +65,9 @@ class Assessment:
             {'_id': ObjectId(assessment_id)},
             {'$set': update_data}
         )
-        return assessments_collection.find_one({'_id': ObjectId(assessment_id)})
+        result = assessments_collection.find_one({'_id': ObjectId(assessment_id)})
+        result['_id'] = str(result['_id'])
+        return result
     
     @staticmethod
     def delete(assessment_id):
@@ -83,6 +93,7 @@ class AssessmentResult:
     def create(user_id, assessment_id, answers, score, passed, started_at,
                questions, knowledge_gaps=None, demonstrated_strengths=None):
         """Create a new assessment result with demonstrated strengths"""
+
         result = {
             'user_id': user_id,
             'assessment_id': assessment_id,
@@ -97,17 +108,31 @@ class AssessmentResult:
             'time_spent': (datetime.now(timezone.utc) - datetime.fromisoformat(started_at)).total_seconds() / 60,
             'questions': questions,
         }
+
         result_id = results_collection.insert_one(result).inserted_id
+
         result['_id'] = result_id
         return result
     
     @staticmethod
     def find_by_user(user_id, limit=20, skip=0):
         """Find assessment results for a specific user"""
-        cursor = results_collection.find({'user_id': user_id}).sort(
-            'created_at', -1
-        ).skip(skip).limit(limit)
-        return list(cursor)
+        try:
+
+            if not isinstance(user_id, str):
+                user_id = str(user_id)
+
+            cursor = results_collection.find({'user_id': user_id}).sort(
+                'created_at', -1
+            ).skip(int(skip)).limit(limit)
+            results = []
+            for course in cursor:
+                course['_id'] = str(course['_id'])
+                results.append(course)
+            return results
+        except Exception as e:
+            print(f"Error in find_by_user: {e}")
+            return None
     
     @staticmethod
     def find_by_assessment(assessment_id, limit=20, skip=0):
@@ -115,7 +140,11 @@ class AssessmentResult:
         cursor = results_collection.find({'assessment_id': assessment_id}).sort(
             'created_at', -1
         ).skip(skip).limit(limit)
-        return list(cursor)
+        results = []
+        for course in cursor:
+            course['_id'] = str(course['_id'])
+            results.append(course)
+        return results
     
     @staticmethod
     def find_latest_by_user_and_assessment(user_id, assessment_id):

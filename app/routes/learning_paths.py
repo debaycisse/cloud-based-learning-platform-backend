@@ -35,21 +35,27 @@ def get_learning_path(path_id):
 @learning_paths_bp.route('', methods=['GET'])
 @yaml_from_file('docs/swagger/learning_paths/get_learning_paths.yaml')
 def get_learning_paths():
-    limit = int(request.args.get('limit', 20))
-    skip = int(request.args.get('skip', 0))
-    skill = request.args.get('skill')
-    
-    if skill:
-        paths = LearningPath.find_by_skill(skill, limit, skip)
-    else:
-        paths = LearningPath.find_all(limit, skip)
-    
-    return jsonify({
-        "learning_paths": paths,
-        "count": len(paths),
-        "skip": skip,
-        "limit": limit
-    }), 200
+    try:
+
+        limit = int(request.args.get('limit', 20))
+        skip = int(request.args.get('skip', 0))
+        skill = request.args.get('skill')
+        
+        if skill:
+            paths = LearningPath.find_by_skill(skill, limit, skip)
+        else:
+            paths = LearningPath.find_all(limit, skip)
+        
+        return jsonify({
+            "learning_paths": paths,
+            "count": len(paths),
+            "skip": skip,
+            "limit": limit
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'error': 'Could not find learning path for the user'
+        }), 404
 
 @learning_paths_bp.route('', methods=['POST'])
 @jwt_required()

@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.course import Course
+from app.models.user import User
 from app.services.recommendation import RecommendationService
 from app.services.content_service import ContentService
 from app.utils.auth import admin_required
@@ -15,13 +16,12 @@ courses_bp = Blueprint('courses', __name__)
 def get_courses():
     limit = int(request.args.get('limit', 20))
     skip = int(request.args.get('skip', 0))
-    category = request.args.get('category')
-    
+    category = request.args.get('category', None)
+
     if category:
         courses = Course.find_by_category(category, limit, skip)
     else:
         courses = Course.find_all(limit, skip)
-    
     return jsonify({
         "courses": courses,
         "count": len(courses),
@@ -34,10 +34,9 @@ def get_courses():
 @yaml_from_file('docs/swagger/courses/get_course.yaml')
 def get_course(course_id):
     course = Course.find_by_id(course_id)
-    
     if not course:
         return jsonify({"error": "Course not found"}), 404
-    
+    course['_id'] = str(course['_id'])
     return jsonify({"course": course}), 200
 
 # GET /api/courses/recommended
@@ -92,9 +91,10 @@ def create_course():
     description = data.get('description')
     category = data.get('category')
     prerequisites = data.get('prerequisites', [])
-    content_structure = data.get('content')
+    content_structure = data.get('sections')
     difficulty = data.get('difficulty', 'beginner')
     tags = data.get('tags', [])
+
     
     # Validate content structure if provided
     if content_structure and not validate_content_structure(content_structure):
@@ -240,7 +240,7 @@ def delete_course(course_id):
 
     deleted_course = Course.remove_course(course_id)
 
-    if not deleted_course:
+    if deleted_course.deleted_count == 0:
         return jsonify({
             "error": "Failed to delete course"
         }), 400
@@ -454,15 +454,20 @@ def enroll_user_in_course():
     course_id = data.get('course_id')
     
     # Check if user's in_progress_courses length is 0
-    user = Course.get_user_by_id(user_id)
+    user = User.find_by_id(user_id)
+
     if not user:
         return jsonify({"error": "User not found"}), 404
+    
     if len(user.get('progress', {}).get('in_progress_courses', [])) > 0:
-        return jsonify({"error": "User is already enrolled in a course"}), 400
+        return jsonify({"error": "Complete your ongoing course firstly"}), 400
+    
     # Enroll user in the given course
     success = Course.enroll_user(course_id=course_id, user_id=user_id)
+
     if not success:
         return jsonify({"error": "Failed to enroll in course"}), 400
+    
     return jsonify({
         "message": "User enrolled in course successfully"
     }), 200

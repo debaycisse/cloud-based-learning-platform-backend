@@ -19,14 +19,14 @@ Question Model
 '''
 class Question:
     @staticmethod
-    def create(question_text, options, correct_answer, tags=None):
+    def create(question_text, options, correct_answer, tags=None, assessment_ids=None):
         """Create a new question"""
         question = {
             'question_text': question_text,
             'options': options,
             'correct_answer': correct_answer,
             'tags': tags or [],
-            'assessment_ids': [],
+            'assessment_ids': assessment_ids or [],
             'created_at': datetime.now(timezone.utc).isoformat(),
             'updated_at': datetime.now(timezone.utc).isoformat(),
         }
@@ -40,23 +40,58 @@ class Question:
         return questions_collection.find_one({'_id': ObjectId(question_id)})
     
     @staticmethod
+    def find_by_ids(object_ids):
+        """
+        Find multiple questions by their ObjectIds.
+    
+        Args:
+            object_ids (list): List of ObjectId instances.
+    
+        Returns:
+            list: List of question objects.
+        """
+        # Query the database for questions with _id in the provided object_ids
+        cursor = questions_collection.find({'_id': {'$in': object_ids}})
+        
+        # Convert the cursor to a list and format the _id field as a string
+        questions = []
+        for question in cursor:
+            question['_id'] = str(question['_id'])  # Convert ObjectId to string
+            questions.append(question)
+        
+        return questions
+
+    @staticmethod
     def find_by_tags(tags, limit=20, skip=0):
         """Find questions by tags"""
         cursor = questions_collection.find(
             {'tags': {'$in': tags}}
         ).skip(skip).limit(limit)
-        return list(cursor)
+        results = []
+        for course in cursor:
+            course['_id'] = str(course['_id'])
+            results.append(course)
+        return results
     
     @staticmethod
     def find_by_assessment_id(assessment_id):
         """Find questions by assessment ID"""
-        return questions_collection.find({'assessment_ids': assessment_id})
+        cursor = questions_collection.find({'assessment_ids': str(assessment_id)})
+        questions = []
+        for question in cursor:
+            question['_id'] = str(question['_id'])
+            questions.append(question)
+        return questions
     
     @staticmethod
     def find_all(limit=20, skip=0):
         """Find all questions with pagination"""
         cursor = questions_collection.find().sort('created_at', -1).skip(skip).limit(limit)
-        return list(cursor)
+        results = []
+        for course in cursor:
+            course['_id'] = str(course['_id'])
+            results.append(course)
+        return results
     
     @staticmethod
     def update(question_id, update_data):
@@ -107,7 +142,11 @@ class Question:
         cursor = questions_collection.find(
             {'assessment_ids': {'$in': assessment_ids}}
         ).skip(skip).limit(limit)
-        return list(cursor)
+        results = []
+        for course in cursor:
+            course['_id'] = str(course['_id'])
+            results.append(course)
+        return results
     
     @staticmethod
     def find_by_assessment_id_and_tags(assessment_id, tags, limit=20, skip=0):
@@ -115,5 +154,9 @@ class Question:
         cursor = questions_collection.find(
             {'assessment_ids': assessment_id, 'tags': {'$in': tags}}
         ).skip(skip).limit(limit)
-        return list(cursor)
+        results = []
+        for course in cursor:
+            course['_id'] = str(course['_id'])
+            results.append(course)
+        return results
     

@@ -1,3 +1,4 @@
+from dateutil import parser
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.utils.swagger_utils import yaml_from_file
@@ -24,13 +25,13 @@ def get_an_assessment(assessment_id):
     
     return jsonify({
         "assessment": {
-            "id": str(assessments['_id']),
+            "_id": str(assessments['_id']),
             "title": assessments['title'],
             "course_id": assessments['course_id'],
             "questions": assessments.get('questions', []),
             "time_limit": assessments.get('time_limit', 25),  # Default time limit in minutes
-            "created_at": assessments.get('created_at').isoformat() if assessments.get('created_at') else None,
-            "updated_at": assessments.get('updated_at').isoformat() if assessments.get('updated_at') else None
+            "created_at": assessments.get('created_at'),
+            "updated_at": assessments.get('updated_at')
         }
     }), 200
 
@@ -72,10 +73,6 @@ def get_assessment_for_course(course_id):
     if not assessments:
         return jsonify({"error": "No assessments found for this course"}), 404
     
-    # For security, remove correct answers from the response
-    for assessment in assessments:
-        for question in assessment.get('questions', []):
-            question.pop('correct_answer', None)
     
     return jsonify({"assessments": assessments}), 200
 
@@ -93,12 +90,12 @@ def submit_assessment(assessment_id):
     answers = data.get('answers')
     started_at = data.get('started_at')
     questions_id = data.get('questions_id')
-    
+
     # Submit and score the assessment
     result, error_message = AssessmentService.submit_assessment(
         user_id, assessment_id, answers, started_at, questions_id
     )
-    
+
     if error_message:
         return jsonify({"error": error_message}), 400
     
@@ -116,11 +113,21 @@ def submit_assessment(assessment_id):
 @yaml_from_file('docs/swagger/assessments/get_assessment_results.yaml')
 def get_assessment_results():
     user_id = get_jwt_identity()
-    limit = int(request.args.get('limit', 20))
-    skip = int(request.args.get('skip', 0))
+    limit = request.args.get('limit', 20)
+    skip = request.args.get('skip', 0)
     
+    if not user_id:
+        return jsonify({"error": "Invalid or missing user ID"}), 400
+
     # Get assessment results for the user
     results = AssessmentResult.find_by_user(user_id, limit, skip)
+    if results is None or len(results) < 1:
+        return jsonify({
+            'error': 'No result found'
+        }), 404
+    print(f'Inside submit request route ::: {results}')
+    print(f'count {len(results)}')
+    print(f'limit {limit}')
     
     return jsonify({
         "results": results,
@@ -145,18 +152,18 @@ def get_assessment_results():
 @assessments_bp.route('', methods=['POST'])
 @jwt_required()
 @admin_required
-@validate_json('title', 'time_limit', 'course_id', 'questions')
+@validate_json('title', 'time_limit', 'course_id')
 @yaml_from_file('docs/swagger/assessments/create_assessment_admin_only.yaml')
 def create_assessment():
     data = sanitize_input(request.get_json())
-    
+
     # Create new assessment
     assessment = Assessment.create(
         title=data.get('title'),
         time_limit=data.get('time_limit', 25),
         course_id=data.get('course_id'),
-        questions=data.get('questions')
     )
+    assessment['_id'] = str(assessment['_id'])
     
     return jsonify({
         "message": "Assessment created successfully",

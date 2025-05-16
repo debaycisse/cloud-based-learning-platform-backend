@@ -39,14 +39,13 @@ class ContentService:
             description=description,
             category=category,
             prerequisites=prerequisites or [],
-            content=content_structure,
             difficulty=difficulty,
             tags=tags or [],
         )
         
         # If content structure is provided, populate the course with sections, subsections, and content
-        if content_structure and isinstance(content_structure, dict) and 'sections' in content_structure:
-            for section_data in content_structure.get('sections', []):
+        if content_structure and isinstance(content_structure, list):
+            for section_data in content_structure:
                 # Add section
                 section_id = Course.add_section(
                     course_id=course['_id'],
@@ -71,7 +70,7 @@ class ContentService:
                             subsection_id=subsection_id,
                             data_object=data_obj
                         )
-        
+        course['_id'] = str(course['_id'])
         return course
     
     '''

@@ -3,6 +3,7 @@ from bson import ObjectId
 from app import db
 
 courses_collection = db.courses
+users_collection = db.users
 
 '''
 Course Model.
@@ -26,14 +27,14 @@ class Course:
         dict: Created course object.
     '''
     @staticmethod
-    def create(title, description, category, prerequisites=None, content=None, difficulty=None, tags=None):
+    def create(title, description, category, prerequisites=None, difficulty=None, tags=None):
         """Create a new course"""
         course = {
             'title': title,
             'description': description,
             'category': category,
             'prerequisites': prerequisites or [],
-            'content': content or {
+            'content': {
                 'sections': [],
                 'tags': tags or []
             },
@@ -45,7 +46,7 @@ class Course:
             'completed_users': [],
         }
         result = courses_collection.insert_one(course)
-        course['_id'] = result.inserted_id
+        course['_id'] = str(result.inserted_id)
         return course
     
     '''
@@ -62,7 +63,11 @@ class Course:
         """Find all courses with optional filtering"""
         query = filters or {}
         cursor = courses_collection.find(query).skip(skip).limit(limit)
-        return list(cursor)
+        results = []
+        for course in cursor:
+            course['_id'] = str(course['_id'])
+            results.append(course)
+        return results
     
     '''
     A static method that finds a specific course by its ID.
@@ -94,7 +99,13 @@ class Course:
     def find_by_category(category, limit=20, skip=0):
         """Find courses by category"""
         cursor = courses_collection.find({'category': category}).skip(skip).limit(limit)
-        return list(cursor)
+        for course in cursor:
+            course['_id'] = str(course['_id'])
+        results = []
+        for course in cursor:
+            course['_id'] = str(course['_id'])
+            results.append(course)
+        return results
     
     '''
     A static method that finds popular courses.
@@ -108,7 +119,11 @@ class Course:
         """Find popular courses based on enrollment count"""
         # We will use the enrollment_count field to determine popularity
         cursor = courses_collection.find().sort('enrollment_count', -1).limit(limit)
-        return list(cursor)
+        results = []
+        for course in cursor:
+            course['_id'] = str(course['_id'])
+            results.append(course)
+        return results
     
     '''
     A static method that finds courses by tags.
@@ -125,7 +140,11 @@ class Course:
         cursor = courses_collection.find(
             {'content.tags': {'$in': tags}}
         ).skip(skip).limit(limit)
-        return list(cursor)
+        results = []
+        for course in cursor:
+            course['_id'] = str(course['_id'])
+            results.append(course)
+        return results
     
     '''
     A static method that finds courses by difficulty level.
@@ -142,8 +161,25 @@ class Course:
         cursor = courses_collection.find(
             {'difficulty': difficulty}
         ).skip(skip).limit(limit)
-        return list(cursor)
+        results = []
+        for course in cursor:
+            course['_id'] = str(course['_id'])
+            results.append(course)
+        return results
     
+    @staticmethod
+    def get_user_by_id(user_id, limit=10, skip=0):
+        """Finds courses by user's id"""
+        cursor = courses_collection.find(
+            {'enrolled_users': {'$in': user_id}}
+        ).skip(skip).limit(limit)
+
+        results = []
+        for course in cursor:
+            course['_id'] = str(course['_id'])
+            results.append(course)
+        return results
+
     '''
     A static method that updates a course by its ID.
     Args:
@@ -628,14 +664,28 @@ class Course:
         # Add the user to the course's enrolled users
         courses_collection.update_one(
             {'_id': ObjectId(course_id)},
-            {'$addToSet': {'enrolled_users': user_id}}
+            {'$addToSet': {'enrolled_users': str(user_id)}},
         )
 
         # Check if the user was enrolled successfully
         course = courses_collection.find_one({'_id': ObjectId(course_id)})
-        if course and 'enrolled_users' in course:
-            return user_id in course['enrolled_users']
-        return False
+
+        if course is not None and 'enrolled_users' not in course:
+            return False
+        
+        if str(user_id) not in course['enrolled_users']:
+            return False
+        
+        # Add the course to the in_progress of the user
+        updated_user = users_collection.update_one(
+            {'_id': ObjectId(user_id)},
+            {'$addToSet': {'progress.in_progress_courses': str(course_id)}}
+        )
+
+        if updated_user.modified_count == 0:
+            return False
+        
+        return True
 
     '''
     A static method that marks a course as completed for a user, only if 
@@ -659,17 +709,28 @@ class Course:
             {'_id': ObjectId(course_id), 'completed_users': user_id}
         )
         
-        if course:
+        if course is not None:
             return  # User has already completed the course before, do nothing
         
-        # Checks if the update was successful
+        # Updates and checks if the course update was successful
         result = courses_collection.update_one(
             {'_id': ObjectId(course_id)},
             {'$addToSet': {'completed_users': user_id}}
         )
         if result.modified_count == 0:
             return False
-                
+        
+        updated_user = users_collection.update_one(
+            {'_id': ObjectId(user_id)},
+            {
+                '$pull': {'progress.in_progress_courses': str(course_id)},
+                '$addToSet': {'progress.completed_courses': str(course_id)},
+            }
+        )
+
+        if updated_user.modified_count == 0:
+            return False
+
         return True
 
     @staticmethod
@@ -692,4 +753,8 @@ class Course:
         cursor = courses_collection.find().sort(sort_field, -1).limit(limit)
 
         # Convert the cursor to a list and return it
-        return list(cursor)
+        results = []
+        for course in cursor:
+            course['_id'] = str(course['_id'])
+            results.append(course)
+        return results

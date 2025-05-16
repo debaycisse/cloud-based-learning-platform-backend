@@ -37,13 +37,16 @@ class RecommendationService:
         
         # Get user's assessment results
         results = AssessmentResult.find_by_user(user_id)
+
+        if not results:
+            return []
         
         # Extract knowledge gaps from failed assessments
         knowledge_gaps = []
         for result in results:
             if not result.get('passed', False):
                 knowledge_gaps.extend(result.get('knowledge_gaps', []))
-        
+        print('Here ...... ')
         # Get user's completed and in-progress courses
         completed_courses = user.get('progress', {}).get('completed_courses', [])
         in_progress_courses = user.get('progress', {}).get('in_progress_courses', [])

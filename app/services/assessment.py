@@ -1,3 +1,4 @@
+from dateutil import parser
 from datetime import datetime, timedelta, timezone
 from app import db
 from app.models.assessment import Assessment, AssessmentResult
@@ -5,6 +6,7 @@ from app.models.question import Question
 from config import Config
 
 class AssessmentService:
+
     @staticmethod
     def get_assessment_for_course(course_id):
         """Get the prerequisite assessment for a course"""
@@ -21,7 +23,7 @@ class AssessmentService:
             user_id, assessment_id
         )
         
-        if not latest_result:
+        if latest_result is None:
             return True, None
         
         if latest_result.get('passed', False):
@@ -49,21 +51,22 @@ class AssessmentService:
         assessment = Assessment.find_by_id(assessment_id)
         if not assessment:
             return None
-        
         questions = assessment.get('questions', [])
         total_questions = len(questions)
         correct_answers = 0
         knowledge_gaps = []
         demonstrated_strengths = []
-        
         for i, question in enumerate(questions):
+            # find the question
+            question = Question.find_by_id(question_id=question)
             if i < len(answers) and answers[i] == question.get('correct_answer'):
                 correct_answers += 1
                 # Add the concepts related to this question to demonstrated strengths
-                demonstrated_strengths.extend(question.get('concepts', []))
+                # Tags contain the concerned concepts
+                demonstrated_strengths.extend(question.get('tags', []))
             else:
                 # Add the concepts related to this question to knowledge gaps
-                knowledge_gaps.extend(question.get('concepts', []))
+                knowledge_gaps.extend(question.get('tags', []))
         
         # Remove duplicates
         knowledge_gaps = list(set(knowledge_gaps))
@@ -91,13 +94,14 @@ class AssessmentService:
         can_take, message = AssessmentService.can_take_assessment(user_id, assessment_id)
         if not can_take:
             return None, message
-        
         result = AssessmentService.score_assessment(assessment_id, answers)
         if not result:
             return None, "Assessment not found"
         
         questions = [Question.find_by_id(question_id) for question_id in questions_id]
+
         # Store the result
+
         assessment_result = AssessmentResult.create(
             user_id=user_id,
             assessment_id=assessment_id,
@@ -106,37 +110,37 @@ class AssessmentService:
             passed=result['passed'],
             knowledge_gaps=result['knowledge_gaps'],
             demonstrated_strengths=result['demonstrated_strengths'],
-            started_at=started_at,
+            started_at=parser.isoparse(started_at).isoformat(),
             questions=questions,
         )
         
         return assessment_result, None
     
-    # @staticmethod
-    # def add_question(assessment_id, question_id):
-    #     '''
-    #     Adds question to assessment
-    #     - CHecks if the question exists
-    #     - Checks if the assessment exists
-    #     '''
-    #     assessment = Assessment.find_by_id(assessment_id)
+    @staticmethod
+    def add_question(assessment_id, question_id):
+        '''
+        Adds question to assessment
+        - CHecks if the question exists
+        - Checks if the assessment exists
+        '''
+        assessment = Assessment.find_by_id(assessment_id)
 
-    #     if not assessment:
-    #         return None
+        if not assessment:
+            return None
 
-    #     question = Question.find_by_id(question_id)
+        question = Question.find_by_id(question_id)
 
-    #     if not question:
-    #         return None
+        if not question:
+            return None
         
-    #     # Update the questions (array) field of the assessment
-    #     updated_data = {
-    #         'questions': assessment.get('questions', []) + [question_id]
-    #     }
+        # Update the questions (array) field of the assessment
+        updated_data = {
+            'questions': assessment.get('questions', []) + [question_id]
+        }
 
-    #     # Update the assessment with the updated data
-    #     updated_assessment = Assessment.update(assessment_id, updated_data)
+        # Update the assessment with the updated data
+        updated_assessment = Assessment.update(assessment_id, updated_data)
 
-    #     if updated_assessment:
-    #         return True
-    #     return False
+        if updated_assessment:
+            return True
+        return False

@@ -1,6 +1,11 @@
 import re
-from flask import request, jsonify
+from flask import request, jsonify, current_app
 from functools import wraps
+from os import path
+from werkzeug.utils import secure_filename
+import magic
+import os
+from config import Config
 
 '''
 Validation utilities for Flask application.
@@ -148,13 +153,13 @@ Returns:
     bool: True if valid, False otherwise
 '''
 def validate_content_structure(content):
-    if not isinstance(content, dict) or 'sections' not in content:
+    if not isinstance(content, list):
         return False
     
-    if not isinstance(content['sections'], list):
-        return False
+    #if not isinstance(content['sections'], list):
+    #    return False
     
-    for section in content['sections']:
+    for section in content:
         if not isinstance(section, dict) or 'title' not in section:
             return False
         
@@ -179,3 +184,36 @@ def validate_content_structure(content):
                             return False
     
     return True
+
+def is_valid_image(file_stream):
+    """
+    Validate if the file is an actual image of allowed type
+    """
+    # Save file temporarily
+    temp_path = path.join('/tmp', secure_filename('temp_file'))
+    file_stream.save(temp_path)
+    file_stream.seek(0)  # Reset file pointer to beginning for later use
+    
+    try:
+        # Check MIME type
+        mime = magic.Magic(mime=True)
+        file_type = mime.from_file(temp_path)
+        
+        if not file_type.startswith('image/'):
+            return False
+        # Check for allowed extensions based on MIME type
+        extension_map = {
+            'image/jpeg': ['.jpg', '.jpeg'],
+            'image/png': ['.png'],
+            'image/gif': ['.gif'],
+            'image/webp': ['.webp']
+        }
+        for mime_type, extensions in extension_map.items():
+            if file_type == mime_type and any(ext in Config.ALLOWED_EXTENSIONS for ext in extensions):
+                return True
+        return False
+        
+    finally:
+        # Clean up temp file
+        if os.path.exists(temp_path):
+            os.remove(temp_path)

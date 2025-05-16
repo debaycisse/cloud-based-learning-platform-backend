@@ -19,7 +19,7 @@ def get_a_question(question_id):
         return jsonify({"error": "No question found for the given ID"}), 404
     
     # For security, remove correct answer from the response
-    question.pop('correct_answer', None)
+    # question.pop('correct_answer', None)
     
     return jsonify({
         "question": {
@@ -29,10 +29,53 @@ def get_a_question(question_id):
             "correct_answer": question['correct_answer'],
             "tags": question.get('tags', []),
             "assessment_ids": question.get('assessment_ids', []),
-            "created_at": question.get('created_at').isoformat() if question.get('created_at') else None,
-            "updated_at": question.get('updated_at').isoformat() if question.get('updated_at') else None
+            "created_at": question.get('created_at'),
+            "updated_at": question.get('updated_at')
         }
     }), 200 
+
+@questions_bp.route('/bulk', methods=['POST'])
+@jwt_required()
+@admin_required
+@validate_json('question_ids')  # Ensure 'question_ids' is present in the request body
+# @yaml_from_file('docs/swagger/questions/get_questions_bulk.yaml')
+def get_questions_bulk():
+    """
+    Fetch a list of questions by their IDs.
+    """
+    data = sanitize_input(request.get_json())  # Sanitize input data
+    question_ids = data.get('question_ids')  # Extract the array of question IDs
+
+    # Validate input
+    if not question_ids or not isinstance(question_ids, list):
+        return jsonify({"error": "question_ids must be a non-empty array"}), 400
+
+    # Fetch questions by their IDs
+    questions = QuestionService.find_questions_by_ids(question_ids)
+
+    # If no questions are found
+    if not questions:
+        return jsonify({"error": "No questions found for the given IDs"}), 404
+
+    # Format the response
+    formatted_questions = [
+        {
+            "_id": str(question['_id']),
+            "question_text": question['question_text'],
+            "options": question['options'],
+            "correct_answer": question['correct_answer'],
+            "tags": question.get('tags', []),
+            "assessment_ids": question.get('assessment_ids', []),
+            "created_at": question.get('created_at'),
+            "updated_at": question.get('updated_at')
+        }
+        for question in questions
+    ]
+
+    return jsonify({
+        "questions": formatted_questions,
+        "count": len(formatted_questions)
+    }), 200
 
 '''
 Get all questions with pagination
@@ -98,6 +141,10 @@ def get_questions_by_assessment(assessment_id):
     # limit = int(request.args.get('limit', 20))
     # skip = int(request.args.get('skip', 0))
     questions = QuestionService.find_questions_by_assessment_id(assessment_id)
+    # questions = []
+    # for question in cursor:
+    #     question['_id'] = str(question['_id'])
+    #     questions.append(question)
     
     if not questions:
         return jsonify({"error": "No questions found for the given assessment ID"}), 404
@@ -212,13 +259,17 @@ def create_questions(assessment_id):
             question_text=question_text,
             options=options,
             correct_answer=correct_answer,
-            tags=tags
+            tags=tags,
+            assessment_ids=[assessment_id],
         )
         questions.append(question)
-    
     # Add assessment's id to multiple questions
     for question in questions:
-        AssessmentService.add_question(assessment_id, str(question['_id']))
+        if not AssessmentService.add_question(assessment_id, str(question['_id'])):
+            return jsonify({
+                "error": "Error occured while adding questions to assessment"
+            })
+        question['_id'] = str(question['_id'])
 
     return jsonify({
         "message": "Questions created successfully",

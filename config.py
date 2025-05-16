@@ -13,3 +13,6 @@ class Config:
     DATABASE_NAME = os.environ.get('DATABASE_NAME')
     FLASK_ENV = os.environ.get('FLASK_ENV')
     ASSESSMENT_PASS_THRESHOLD = float(os.environ.get('ASSESSMENT_PASS_THRESHOLD', 0.5))  # 50%
+    IMGBB_API_KEY = os.getenv('IMGBB_API_KEY')
+    MAX_CONTENT_LENGTH = 2 * 1024 * 1024  # 2MB max file size
+    ALLOWED_EXTENSIONS = ['.jpeg', '.jpg', '.png', '.gif', '.webp']

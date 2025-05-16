@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from bson import ObjectId
 from app import db
 from app.models.question import Question
 from app.models.assessment import Assessment
@@ -6,13 +7,14 @@ from config import Config
 
 class QuestionService:
     @staticmethod
-    def create_question(question_text, options, correct_answer, tags=None):
+    def create_question(question_text, options, correct_answer, tags=None, assessment_ids=None):
         """Create a new question"""
         question = Question.create(
             question_text=question_text,
             options=options,
             correct_answer=correct_answer,
-            tags=tags
+            tags=tags,
+            assessment_ids=assessment_ids,
         )
         return question
 
@@ -20,6 +22,23 @@ class QuestionService:
     def find_question_by_id(question_id):
         """Find a question by ID"""
         return Question.find_by_id(question_id)
+    
+    @staticmethod
+    def find_questions_by_ids(question_ids):
+        """
+        Find multiple questions by their IDs.
+
+        Args:
+            question_ids (list): List of question IDs.
+
+        Returns:
+            list: List of question objects.
+        """
+        # Convert string IDs to ObjectId
+        object_ids = [ObjectId(qid) for qid in question_ids]
+
+        # Use the Question model to fetch questions
+        return Question.find_by_ids(object_ids)
 
     @staticmethod
     def find_questions_by_tags(tags, limit=20, skip=0):

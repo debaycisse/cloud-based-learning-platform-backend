@@ -61,6 +61,7 @@ def create_app(config_class=Config):
     from app.routes.questions import questions_bp
     from app.routes.learning_paths import learning_paths_bp
     from app.routes.recommendations import recommendations_bp
+    from app.routes.images import images_bp
     
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(users_bp, url_prefix='/api/users')
@@ -69,6 +70,7 @@ def create_app(config_class=Config):
     app.register_blueprint(questions_bp, url_prefix='/api/questions')
     app.register_blueprint(learning_paths_bp, url_prefix='/api/learning-paths')
     app.register_blueprint(recommendations_bp, url_prefix='/api/recommendations')
+    app.register_blueprint(images_bp, url_prefix='/api/images')
     
 
     # Setup Swagger UI
