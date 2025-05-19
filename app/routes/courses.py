@@ -278,15 +278,15 @@ def update_course(course_id):
             return jsonify({
                 "error": "Course not found" 
             }), 404
-
         # Update the course in the database
         updated_course = Course.update(course_id, update_data)
+        updated_course['_id'] = str(updated_course['_id'])
+        print(f'Here :: updated_course {updated_course}')
 
         if not updated_course:
             return jsonify({
                 "error": "Failed to update course"
             }), 400
-        
         # Return the updated course object
         return jsonify({
             "message": "Course updated successfully",
@@ -296,6 +296,7 @@ def update_course(course_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
+        print(f'\nError Message:: {e}\n')
         return jsonify({'error': 'Internal server error'}), 500
 
 # DELETE /api/courses/<course_id>
