@@ -23,6 +23,8 @@ class LearningPath:
     @staticmethod
     def find_all(filters={}, limit=20, skip=0):
         """Find all learning paths"""
+        limit = int(limit)
+        skip = int(skip)
         cursor = learning_paths_collection.find(filters).skip(skip).limit(limit)
         results = []
         for course in cursor:
@@ -37,6 +39,8 @@ class LearningPath:
     
     @staticmethod
     def find_by_skill(skill, limit=20, skip=0):
+        limit = int(limit)
+        skip = int(skip)
         """Find learning paths by target skill"""
         cursor = learning_paths_collection.find(
             {'target_skills': skill}

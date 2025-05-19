@@ -60,6 +60,8 @@ class Course:
     '''
     @staticmethod
     def find_all(limit=20, skip=0, filters=None):
+        limit = int(limit)
+        skip = int(skip)
         """Find all courses with optional filtering"""
         query = filters or {}
         cursor = courses_collection.find(query).skip(skip).limit(limit)
@@ -98,6 +100,8 @@ class Course:
     @staticmethod
     def find_by_category(category, limit=20, skip=0):
         """Find courses by category"""
+        limit = int(limit)
+        skip = int(skip)
         cursor = courses_collection.find({'category': category}).skip(skip).limit(limit)
         for course in cursor:
             course['_id'] = str(course['_id'])
@@ -116,6 +120,7 @@ class Course:
     '''
     @staticmethod
     def find_popular_courses(limit=10):
+        limit = int(limit)
         """Find popular courses based on enrollment count"""
         # We will use the enrollment_count field to determine popularity
         cursor = courses_collection.find().sort('enrollment_count', -1).limit(limit)
@@ -137,6 +142,8 @@ class Course:
     @staticmethod
     def find_by_tags(tags, limit=10, skip=0):
         """Find courses by tags"""
+        limit = int(limit)
+        skip = int(skip)
         cursor = courses_collection.find(
             {'content.tags': {'$in': tags}}
         ).skip(skip).limit(limit)
@@ -158,6 +165,8 @@ class Course:
     @staticmethod
     def find_by_difficulty(difficulty, limit=10, skip=0):
         """Find courses by difficulty level"""
+        limit = int(limit)
+        skip = int(skip)
         cursor = courses_collection.find(
             {'difficulty': difficulty}
         ).skip(skip).limit(limit)
@@ -170,6 +179,8 @@ class Course:
     @staticmethod
     def get_user_by_id(user_id, limit=10, skip=0):
         """Finds courses by user's id"""
+        limit = int(limit)
+        skip = int(skip)
         cursor = courses_collection.find(
             {'enrolled_users': {'$in': user_id}}
         ).skip(skip).limit(limit)
@@ -746,6 +757,7 @@ class Course:
         Returns:
             list: A list of popular courses.
         """
+        limit = int(limit)
         # Determine the sorting field based on the sort parameter
         sort_field = 'enrollment_count' if sort == 'popular' else 'created_at'
 

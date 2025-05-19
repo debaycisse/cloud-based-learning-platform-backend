@@ -51,8 +51,11 @@ class User:
         return users_collection.find_one({'_id': ObjectId(user_id)})
     
     @staticmethod
-    def find_all_users(filters={}, limit=20, skip=0):
+    def find_all_users(filters=None, limit=20, skip=0):
         """Find all users"""
+        filters = filters or {}
+        limit = int(limit)
+        skip = int(skip)
         cursor = users_collection.find(filters).limit(limit).skip(skip)
         
         results =[]

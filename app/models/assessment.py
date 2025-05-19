@@ -50,6 +50,8 @@ class Assessment:
     @staticmethod
     def find_all(limit=20, skip=0):
         """Find all assessments with pagination"""
+        limit = int(limit)
+        skip = int(skip)
         cursor = assessments_collection.find().sort('created_at', -1).skip(skip).limit(limit)
         results = []
         for course in cursor:
@@ -118,7 +120,8 @@ class AssessmentResult:
     def find_by_user(user_id, limit=20, skip=0):
         """Find assessment results for a specific user"""
         try:
-
+            limit = int(limit)
+            skip = int(skip)
             if not isinstance(user_id, str):
                 user_id = str(user_id)
 
@@ -139,6 +142,8 @@ class AssessmentResult:
     @staticmethod
     def find_by_assessment(assessment_id, limit=20, skip=0):
         """Find results for a specific assessment"""
+        limit = int(limit)
+        skip = int(skip)
         cursor = results_collection.find({'assessment_id': assessment_id}).sort(
             'created_at', -1
         ).skip(skip).limit(limit)

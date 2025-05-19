@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import requests
 from app.models.user import User
 from app.models.assessment import AssessmentResult
 from app.utils.validation import validate_json, sanitize_input
@@ -27,10 +28,12 @@ Retrieves all users
 def get_all_users():
     try:
             
-        limit = int(request.args.get('limit', 100))
-        skip = int(request.args.get('skip', 0))
+        limit = request.args.get('limit', 100)
+        skip = request.args.get('skip', 0)
 
-        users = User.find_all_users(limit, skip)
+        users = User.find_all_users(limit=limit, skip=skip)
+
+        print(f'users ::: {users}')
 
         if not users:
             return jsonify({"error": "No users found"}), 404

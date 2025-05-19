@@ -64,10 +64,16 @@ class Question:
     @staticmethod
     def find_by_tags(tags, limit=20, skip=0):
         """Find questions by tags"""
+        limit = int(limit)
+        
+        skip = int(skip)
+
         cursor = questions_collection.find(
             {'tags': {'$in': tags}}
         ).skip(skip).limit(limit)
+        
         results = []
+        
         for course in cursor:
             course['_id'] = str(course['_id'])
             results.append(course)
@@ -86,6 +92,8 @@ class Question:
     @staticmethod
     def find_all(limit=20, skip=0):
         """Find all questions with pagination"""
+        limit = int(limit)
+        skip = int(skip)
         cursor = questions_collection.find().sort('created_at', -1).skip(skip).limit(limit)
         results = []
         for course in cursor:
@@ -139,6 +147,8 @@ class Question:
     @staticmethod
     def find_by_assessment_ids(assessment_ids, limit=20, skip=0):
         """Find questions by multiple assessment IDs"""
+        limit = int(limit)
+        skip = int(skip)
         cursor = questions_collection.find(
             {'assessment_ids': {'$in': assessment_ids}}
         ).skip(skip).limit(limit)
@@ -151,6 +161,9 @@ class Question:
     @staticmethod
     def find_by_assessment_id_and_tags(assessment_id, tags, limit=20, skip=0):
         """Find questions by assessment ID and tags"""
+        limit = int(limit)
+        skip = int(skip)
+
         cursor = questions_collection.find(
             {'assessment_ids': assessment_id, 'tags': {'$in': tags}}
         ).skip(skip).limit(limit)
