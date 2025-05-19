@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from flask import Flask
+from flask_mail import Mail
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
 from flask_limiter import Limiter
@@ -12,6 +13,7 @@ from app.swagger import setup_swagger
 from flask_cors import CORS
 
 # Initialize extensions
+mail = Mail()
 jwt = JWTManager()
 limiter = Limiter(
     key_func=get_remote_address,
@@ -39,6 +41,7 @@ def create_app(config_class=Config):
     # Initialize extensions with app
     jwt.init_app(app)
     limiter.init_app(app)
+    mail.init_app(app)
     
     # Initialize MongoDB connection
     global mongo_client, db

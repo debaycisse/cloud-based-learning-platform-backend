@@ -10,63 +10,94 @@ recommendations_bp = Blueprint('recommendations', __name__)
 @jwt_required()
 @yaml_from_file('docs/swagger/recommendations/get_courses_recommendations.yaml')
 def get_course_recommendations():
-    """Get personalized course recommendations"""
-    user_id = get_jwt_identity()
-    limit = int(request.args.get('limit', 4))
+    try:
+        """Get personalized course recommendations"""
+        user_id = get_jwt_identity()
+        limit = int(request.args.get('limit', 4))
+        
+        # Get course recommendations
+        recommended_courses = RecommendationService.get_course_recommendations(user_id, limit)
+        
+        return jsonify({
+            "recommended_courses": recommended_courses,
+            "count": len(recommended_courses)
+        }), 200
     
-    # Get course recommendations
-    recommended_courses = RecommendationService.get_course_recommendations(user_id, limit)
-    
-    return jsonify({
-        "recommended_courses": recommended_courses,
-        "count": len(recommended_courses)
-    }), 200
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
+    except Exception as e:
+        return jsonify({'error': 'Internal server error'}), 500
 
 @recommendations_bp.route('/learning_paths', methods=['GET'])
 @jwt_required()
 @yaml_from_file('docs/swagger/recommendations/get_learning_paths_recommendations.yaml')
 def get_learning_path_recommendations():
-    """Get personalized learning path recommendations"""
-    user_id = get_jwt_identity()
-    limit = int(request.args.get('limit', 3))
-    
-    # Get learning path recommendations
-    recommended_paths = RecommendationService.get_learning_path_recommendations(user_id, limit)
-    
-    return jsonify({
-        "recommended_paths": recommended_paths,
-        "count": len(recommended_paths)
-    }), 200
+    try:
+            
+        """Get personalized learning path recommendations"""
+        user_id = get_jwt_identity()
+        limit = int(request.args.get('limit', 3))
+        
+        # Get learning path recommendations
+        recommended_paths = RecommendationService.get_learning_path_recommendations(user_id, limit)
+        
+        return jsonify({
+            "recommended_paths": recommended_paths,
+            "count": len(recommended_paths)
+        }), 200
+
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
+    except Exception as e:
+        return jsonify({'error': 'Internal server error'}), 500
 
 @recommendations_bp.route('/personalized', methods=['POST'])
 @jwt_required()
 @yaml_from_file('docs/swagger/recommendations/get_personalized_recommendations.yaml')
 def get_personalized_recommendations():
-    """Get recommendations based on user preferences"""
-    user_id = get_jwt_identity()
-    data = sanitize_input(request.get_json() or {})
-    limit = int(request.args.get('limit', 4))
-    
-    # Get personalized recommendations
-    recommended_courses = RecommendationService.get_personalized_recommendations(
-        user_id, data, limit
-    )
-    
-    return jsonify({
-        "recommended_courses": recommended_courses,
-        "count": len(recommended_courses)
-    }), 200
+    try:
+            
+        """Get recommendations based on user preferences"""
+        user_id = get_jwt_identity()
+        data = sanitize_input(request.get_json() or {})
+        limit = int(request.args.get('limit', 4))
+        
+        # Get personalized recommendations
+        recommended_courses = RecommendationService.get_personalized_recommendations(
+            user_id, data, limit
+        )
+        
+        return jsonify({
+            "recommended_courses": recommended_courses,
+            "count": len(recommended_courses)
+        }), 200
+
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
+    except Exception as e:
+        return jsonify({'error': 'Internal server error'}), 500
 
 @recommendations_bp.route('/similar/<course_id>', methods=['GET'])
 @yaml_from_file('docs/swagger/recommendations/get_similar_courses.yaml')
 def get_similar_courses(course_id):
-    """Get courses similar to a given course"""
-    limit = int(request.args.get('limit', 3))
-    
-    # Get similar courses
-    similar_courses = RecommendationService.get_similar_courses(course_id, limit)
-    
-    return jsonify({
-        "similar_courses": similar_courses,
-        "count": len(similar_courses)
-    }), 200
+    try:
+            
+        """Get courses similar to a given course"""
+        limit = int(request.args.get('limit', 3))
+        
+        # Get similar courses
+        similar_courses = RecommendationService.get_similar_courses(course_id, limit)
+        
+        return jsonify({
+            "similar_courses": similar_courses,
+            "count": len(similar_courses)
+        }), 200
+
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
+    except Exception as e:
+        return jsonify({'error': 'Internal server error'}), 500

@@ -21,9 +21,9 @@ class LearningPath:
         return path
     
     @staticmethod
-    def find_all(limit=20, skip=0):
+    def find_all(filters={}, limit=20, skip=0):
         """Find all learning paths"""
-        cursor = learning_paths_collection.find().skip(skip).limit(limit)
+        cursor = learning_paths_collection.find(filters).skip(skip).limit(limit)
         results = []
         for course in cursor:
             course['_id'] = str(course['_id'])

@@ -1,0 +1,101 @@
+summary: Fetch multiple questions by their IDs
+description: 
+  Retrieves a list of questions based on the provided array of question IDs.
+tags:
+  - Questions
+security:
+  - Bearer: []
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          question_ids:
+            type: array
+            items:
+              type: string
+              example: "5f8d0d55b54764421b7156a1"
+        required:
+          - question_ids
+        example:
+          question_ids: ["5f8d0d55b54764421b7156a1", "5f8d0d55b54764421b7156a2"]
+responses:
+  200:
+    description: A list of questions retrieved successfully.
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            questions:
+              type: array
+              items:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    example: "5f8d0d55b54764421b7156a1"
+                  question_text:
+                    type: string
+                    example: "What is the output of print(1 + 1)?"
+                  options:
+                    type: array
+                    items:
+                      type: string
+                      example: ["3", "2", "7"]
+                  correct_answer:
+                    type: string
+                    example: "2"
+                  tags:
+                    type: array
+                    items:
+                      type: string
+                      example: ["python", "basics"]
+                  assessment_ids:
+                    type: array
+                    items:
+                      type: string
+                      example: ["5f8d0d55b54764421b7156a2"]
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2023-01-15T14:30:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2023-01-15T14:30:00Z"
+            count:
+              type: integer
+              example: 2
+  400:
+    description: Invalid input data.
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "question_ids must be a non-empty array."
+  404:
+    description: No questions found for the provided IDs.
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "No questions found for the given IDs."
+  401:
+    description: Unauthorized access.
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            msg:
+              type: string
+              example: "Unauthorized access."

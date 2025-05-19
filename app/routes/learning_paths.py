@@ -12,25 +12,41 @@ learning_paths_bp = Blueprint('learning_paths', __name__)
 @jwt_required()
 @yaml_from_file('docs/swagger/learning_paths/get_recommended_paths.yaml')
 def get_recommended_paths():
-    user_id = get_jwt_identity()
-    
-    # Get personalized learning path recommendations
-    recommended_paths = RecommendationService.get_learning_path_recommendations(user_id)
-    
-    return jsonify({
-        "recommended_paths": recommended_paths,
-        "count": len(recommended_paths)
-    }), 200
+    try:
+
+        user_id = get_jwt_identity()
+        
+        # Get personalized learning path recommendations
+        recommended_paths = RecommendationService.get_learning_path_recommendations(user_id)
+        
+        return jsonify({
+            "recommended_paths": recommended_paths,
+            "count": len(recommended_paths)
+        }), 200
+
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
+    except Exception as e:
+        return jsonify({'error': 'Internal server error'}), 500
 
 @learning_paths_bp.route('/<path_id>', methods=['GET'])
 @yaml_from_file('docs/swagger/learning_paths/get_learning_path.yaml')
 def get_learning_path(path_id):
-    path = LearningPath.find_by_id(path_id)
-    
-    if not path:
-        return jsonify({"error": "Learning path not found"}), 404
-    
-    return jsonify({"learning_path": path}), 200
+    try:
+            
+        path = LearningPath.find_by_id(path_id)
+        
+        if not path:
+            return jsonify({"error": "Learning path not found"}), 404
+        
+        return jsonify({"learning_path": path}), 200
+
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
+    except Exception as e:
+        return jsonify({'error': 'Internal server error'}), 500
 
 @learning_paths_bp.route('', methods=['GET'])
 @yaml_from_file('docs/swagger/learning_paths/get_learning_paths.yaml')
@@ -52,10 +68,11 @@ def get_learning_paths():
             "skip": skip,
             "limit": limit
         }), 200
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
     except Exception as e:
-        return jsonify({
-            'error': 'Could not find learning path for the user'
-        }), 404
+        return jsonify({'error': 'Internal server error'}), 500
 
 @learning_paths_bp.route('', methods=['POST'])
 @jwt_required()
@@ -63,17 +80,25 @@ def get_learning_paths():
 @validate_json('title', 'description', 'courses')
 @yaml_from_file('docs/swagger/learning_paths/create_learning_path_admin_only.yaml')
 def create_learning_path():
-    data = sanitize_input(request.get_json())
-    
-    # Create new learning path
-    path = LearningPath.create(
-        title=data.get('title'),
-        description=data.get('description'),
-        courses=data.get('courses'),
-        target_skills=data.get('target_skills', [])
-    )
-    
-    return jsonify({
-        "message": "Learning path created successfully",
-        "learning_path": path
-    }), 201
+    try:
+
+        data = sanitize_input(request.get_json())
+        
+        # Create new learning path
+        path = LearningPath.create(
+            title=data.get('title'),
+            description=data.get('description'),
+            courses=data.get('courses'),
+            target_skills=data.get('target_skills', [])
+        )
+        
+        return jsonify({
+            "message": "Learning path created successfully",
+            "learning_path": path
+        }), 201
+
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
+    except Exception as e:
+        return jsonify({'error': 'Internal server error'}), 500

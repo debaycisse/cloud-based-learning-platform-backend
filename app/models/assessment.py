@@ -128,6 +128,8 @@ class AssessmentResult:
             results = []
             for course in cursor:
                 course['_id'] = str(course['_id'])
+                for question in course.get('questions'):
+                    question['_id'] = str(question['_id'])
                 results.append(course)
             return results
         except Exception as e:

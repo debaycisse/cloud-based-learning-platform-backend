@@ -25,25 +25,33 @@ Retrieves all users
 @admin_required
 @yaml_from_file('docs/swagger/users/get_all_users.yaml')
 def get_all_users():
-    limit = int(request.args.get('limit', 100))
-    skip = int(request.args.get('skip', 0))
+    try:
+            
+        limit = int(request.args.get('limit', 100))
+        skip = int(request.args.get('skip', 0))
 
-    users = User.find_all_users(limit, skip)
+        users = User.find_all_users(limit, skip)
 
-    if not users:
-        return jsonify({"error": "No users found"}), 404
-    
-    # Remove sensitive information
-    for user in users:
-        user['_id'] = str(user['_id'])
-        user.pop('password_hash', None)
+        if not users:
+            return jsonify({"error": "No users found"}), 404
+        
+        # Remove sensitive information
+        for user in users:
+            user['_id'] = str(user['_id'])
+            user.pop('password_hash', None)
 
-    return jsonify({
-        "users": users,
-        "count": len(user),
-        "limit": limit,
-        "skip": skip
-        }), 200
+        return jsonify({
+            "users": users,
+            "count": len(user),
+            "limit": limit,
+            "skip": skip
+            }), 200
+
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
+    except Exception as e:
+        return jsonify({'error': 'Internal server error'}), 500
 
 '''
 Retrieves a specific user by ID
@@ -57,38 +65,46 @@ Retrieves a specific user by ID
 @admin_required
 @yaml_from_file('docs/swagger/users/get_user.yaml')
 def get_user(user_id):
-    user = User.find_by_id(user_id)
+    try:
+            
+        user = User.find_by_id(user_id)
+        
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Remove sensitive information
+        user.pop('password_hash', None)
     
-    if not user:
-        return jsonify({"error": "User not found"}), 404
+        return jsonify({
+            "user": {
+                "_id": str(user.get('_id', '')),
+                "name": user.get('name', ''),
+                "email": user.get('email', ''),
+                "username": user.get('username', ''),
+                "role": user.get('role', 'user'),
+                "progress": user.get('progress', {
+                    'completed_courses': [],
+                    'in_progress_courses': [],
+                    'completed_assessments': []
+                }),
+                "preferences": user.get('preferences', {
+                    'categories': [],
+                    'skills': [],
+                    'difficulty': 'beginner',
+                    'learning_style': 'textual',
+                    'time_commitment': 'medium',
+                    'goals': []
+                }),
+                "created_at": user.get('created_at', None),
+                "updated_at": user.get('updated_at', None)
+            }
+        }), 200
     
-    # Remove sensitive information
-    user.pop('password_hash', None)
- 
-    return jsonify({
-        "user": {
-            "_id": str(user.get('_id', '')),
-            "name": user.get('name', ''),
-            "email": user.get('email', ''),
-            "username": user.get('username', ''),
-            "role": user.get('role', 'user'),
-            "progress": user.get('progress', {
-                'completed_courses': [],
-                'in_progress_courses': [],
-                'completed_assessments': []
-            }),
-            "preferences": user.get('preferences', {
-                'categories': [],
-                'skills': [],
-                'difficulty': 'beginner',
-                'learning_style': 'textual',
-                'time_commitment': 'medium',
-                'goals': []
-            }),
-            "created_at": user.get('created_at', None),
-            "updated_at": user.get('updated_at', None)
-        }
-    }), 200
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
+    except Exception as e:
+        return jsonify({'error': 'Internal server error'}), 500
 
 '''
 Retrieves user's profile
@@ -100,28 +116,36 @@ Retrieves user's profile
 @jwt_required()
 @yaml_from_file('docs/swagger/users/get_profile.yaml')
 def get_profile():
-    user_id = get_jwt_identity()
-    user = User.find_by_id(user_id)
+    try:
+            
+        user_id = get_jwt_identity()
+        user = User.find_by_id(user_id)
+        
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Remove sensitive information
+        user.pop('password_hash', None)
+        
+        return jsonify({
+            "profile": {
+                "_id": str(user['_id']),
+                "name": str(user['name']),
+                "email": user.get('email'),
+                "username": user.get('username'),
+                "role": user.get('role', 'user'),
+                "created_at": user.get('created_at', None),
+                "updated_at": user.get('updated_at', None),
+                "progress": user.get('progress', [],),
+                "preferences": user.get('preferences', [],),
+            }
+        }), 200
     
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-    
-    # Remove sensitive information
-    user.pop('password_hash', None)
-    
-    return jsonify({
-        "profile": {
-            "_id": str(user['_id']),
-            "name": str(user['name']),
-            "email": user.get('email'),
-            "username": user.get('username'),
-            "role": user.get('role', 'user'),
-            "created_at": user.get('created_at', None),
-            "updated_at": user.get('updated_at', None),
-            "progress": user.get('progress', [],),
-            "preferences": user.get('preferences', [],),
-        }
-    }), 200
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
+    except Exception as e:
+        return jsonify({'error': 'Internal server error'}), 500
 
 '''
 Updates user profile
@@ -135,31 +159,39 @@ Updates user profile
 @validate_json()
 @yaml_from_file('docs/swagger/users/update_profile.yaml')
 def update_profile():
-    user_id = get_jwt_identity()
-    data = sanitize_input(request.get_json())
-    
-    # Prevent updating sensitive fields
-    data.pop('password_hash', None)
-    data.pop('role', None)
-    data.pop('_id', None)
+    try:
+            
+        user_id = get_jwt_identity()
+        data = sanitize_input(request.get_json())
+        
+        # Prevent updating sensitive fields
+        data.pop('password_hash', None)
+        data.pop('role', None)
+        data.pop('_id', None)
 
-    # Update user profile
-    updated_user = User.update_profile(user_id, data)
+        # Update user profile
+        updated_user = User.update_profile(user_id, data)
 
-    
-    if not updated_user:
-        return jsonify({"error": "User not found"}), 404
-    
-    # Remove sensitive information
-    updated_user.pop('password_hash', None)
+        
+        if not updated_user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Remove sensitive information
+        updated_user.pop('password_hash', None)
 
-    # Convert the id to string
-    updated_user['_id'] = str(updated_user.get('_id', None))
-    
-    return jsonify({
-        "message": "Profile updated successfully",
-        "profile": updated_user
-    }), 200
+        # Convert the id to string
+        updated_user['_id'] = str(updated_user.get('_id', None))
+        
+        return jsonify({
+            "message": "Profile updated successfully",
+            "profile": updated_user
+        }), 200
+
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
+    except Exception as e:
+        return jsonify({'error': 'Internal server error'}), 500
 
 '''
 Retrieves user progress
@@ -171,26 +203,35 @@ Retrieves user progress
 @jwt_required()
 @yaml_from_file('docs/swagger/users/get_progress.yaml')
 def get_progress():
-    user_id = get_jwt_identity()
-    user = User.find_by_id(user_id)
-    
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-    
-    # Get assessment results
-    assessment_results = AssessmentResult.find_by_user(user_id)
-    
-    # Get user progress from user document
-    progress = user.get('progress', {
-        'completed_courses': [],
-        'in_progress_courses': [],
-        'completed_assessments': []
-    })
-    
-    return jsonify({
-        "progress": progress,
-        "assessment_results": assessment_results
-    }), 200
+    try:
+            
+        user_id = get_jwt_identity()
+        user = User.find_by_id(user_id)
+        
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Get assessment results
+        assessment_results = AssessmentResult.find_by_user(user_id)
+        
+        # Get user progress from user document
+        progress = user.get('progress', {
+            'completed_courses': [],
+            'in_progress_courses': [],
+            'completed_assessments': []
+        })
+        # progress['_id'] = str(progress['_id'])
+        
+        return jsonify({
+            "progress": progress,
+            "assessment_results": assessment_results
+        }), 200
+
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
+    except Exception as e:
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 '''
@@ -203,25 +244,33 @@ Retrieves user preferences
 @jwt_required()
 @yaml_from_file('docs/swagger/users/get_preferences.yaml')
 def get_preferences():
-    user_id = get_jwt_identity()
-    user = User.find_by_id(user_id)
-    
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-    
-    # Get user preferences
-    preferences = user.get('preferences', {
-        'categories': [],
-        'skills': [],
-        'difficulty': 'beginner',
-        'learning_style': 'visual',
-        'time_commitment': 'medium',
-        'goals': []
-    })
-    
-    return jsonify({
-        "preferences": preferences
-    }), 200
+    try:
+            
+        user_id = get_jwt_identity()
+        user = User.find_by_id(user_id)
+        
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Get user preferences
+        preferences = user.get('preferences', {
+            'categories': [],
+            'skills': [],
+            'difficulty': 'beginner',
+            'learning_style': 'visual',
+            'time_commitment': 'medium',
+            'goals': []
+        })
+        
+        return jsonify({
+            "preferences": preferences
+        }), 200
+
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
+    except Exception as e:
+        return jsonify({'error': 'Internal server error'}), 500
 
 '''
 Updates user preferences
@@ -235,19 +284,27 @@ Updates user preferences
 @validate_json()
 @yaml_from_file('docs/swagger/users/update_preferences.yaml')
 def update_preferences():
-    user_id = get_jwt_identity()
-    data = sanitize_input(request.get_json())
-    
-    # Update user preferences
-    updated_user = User.update_preferences(user_id, data)
-    
-    if not updated_user:
-        return jsonify({"error": "User not found"}), 404
-    
-    # Get updated preferences
-    preferences = updated_user.get('preferences', {})
-    
-    return jsonify({
-        "message": "Preferences updated successfully",
-        "preferences": preferences
-    }), 200
+    try:
+            
+        user_id = get_jwt_identity()
+        data = sanitize_input(request.get_json())
+        
+        # Update user preferences
+        updated_user = User.update_preferences(user_id, data)
+        
+        if not updated_user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Get updated preferences
+        preferences = updated_user.get('preferences', {})
+        
+        return jsonify({
+            "message": "Preferences updated successfully",
+            "preferences": preferences
+        }), 200
+
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
+    except Exception as e:
+        return jsonify({'error': 'Internal server error'}), 500

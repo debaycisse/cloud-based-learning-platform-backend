@@ -1,0 +1,62 @@
+title: Cloud-Based Learning Platform API
+description: API documentation for the Cloud-Based Learning Platform backend.
+
+summary: Upload an image (Admin only)
+description: Endpoint to upload an image. Only accessible by admin users.
+tags:
+  - Images
+requestBody:
+  required: true
+  content:
+    multipart/form-data:
+      schema:
+        type: object
+        properties:
+          image:
+            type: string
+            format: binary
+            description: The image file to upload.
+responses:
+  '200':
+    description: Image uploaded successfully.
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Image uploaded successfully.
+            image_url:
+              type: string
+              example: https://example.com/uploads/image.jpg
+  '400':
+    description: Bad request. Invalid file or missing parameters.
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: Invalid file format.
+  '401':
+    description: Unauthorized. Admin access required.
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: Admin access required.
+  '500':
+    description: Internal server error.
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: An error occurred while uploading the image.

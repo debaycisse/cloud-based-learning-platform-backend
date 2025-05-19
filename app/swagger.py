@@ -78,6 +78,10 @@ def setup_swagger(app):
                 "name": "Questions",
                 "description": "Question management operations"
             },
+            {
+                "name": "Images",
+                "description": "Images upload managements"
+            }
         ]
     }
     

@@ -51,9 +51,18 @@ class User:
         return users_collection.find_one({'_id': ObjectId(user_id)})
     
     @staticmethod
-    def find_all_users(limit=20, skip=0):
+    def find_all_users(filters={}, limit=20, skip=0):
         """Find all users"""
-        return list(users_collection.find().limit(limit).skip(skip))
+        cursor = users_collection.find(filters).limit(limit).skip(skip)
+        
+        results =[]
+
+        if cursor is not None:
+            for user in cursor:
+                user['_id'] = str(user['_id'])
+                results.append(user)
+
+        return results
     
     @staticmethod
     def update_profile(user_id, update_data):

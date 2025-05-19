@@ -9,6 +9,7 @@ from app.utils.validation import is_valid_image
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required
 from app.utils.auth import admin_required
+from app.utils.swagger_utils import yaml_from_file
 from config import Config
 
 
@@ -17,6 +18,7 @@ images_bp = Blueprint('images', __name__)
 @images_bp.route('/upload', methods=['POST'])
 @jwt_required()
 @admin_required
+@yaml_from_file('docs/swagger/images/upload_image_admin_only.yaml')
 def upload_image():
     """
     Endpoint to upload an image to ImgBB
@@ -31,35 +33,35 @@ def upload_image():
     Returns:
     - JSON with image URL or error details
     """
-    # Check if the post request has the file part
-
-    if 'image' not in request.files:
-        return jsonify({'error': 'No image file in request'}), 400
-
-    file = request.files['image']
-    
-    
-    # Check if file is empty
-    if file.filename == '':
-        return jsonify({'error': 'Empty file submitted'}), 400
-    
-    # Check file size before processing
-    file.seek(0, os.SEEK_END)
-    file_size = file.tell()
-    file.seek(0)
-    
-    if file_size > Config.MAX_CONTENT_LENGTH:
-        return jsonify({
-            'error': f'File too large. Maximum size is {Config.MAX_CONTENT_LENGTH/1024/1024}MB'
-        }), 413
-    
-    # Validate file is actually an image
-    if not is_valid_image(file):
-        return jsonify({
-            'error': 'Invalid file. Only JPEG, PNG, GIF and WEBP images are allowed'
-        }), 415
-    
     try:
+        # Check if the post request has the file part
+
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image file in request'}), 400
+
+        file = request.files['image']
+        
+        
+        # Check if file is empty
+        if file.filename == '':
+            return jsonify({'error': 'Empty file submitted'}), 400
+        
+        # Check file size before processing
+        file.seek(0, os.SEEK_END)
+        file_size = file.tell()
+        file.seek(0)
+        
+        if file_size > Config.MAX_CONTENT_LENGTH:
+            return jsonify({
+                'error': f'File too large. Maximum size is {Config.MAX_CONTENT_LENGTH/1024/1024}MB'
+            }), 413
+        
+        # Validate file is actually an image
+        if not is_valid_image(file):
+            return jsonify({
+                'error': 'Invalid file. Only JPEG, PNG, GIF and WEBP images are allowed'
+            }), 415
+        
         # Prepare optional parameters
         expiry = request.form.get('expiry', None)
         name = request.form.get('name', None)
