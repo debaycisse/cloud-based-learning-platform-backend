@@ -1,6 +1,7 @@
 from dateutil import parser
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import requests
 from app.utils.swagger_utils import yaml_from_file
 from app.models.assessment import Assessment, AssessmentResult
 from app.services.assessment import AssessmentService

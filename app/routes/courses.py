@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import requests
 from app.models.course import Course
 from app.models.user import User
 from app.services.recommendation import RecommendationService

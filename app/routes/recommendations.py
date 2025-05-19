@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import requests
 from app.services.recommendation import RecommendationService
 from app.utils.validation import validate_json, sanitize_input
 from app.utils.swagger_utils import yaml_from_file

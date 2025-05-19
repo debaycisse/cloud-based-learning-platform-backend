@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import requests
 from app.models.learning_path import LearningPath
 from app.services.recommendation import RecommendationService
 from app.utils.auth import admin_required

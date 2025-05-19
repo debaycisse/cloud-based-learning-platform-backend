@@ -33,8 +33,6 @@ def get_all_users():
 
         users = User.find_all_users(limit=limit, skip=skip)
 
-        print(f'users ::: {users}')
-
         if not users:
             return jsonify({"error": "No users found"}), 404
         

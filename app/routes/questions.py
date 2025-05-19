@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import requests
 from app.utils.swagger_utils import yaml_from_file
 from app.models.question import Question
 from app.services.assessment import AssessmentService
@@ -36,10 +37,11 @@ def get_a_question(question_id):
             }
         }), 200 
 
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
     except Exception as e:
-        return jsonify({
-            'error': str(e)
-        }), 400
+        return jsonify({'error': 'Internal server error'}), 500
 
 @questions_bp.route('/bulk', methods=['POST'])
 @jwt_required()
@@ -86,10 +88,11 @@ def get_questions_bulk():
             "count": len(formatted_questions)
         }), 200
     
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
     except Exception as e:
-        return jsonify({
-            'error': str(e)
-        }), 400
+        return jsonify({'error': 'Internal server error'}), 500
 
 '''
 Get all questions with pagination
@@ -125,10 +128,11 @@ def get_questions():
             "limit": limit
         }), 200
     
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
     except Exception as e:
-        return jsonify({
-            'error': str(e)
-        }), 400
+        return jsonify({'error': 'Internal server error'}), 500
 
 @questions_bp.route('/tags', methods=['GET'])
 @jwt_required()
@@ -157,10 +161,11 @@ def get_questions_by_tags():
             "limit": limit
         }), 200
     
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
     except Exception as e:
-        return jsonify({
-            'error': str(e)
-        }), 400
+        return jsonify({'error': 'Internal server error'}), 500
 
 @questions_bp.route('/assessment/<assessment_id>', methods=['GET'])
 @jwt_required()
@@ -183,10 +188,11 @@ def get_questions_by_assessment(assessment_id):
             "questions": questions
         }), 200
 
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
     except Exception as e:
-        return jsonify({
-            'error': str(e)
-        }), 400
+        return jsonify({'error': 'Internal server error'}), 500
 
 '''Gets questions by assessment id and tags
 - Parameters:
@@ -228,10 +234,11 @@ def get_questions_by_assessment_and_tags(assessment_id):
             "limit": limit
         }), 200
     
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
     except Exception as e:
-        return jsonify({
-            'error': str(e)
-        }), 400
+        return jsonify({'error': 'Internal server error'}), 500
 
 @questions_bp.route('', methods=['POST'])
 @jwt_required()
@@ -273,10 +280,11 @@ def create_question():
             }
         }), 201
 
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
     except Exception as e:
-        return jsonify({
-            'error': str(e)
-        }), 400
+        return jsonify({'error': 'Internal server error'}), 500
 
 # endpoint that creates questions by interating over a list of questions
 @questions_bp.route('/bulk/<assessment_id>', methods=['POST'])
@@ -327,10 +335,11 @@ def create_questions(assessment_id):
             "questions": questions,
         }), 201
     
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
     except Exception as e:
-        return jsonify({
-            'error': str(e)
-        }), 400
+        return jsonify({'error': 'Internal server error'}), 500
 
 @questions_bp.route('/<question_id>', methods=['PUT'])
 @jwt_required()
@@ -378,10 +387,11 @@ def update_question(question_id):
             }
         }), 200
 
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
     except Exception as e:
-        return jsonify({
-            'error': str(e)
-        }), 400
+        return jsonify({'error': 'Internal server error'}), 500
 
 @questions_bp.route('/<question_id>', methods=['DELETE'])
 @jwt_required()
@@ -400,10 +410,11 @@ def delete_question(question_id):
             "message": "Question deleted successfully"
         }), 200
 
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
     except Exception as e:
-        return jsonify({
-            'error': str(e)
-        }), 400
+        return jsonify({'error': 'Internal server error'}), 500
 
 @questions_bp.route('/<question_id>/assessments/<assessment_id>', methods=['POST'])
 @jwt_required()
@@ -430,10 +441,11 @@ def add_question_to_assessment(question_id, assessment_id):
             "message": "Question added to assessment successfully"
         }), 200
     
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
     except Exception as e:
-        return jsonify({
-            'error': str(e)
-        }), 400
+        return jsonify({'error': 'Internal server error'}), 500
 
 @questions_bp.route('/<question_id>/assessment/<assessment_id>', methods=['DELETE'])
 @jwt_required()
@@ -452,7 +464,8 @@ def remove_question_from_assessment(question_id, assessment_id):
             "message": "Question removed from assessment successfully"
         }), 200
     
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
     except Exception as e:
-        return jsonify({
-            'error': str(e)
-        }), 400
+        return jsonify({'error': 'Internal server error'}), 500
