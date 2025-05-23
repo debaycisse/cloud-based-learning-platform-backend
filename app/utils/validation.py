@@ -1,4 +1,5 @@
 import re
+import html
 from flask import request, jsonify, current_app
 from functools import wraps
 from os import path
@@ -128,18 +129,40 @@ Returns:
     str or dict: The sanitized data
 '''
 def sanitize_input(data):
+    # if isinstance(data, str):
+    #     # Remove HTML tags
+    #     data = re.sub(r'<[^>]*>', '', data)
+    #     # Escape special characters
+    #     data = data.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+    #     data = data.replace('"', '&quot;').replace("'", '&#39;')
+    # elif isinstance(data, dict):
+    #     return {k: sanitize_input(v) for k, v in data.items()}
+    # elif isinstance(data, list):
+    #     return [sanitize_input(item) for item in data]
+    # return data
+
     if isinstance(data, str):
-        # Remove HTML tags
-        data = re.sub(r'<[^>]*>', '', data)
-        # Escape special characters
-        data = data.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-        data = data.replace('"', '&quot;').replace("'", '&#39;')
+        return html.escape(data)  # converts < to &lt;, > to &gt;, etc.
     elif isinstance(data, dict):
         return {k: sanitize_input(v) for k, v in data.items()}
     elif isinstance(data, list):
         return [sanitize_input(item) for item in data]
     return data
 
+'''
+Converts HTML-escaped text (like &lt;h1&gt;) into actual HTML tags as a string.
+
+Parameters:
+    text (str): Escaped HTML string.
+
+Returns:
+    str: Unescaped HTML as a plain string.
+'''
+def html_tags_converter(text: str) -> str:
+    if isinstance(text, str):
+        return html.unescape(text)
+    
+    raise TypeError("html_tags_converter expects a string input")
 
 '''
 Validates the course content structure

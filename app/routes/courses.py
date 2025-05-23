@@ -259,8 +259,7 @@ def update_section(course_id, section_id):
 @validate_json('title', 'description', 'category')
 @yaml_from_file('docs/swagger/courses/update_course.yaml')
 def update_course(course_id):
-    try:
-            
+    try:   
         data = sanitize_input(request.get_json())
 
         # Extract only fields to update
@@ -278,10 +277,9 @@ def update_course(course_id):
             return jsonify({
                 "error": "Course not found" 
             }), 404
+        
         # Update the course in the database
         updated_course = Course.update(course_id, update_data)
-        updated_course['_id'] = str(updated_course['_id'])
-        print(f'Here :: updated_course {updated_course}')
 
         if not updated_course:
             return jsonify({

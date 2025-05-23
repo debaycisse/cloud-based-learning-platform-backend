@@ -46,14 +46,13 @@ def get_a_question(question_id):
 @questions_bp.route('/bulk', methods=['POST'])
 @jwt_required()
 @admin_required
-@validate_json('question_ids')  # Ensure 'question_ids' is present in the request body
+@validate_json('question_ids')
 @yaml_from_file('docs/swagger/questions/get_questions_bulk.yaml')
 def get_questions_bulk():
     """
     Fetch a list of questions by their IDs.
     """
     try:
-            
         data = sanitize_input(request.get_json())  # Sanitize input data
         question_ids = data.get('question_ids')  # Extract the array of question IDs
 
@@ -65,7 +64,7 @@ def get_questions_bulk():
         questions = QuestionService.find_questions_by_ids(question_ids)
 
         # If no questions are found
-        if not questions:
+        if len(questions) < 1:
             return jsonify({"error": "No questions found for the given IDs"}), 404
 
         # Format the response
@@ -311,7 +310,7 @@ def create_questions(assessment_id):
             tags = question_data.get('tags', [])
             
             # Validate input
-            if not question_text or not options or not correct_answer:
+            if question_text is None or options is None or correct_answer is None:
                 return jsonify({"error": "Question text, options, and correct answer are required"}), 400
             
             question = QuestionService.create_question(

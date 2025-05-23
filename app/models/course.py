@@ -212,7 +212,8 @@ class Course:
             {'_id': ObjectId(course_id)},
             {'$set': update_data}
         )
-        return courses_collection.find_one({'_id': ObjectId(course_id)})
+        updated_course = courses_collection.find_one({'_id': ObjectId(course_id)})
+        return {**updated_course, '_id': str(updated_course['_id'])}
     
     '''
     A static method that deletes a course whose ID is given

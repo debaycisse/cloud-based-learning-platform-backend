@@ -209,22 +209,25 @@ def create_assessment():
 @assessments_bp.route('/<assessment_id>', methods=['PUT'])
 @jwt_required()
 @admin_required
-@validate_json('title', 'course_id', 'questions')
+@validate_json('title', 'course_id')
 @yaml_from_file('docs/swagger/assessments/update_assessment_admin_only.yaml')
 def update_assessment(assessment_id):
     try:
         data = sanitize_input(request.get_json())
         
+        update_data = {
+            'title': data.get('title'),
+            'time_limit': data.get('time_limit', 25),
+            'course_id': data.get('course_id'),
+        }
+
         # Update assessment
         assessment = Assessment.update(
             assessment_id,
-            title=data.get('title'),
-            time_limit=data.get('time_limit', 25),
-            course_id=data.get('course_id'),
-            questions=data.get('questions')
+            update_data,
         )
         
-        if not assessment:
+        if assessment is None:
             return jsonify({"error": "Assessment not found"}), 404
         
         return jsonify({

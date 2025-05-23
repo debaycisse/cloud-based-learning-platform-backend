@@ -3,6 +3,7 @@ from bson import ObjectId
 from app import db
 from app.models.question import Question
 from app.models.assessment import Assessment
+from app.utils.validation import html_tags_converter
 from config import Config
 
 class QuestionService:
@@ -21,7 +22,15 @@ class QuestionService:
     @staticmethod
     def find_question_by_id(question_id):
         """Find a question by ID"""
-        return Question.find_by_id(question_id)
+        question = Question.find_by_id(question_id)
+
+        if question is not None:
+            options = [html_tags_converter(option) for option in question.get('options', [])]
+            question['options'] = options
+            question['_id'] = str(question['_id'])
+            return question
+
+        return None
     
     @staticmethod
     def find_questions_by_ids(question_ids):
@@ -38,22 +47,62 @@ class QuestionService:
         object_ids = [ObjectId(qid) for qid in question_ids]
 
         # Use the Question model to fetch questions
-        return Question.find_by_ids(object_ids)
+        questions =  Question.find_by_ids(object_ids)
+
+        if questions is not None:
+            for question in questions:
+                options = [html_tags_converter(option) for option in question.get('options', [])]
+                question['options'] = options
+                question['_id'] = str(question['_id'])
+            
+            return questions
+
+        return []
 
     @staticmethod
     def find_questions_by_tags(tags, limit=20, skip=0):
         """Find questions by tags"""
-        return Question.find_by_tags(tags, limit, skip)
+        questions = Question.find_by_tags(tags, limit, skip)
+
+        if questions is not None:
+            for question in questions:
+                options = [html_tags_converter(option) for option in question.get('options', [])]
+                question['options'] = options
+                question['_id'] = str(question['_id'])
+            
+            return questions
+
+        return []
 
     @staticmethod
     def find_questions_by_assessment_id(assessment_id):
         """Find questions by assessment ID"""
-        return Question.find_by_assessment_id(assessment_id)
+        questions = Question.find_by_assessment_id(assessment_id)
+
+        if questions is not None:
+            for question in questions:
+                options = [html_tags_converter(option) for option in question.get('options', [])]
+                question['options'] = options
+                question['_id'] = str(question['_id'])
+            
+            return questions
+
+        return []
     
     @staticmethod
     def find_all_questions(limit=20, skip=0):
         """Find all questions with pagination"""
-        return Question.find_all(limit, skip)
+        questions = Question.find_all(limit, skip)
+        
+        if questions is not None:
+            for question in questions:
+                options = [html_tags_converter(option) for option in question.get('options', [])]
+                question['options'] = options
+                question['_id'] = str(question['_id'])
+            
+            return questions
+
+        return []
     
     @staticmethod
     def update_question(question_id, update_data):
