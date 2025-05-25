@@ -57,3 +57,22 @@ def send_login_email(to_email, user_name):
     except Exception as e:
         current_app.logger.error(f"Failed to send email: {e}")
         return False
+
+def contact_support_email(from_email, subject, message):
+    try:
+        support_email = current_app.config['SUPPORT_EMAIL']
+        
+        msg = Message(
+            subject=subject,
+            recipients=[support_email],
+            body=message,
+            sender=from_email
+        )
+
+        mail.send(msg)
+        
+        return True
+
+    except Exception as e:
+        current_app.logger.error(f"Failed to send support email: {e}")
+        return False

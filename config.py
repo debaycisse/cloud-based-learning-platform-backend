@@ -29,3 +29,6 @@ class Config:
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')  # your email
     MAIL_PASSWORD = os.environ.get('MAIL_APP_PASSWORD')  # app password or email password
     MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', MAIL_USERNAME)
+
+    # Support email address
+    SUPPORT_EMAIL = os.environ.get('SUPPORT_EMAIL')
