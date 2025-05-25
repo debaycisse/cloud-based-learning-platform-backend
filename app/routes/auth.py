@@ -260,7 +260,7 @@ def reset_password():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
 Verifies the reset token and returns true if valid
@@ -288,7 +288,7 @@ def verify_reset_token(token):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
 Updates the user\'s password whose reset token was verified, using the provided new password
@@ -333,4 +333,4 @@ def update_password(token):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500

@@ -25,9 +25,13 @@ class QuestionService:
         question = Question.find_by_id(question_id)
 
         if question is not None:
-            options = [html_tags_converter(option) for option in question.get('options', [])]
-            question['options'] = options
-            question['_id'] = str(question['_id'])
+            for k, v in question.items():
+                if k == '_id':
+                    question[k] = str(v)
+                elif k == 'correct_answer' or k == 'question_text':
+                    question[k] = html_tags_converter(v)
+                elif k == 'options':
+                    question[k] = [html_tags_converter(option) for option in v]
             return question
 
         return None
@@ -49,11 +53,15 @@ class QuestionService:
         # Use the Question model to fetch questions
         questions =  Question.find_by_ids(object_ids)
 
-        if questions is not None:
+        if questions is not None or len(questions) > 0:
             for question in questions:
-                options = [html_tags_converter(option) for option in question.get('options', [])]
-                question['options'] = options
-                question['_id'] = str(question['_id'])
+                for k, v in question.items():
+                    if k == '_id':
+                        question[k] = str(v)
+                    elif k == 'correct_answer' or k == 'question_text':
+                        question[k] = html_tags_converter(v)
+                    elif k == 'options':
+                        question[k] = [html_tags_converter(option) for option in v]
             
             return questions
 
@@ -64,11 +72,15 @@ class QuestionService:
         """Find questions by tags"""
         questions = Question.find_by_tags(tags, limit, skip)
 
-        if questions is not None:
+        if questions is not None or len(questions) > 0:
             for question in questions:
-                options = [html_tags_converter(option) for option in question.get('options', [])]
-                question['options'] = options
-                question['_id'] = str(question['_id'])
+                for k, v in question.items():
+                    if k == '_id':
+                        question[k] = str(v)
+                    elif k == 'correct_answer' or k == 'question_text':
+                        question[k] = html_tags_converter(v)
+                    elif k == 'options':
+                        question[k] = [html_tags_converter(option) for option in v]
             
             return questions
 
@@ -79,11 +91,15 @@ class QuestionService:
         """Find questions by assessment ID"""
         questions = Question.find_by_assessment_id(assessment_id)
 
-        if questions is not None:
+        if questions is not None or len(questions) > 0:
             for question in questions:
-                options = [html_tags_converter(option) for option in question.get('options', [])]
-                question['options'] = options
-                question['_id'] = str(question['_id'])
+                for k, v in question.items():
+                    if k == '_id':
+                        question[k] = str(v)
+                    elif k == 'correct_answer' or k == 'question_text':
+                        question[k] = html_tags_converter(v)
+                    elif k == 'options':
+                        question[k] = [html_tags_converter(option) for option in v]
             
             return questions
 
@@ -94,12 +110,16 @@ class QuestionService:
         """Find all questions with pagination"""
         questions = Question.find_all(limit, skip)
         
-        if questions is not None:
+        if questions is not None or len(questions) > 0:
             for question in questions:
-                options = [html_tags_converter(option) for option in question.get('options', [])]
-                question['options'] = options
-                question['_id'] = str(question['_id'])
-            
+                for k, v in question.items():
+                    if k == '_id':
+                        question[k] = str(v)
+                    elif k == 'correct_answer' or k == 'question_text':
+                        question[k] = html_tags_converter(v)
+                    elif k == 'options':
+                        question[k] = [html_tags_converter(option) for option in v]
+      
             return questions
 
         return []
@@ -118,10 +138,10 @@ class QuestionService:
     def add_question_to_assessment(question_id, assessment_id):
         """Add a question to an assessment"""
         question = Question.find_by_id(question_id)
-        if not question:
+        if question is None:
             return None
         assessment = Assessment.find_by_id(assessment_id)
-        if not assessment:
+        if assessment is None:
             return None
         return Question.add_assessment_id(question_id, assessment_id)
     
@@ -129,9 +149,9 @@ class QuestionService:
     def remove_question_from_assessment(question_id, assessment_id):
         """Remove a question from an assessment"""
         question = Question.find_by_id(question_id)
-        if not question:
+        if question is None:
             return None
         assessment = Assessment.find_by_id(assessment_id)
-        if not assessment:
+        if assessment is None:
             return None
         return Question.remove_assessment_id(question_id, assessment_id)

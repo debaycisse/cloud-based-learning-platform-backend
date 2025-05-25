@@ -41,7 +41,7 @@ def get_a_question(question_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @questions_bp.route('/bulk', methods=['POST'])
 @jwt_required()
@@ -91,7 +91,7 @@ def get_questions_bulk():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
 Get all questions with pagination
@@ -131,7 +131,7 @@ def get_questions():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @questions_bp.route('/tags', methods=['GET'])
 @jwt_required()
@@ -164,7 +164,7 @@ def get_questions_by_tags():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @questions_bp.route('/assessment/<assessment_id>', methods=['GET'])
 @jwt_required()
@@ -191,7 +191,7 @@ def get_questions_by_assessment(assessment_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''Gets questions by assessment id and tags
 - Parameters:
@@ -237,7 +237,7 @@ def get_questions_by_assessment_and_tags(assessment_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @questions_bp.route('', methods=['POST'])
 @jwt_required()
@@ -283,7 +283,7 @@ def create_question():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # endpoint that creates questions by interating over a list of questions
 @questions_bp.route('/bulk/<assessment_id>', methods=['POST'])
@@ -338,7 +338,7 @@ def create_questions(assessment_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @questions_bp.route('/<question_id>', methods=['PUT'])
 @jwt_required()
@@ -347,15 +347,15 @@ def create_questions(assessment_id):
 @yaml_from_file('docs/swagger/questions/update_question.yaml')
 def update_question(question_id):
     try:
-            
         data = sanitize_input(request.get_json())
-        question_text = data.get('question_text')
-        options = data.get('options')
-        correct_answer = data.get('correct_answer')
-        tags = data.get('tags', [])
+        question = data.get('question')
+        question_text = question.get('question_text')
+        options = question.get('options')
+        correct_answer = question.get('correct_answer')
+        tags = question.get('tags', [])
         
         # Validate input
-        if not question_text or not options or not correct_answer:
+        if question_text is None or options is None or correct_answer is None:
             return jsonify({"error": "Question text, options, and correct answer are required"}), 400
         
         # Update the question
@@ -369,7 +369,7 @@ def update_question(question_id):
             }
         )
         
-        if not question:
+        if question is None:
             return jsonify({"error": "No question found for the given ID"}), 404
         
         return jsonify({
@@ -381,8 +381,8 @@ def update_question(question_id):
                 "correct_answer": question['correct_answer'],
                 "tags": question.get('tags', []),
                 "assessment_ids": question.get('assessment_ids', []),
-                "created_at": question.get('created_at').isoformat() if question.get('created_at') else None,
-                "updated_at": question.get('updated_at').isoformat() if question.get('updated_at') else None
+                "created_at": question.get('created_at'),
+                "updated_at": question.get('updated_at')
             }
         }), 200
 
@@ -390,7 +390,8 @@ def update_question(question_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        print(f'Error occured ::: {str(e)}')
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @questions_bp.route('/<question_id>', methods=['DELETE'])
 @jwt_required()
@@ -413,7 +414,7 @@ def delete_question(question_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @questions_bp.route('/<question_id>/assessments/<assessment_id>', methods=['POST'])
 @jwt_required()
@@ -444,7 +445,7 @@ def add_question_to_assessment(question_id, assessment_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @questions_bp.route('/<question_id>/assessment/<assessment_id>', methods=['DELETE'])
 @jwt_required()
@@ -467,4 +468,4 @@ def remove_question_from_assessment(question_id, assessment_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500

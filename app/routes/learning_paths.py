@@ -29,7 +29,7 @@ def get_recommended_paths():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @learning_paths_bp.route('/<path_id>', methods=['GET'])
 @yaml_from_file('docs/swagger/learning_paths/get_learning_path.yaml')
@@ -47,7 +47,7 @@ def get_learning_path(path_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @learning_paths_bp.route('', methods=['GET'])
 @yaml_from_file('docs/swagger/learning_paths/get_learning_paths.yaml')
@@ -73,7 +73,7 @@ def get_learning_paths():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @learning_paths_bp.route('', methods=['POST'])
 @jwt_required()
@@ -102,4 +102,4 @@ def create_learning_path():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500

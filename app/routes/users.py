@@ -52,7 +52,7 @@ def get_all_users():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
 Retrieves a specific user by ID
@@ -105,7 +105,7 @@ def get_user(user_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
 Retrieves user's profile
@@ -146,7 +146,7 @@ def get_profile():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
 Updates user profile
@@ -192,7 +192,7 @@ def update_profile():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
 Retrieves user progress
@@ -232,7 +232,7 @@ def get_progress():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 
 '''
@@ -271,7 +271,7 @@ def get_preferences():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
 Updates user preferences
@@ -308,4 +308,4 @@ def update_preferences():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500

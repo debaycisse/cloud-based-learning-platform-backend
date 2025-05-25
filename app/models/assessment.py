@@ -183,16 +183,20 @@ class AssessmentResult:
     
     # Delete an assessment result
     @staticmethod
-    def delete_by_assessment_id(assessment_result_id):
+    def delete_by_assessment_id(assessment_id):
         """Delete an assessment result"""
-        result = results_collection.delete_one({'_id': ObjectId(assessment_result_id)})
-        if result.deleted_count > 0:
-            # Update all questions that have the same assessment ID by removing the
-            # assessment id from the questions
-            clean_questions = questions_collection.update_many(
-                {'assessment_id': ObjectId(assessment_result_id)},
-                {'$pull': {'assessment_ids': ObjectId(assessment_result_id)}}
-            )
-            if clean_questions.modified_count > 0:
-                return True
-        return False
+        results_collection.delete_one({'assessment_id': str(assessment_id)})
+
+        # Update all questions that have the same assessment ID by removing the
+        # assessment id from the questions
+        questions = questions_collection.find({'assessment_ids': str(assessment_id)})
+
+        clean_questions = questions_collection.update_many(
+            {'assessment_ids': str(assessment_id)},
+            {'$pull': {'assessment_ids': str(assessment_id)}}
+        )
+
+        if questions is not None and clean_questions.matched_count < 1:
+            return False
+
+        return True

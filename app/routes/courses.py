@@ -35,7 +35,7 @@ def get_courses():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # GET /api/courses/<course_id>
 @courses_bp.route('/<course_id>', methods=['GET'])
@@ -52,7 +52,7 @@ def get_course(course_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # GET /api/courses/recommended
 @courses_bp.route('/recommended', methods=['GET'], endpoint='get_recommended_courses')
@@ -73,7 +73,7 @@ def get_recommended_courses():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # GET /api/courses/popular
 @courses_bp.route('/popular', methods=['GET'], endpoint='get_popular_courses')
@@ -104,7 +104,7 @@ def get_popular_courses():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # POST /api/courses
 @courses_bp.route('', methods=['POST'])
@@ -150,7 +150,7 @@ def create_course():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # GET /api/courses/<course_id>/sections
 @courses_bp.route('/<course_id>/sections', methods=['GET'])
@@ -173,7 +173,7 @@ def get_course_sections(course_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # POST /api/courses/<course_id>/sections
 @courses_bp.route('/<course_id>/sections', methods=['POST'])
@@ -203,7 +203,7 @@ def add_course_section(course_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # GET /api/courses/<course_id>/sections/<section_id>
 @courses_bp.route('/<course_id>/sections/<section_id>', methods=['GET'])
@@ -221,7 +221,7 @@ def get_section(course_id, section_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # PUT /api/courses/<course_id>/sections/<section_id>
 @courses_bp.route('/<course_id>/sections/<section_id>', methods=['PUT'])
@@ -250,7 +250,7 @@ def update_section(course_id, section_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # PUT /api/courses/<course_id>
 @courses_bp.route('/<course_id>', methods=['PUT'], endpoint='update_course')
@@ -295,7 +295,7 @@ def update_course(course_id):
 
     except Exception as e:
         print(f'\nError Message:: {e}\n')
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # DELETE /api/courses/<course_id>
 @courses_bp.route('/<course_id>', methods=['DELETE'], endpoint='delete_course')
@@ -323,7 +323,7 @@ def delete_course(course_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # DELETE /api/courses/<course_id>/sections/<section_id>
 @courses_bp.route('/<course_id>/sections/<section_id>', methods=['DELETE'])
@@ -344,7 +344,7 @@ def delete_section(course_id, section_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # GET /api/courses/<course_id>/sections/<section_id>/subsections
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections', methods=['GET'])
@@ -367,7 +367,7 @@ def get_subsections(course_id, section_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # POST /api/courses/<course_id>/sections/<section_id>/subsections
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections', methods=['POST'])
@@ -398,7 +398,7 @@ def add_subsection(course_id, section_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # GET /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>', methods=['GET'])
@@ -415,7 +415,7 @@ def get_subsection(course_id, section_id, subsection_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # PUT /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>', methods=['PUT'])
@@ -444,7 +444,7 @@ def update_subsection(course_id, section_id, subsection_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # DELETE /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>', methods=['DELETE'])
@@ -469,7 +469,7 @@ def delete_subsection(course_id, section_id, subsection_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # POST /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>/content
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>/content', methods=['POST'])
@@ -518,7 +518,7 @@ def add_content_data(course_id, section_id, subsection_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # PUT /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>/content/<data_id>
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>/content/<data_id>', methods=['PUT'])
@@ -547,7 +547,7 @@ def update_content_data(course_id, section_id, subsection_id, data_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # DELETE /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>/content/<data_id>
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>/content/<data_id>', methods=['DELETE'])
@@ -574,7 +574,7 @@ def delete_content_data(course_id, section_id, subsection_id, data_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # POST /api/courses/enroll
 @courses_bp.route('/enroll', methods=['POST'], endpoint='enroll_course')
@@ -611,7 +611,7 @@ def enroll_user_in_course():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # POST /api/courses/complete
 @courses_bp.route('/complete', methods=['POST'], endpoint='complete_course')
@@ -638,4 +638,4 @@ def mark_course_as_completed():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500

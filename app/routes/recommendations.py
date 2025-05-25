@@ -28,7 +28,7 @@ def get_course_recommendations():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @recommendations_bp.route('/learning_paths', methods=['GET'])
 @jwt_required()
@@ -52,7 +52,7 @@ def get_learning_path_recommendations():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @recommendations_bp.route('/personalized', methods=['POST'])
 @jwt_required()
@@ -79,7 +79,7 @@ def get_personalized_recommendations():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @recommendations_bp.route('/similar/<course_id>', methods=['GET'])
 @yaml_from_file('docs/swagger/recommendations/get_similar_courses.yaml')
@@ -101,4 +101,4 @@ def get_similar_courses(course_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500

@@ -41,7 +41,7 @@ def get_an_assessment(assessment_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
 Get all assessments with pagination
@@ -77,7 +77,7 @@ def get_assessments():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @assessments_bp.route('/course/<course_id>', methods=['GET'])
 @jwt_required()
@@ -96,7 +96,7 @@ def get_assessment_for_course(course_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 
 @assessments_bp.route('/<assessment_id>/submit', methods=['POST'])
@@ -132,7 +132,7 @@ def submit_assessment(assessment_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @assessments_bp.route('/results', methods=['GET'])
 @jwt_required()
@@ -164,7 +164,7 @@ def get_assessment_results():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # # Get a single assessment result
 # @assessments_bp.route('/results/<assessment_result_id>', methods=['GET'])
@@ -204,7 +204,7 @@ def create_assessment():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @assessments_bp.route('/<assessment_id>', methods=['PUT'])
 @jwt_required()
@@ -239,7 +239,7 @@ def update_assessment(assessment_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 
 @assessments_bp.route('/<assessment_id>', methods=['DELETE'])
@@ -252,7 +252,7 @@ def delete_assessment(assessment_id):
         if not Assessment.delete(assessment_id):
             return jsonify({"error": "Assessment not found"}), 404
         
-        # After an assessment has been deleted, delete all results associated with it and confirm deletion
+        # After an assessment has been deleted, delete all results and questions associated with it.
         if not AssessmentResult.delete_by_assessment_id(assessment_id):
             return jsonify({"error": "Failed to delete associated assessment results"}), 500
         
@@ -264,7 +264,7 @@ def delete_assessment(assessment_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
 Gets assessment result"s average score
@@ -292,4 +292,4 @@ def get_assessment_average_score(assessment_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
