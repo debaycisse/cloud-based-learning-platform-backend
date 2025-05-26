@@ -57,7 +57,7 @@ def get_questions_bulk():
         question_ids = data.get('question_ids')  # Extract the array of question IDs
 
         # Validate input
-        if not question_ids or not isinstance(question_ids, list):
+        if question_ids is None or not isinstance(question_ids, list):
             return jsonify({"error": "question_ids must be a non-empty array"}), 400
 
         # Fetch questions by their IDs
