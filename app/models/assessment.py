@@ -127,12 +127,10 @@ class AssessmentResult:
 
             assessment_results_cursor = results_collection.find({'user_id': user_id}).sort(
                 'created_at', -1
-            ).skip(int(skip)).limit(limit)
+            ).skip(skip).limit(limit)
             results = []
             for assessment_result in assessment_results_cursor:
                 assessment_result['_id'] = str(assessment_result['_id'])
-                for question in assessment_result.get('questions'):
-                    question['_id'] = str(question['_id'])
                 results.append(assessment_result)
             return results
         except Exception as e:

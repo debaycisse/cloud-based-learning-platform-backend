@@ -1,3 +1,5 @@
+from flask import jsonify
+import requests
 from app.models.assessment import AssessmentResult, Assessment
 from app.models.course import Course
 from app.models.learning_path import LearningPath
