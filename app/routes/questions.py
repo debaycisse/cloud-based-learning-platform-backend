@@ -122,7 +122,7 @@ def get_questions():
         
         return jsonify({
             "questions": questions,
-            "count": len(questions),
+            "count": QuestionService.count_questions(),
             "skip": skip,
             "limit": limit
         }), 200
@@ -354,6 +354,7 @@ def update_question(question_id):
         correct_answer = question.get('correct_answer')
         tags = question.get('tags', [])
         
+        # print(f"question updated successfully ::: {question}")
         # Validate input
         if question_text is None or options is None or correct_answer is None:
             return jsonify({"error": "Question text, options, and correct answer are required"}), 400
@@ -371,6 +372,7 @@ def update_question(question_id):
         
         if question is None:
             return jsonify({"error": "No question found for the given ID"}), 404
+        
         
         return jsonify({
             "message": "Question updated successfully",

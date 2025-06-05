@@ -39,7 +39,7 @@ def get_learning_path_recommendations():
         """Get personalized learning path recommendations"""
         user_id = get_jwt_identity()
         limit = int(request.args.get('limit', 3))
-        
+                
         # Get learning path recommendations
         recommended_paths = RecommendationService.get_learning_path_recommendations(user_id, limit)
         

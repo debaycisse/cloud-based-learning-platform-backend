@@ -40,6 +40,11 @@ class Question:
         return questions_collection.find_one({'_id': ObjectId(question_id)})
     
     @staticmethod
+    def count():
+        """Count the total number of questions"""
+        return questions_collection.count_documents({})
+    
+    @staticmethod
     def find_by_ids(object_ids):
         """
         Find multiple questions by their ObjectIds.
@@ -50,8 +55,13 @@ class Question:
         Returns:
             list: List of question objects.
         """
-        # Query the database for questions with _id in the provided object_ids
-        cursor = questions_collection.find({'_id': {'$in': object_ids}})
+        # Query the database for questions with _id in the provided object_ids and use $sample to randomly place the question object
+        pipeline = [
+        {'$match': {'_id': {'$in': object_ids}}},
+        {'$sample': {'size': len(object_ids)}}
+        ]
+
+        cursor = questions_collection.aggregate(pipeline=pipeline)
         
         # Convert the cursor to a list and format the _id field as a string
         questions = []

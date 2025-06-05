@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from bson import ObjectId
 from app import db
 from app.models.question import Question
-from app.models.assessment import Assessment
+from app.models.assessment import Assessment, AssessmentResult
 from app.utils.validation import html_tags_converter
 from config import Config
 
@@ -125,9 +125,20 @@ class QuestionService:
         return []
     
     @staticmethod
+    def count_questions():
+        """Count total number of all questions"""
+        return Question.count()
+    
+    @staticmethod
     def update_question(question_id, update_data):
-        """Update a question"""
-        return Question.update(question_id, update_data)
+        """Update a question and replace it in the assessment result if it exists"""
+        updated_question = Question.update(question_id, update_data)
+        if updated_question is not None:
+            assessment_result = AssessmentResult.find_by_question_id(question_id)
+        if assessment_result is not None:
+            AssessmentResult.update_question(updated_question)
+        print(f"updated question >>> {updated_question}")
+        return updated_question
     
     @staticmethod
     def delete_question(question_id):

@@ -125,15 +125,15 @@ class AssessmentResult:
             if not isinstance(user_id, str):
                 user_id = str(user_id)
 
-            cursor = results_collection.find({'user_id': user_id}).sort(
+            assessment_results_cursor = results_collection.find({'user_id': user_id}).sort(
                 'created_at', -1
             ).skip(int(skip)).limit(limit)
             results = []
-            for course in cursor:
-                course['_id'] = str(course['_id'])
-                for question in course.get('questions'):
+            for assessment_result in assessment_results_cursor:
+                assessment_result['_id'] = str(assessment_result['_id'])
+                for question in assessment_result.get('questions'):
                     question['_id'] = str(question['_id'])
-                results.append(course)
+                results.append(assessment_result)
             return results
         except Exception as e:
             print(f"Error in find_by_user: {e}")
@@ -200,3 +200,34 @@ class AssessmentResult:
             return False
 
         return True
+    
+    @staticmethod
+    def update_question(updated_question):
+        """Update a question in the assessment result if it exists"""
+        print(f"Object to use for updating question: {updated_question}\n")
+        # result = results_collection.replace_one(
+        #     {'questions._id': updated_question.get('_id')},
+        #     updated_question
+        # )
+        question_obj = {
+            'question_text': updated_question.get('question_text'),
+            'options': updated_question.get('options'),
+            'correct_answer': updated_question.get('correct_answer'),
+            'tags': updated_question.get('tags', []),
+            'assessment_ids': updated_question.get('assessment_ids', []),
+            'created_at': updated_question.get('created_at'),
+            'updated_at': updated_question.get('updated_at')
+        }
+        result = results_collection.update_one(
+            {'questions._id': updated_question.get('_id')},
+            {'$set': {'questions.$': question_obj}}
+        )
+        print(f"Number of replacement, done is : {result.modified_count}\n")
+        return result
+    
+    @staticmethod
+    def find_by_question_id(question_id):
+        """Find assessment results by question ID"""
+        if not isinstance(question_id, ObjectId):
+            question_id = ObjectId(question_id)
+        return results_collection.find_one({'questions._id': question_id})
