@@ -3,7 +3,7 @@ from bson import ObjectId
 from app import db
 from app.models.question import Question
 from app.models.assessment import Assessment, AssessmentResult
-from app.utils.validation import html_tags_converter
+from app.utils.validation import html_tags_converter, html_tags_unconverter
 from config import Config
 
 class QuestionService:
@@ -29,9 +29,9 @@ class QuestionService:
                 if k == '_id':
                     question[k] = str(v)
                 elif k == 'correct_answer' or k == 'question_text':
-                    question[k] = html_tags_converter(v)
-                elif k == 'options':
-                    question[k] = [html_tags_converter(option) for option in v]
+                    question[k] = html_tags_unconverter(v)
+                elif k == 'options' or k == 'tags':
+                    question[k] = [html_tags_unconverter(option) for option in v]
             return question
 
         return None
@@ -59,9 +59,9 @@ class QuestionService:
                     if k == '_id':
                         question[k] = str(v)
                     elif k == 'correct_answer' or k == 'question_text':
-                        question[k] = html_tags_converter(v)
-                    elif k == 'options':
-                        question[k] = [html_tags_converter(option) for option in v]
+                        question[k] = html_tags_unconverter(v)
+                    elif k == 'options' or k == 'tags':
+                        question[k] = [html_tags_unconverter(option) for option in v]
             
             return questions
 
@@ -78,9 +78,9 @@ class QuestionService:
                     if k == '_id':
                         question[k] = str(v)
                     elif k == 'correct_answer' or k == 'question_text':
-                        question[k] = html_tags_converter(v)
-                    elif k == 'options':
-                        question[k] = [html_tags_converter(option) for option in v]
+                        question[k] = html_tags_unconverter(v)
+                    elif k == 'options' or k == 'tags':
+                        question[k] = [html_tags_unconverter(option) for option in v]
             
             return questions
 
@@ -97,9 +97,9 @@ class QuestionService:
                     if k == '_id':
                         question[k] = str(v)
                     elif k == 'correct_answer' or k == 'question_text':
-                        question[k] = html_tags_converter(v)
-                    elif k == 'options':
-                        question[k] = [html_tags_converter(option) for option in v]
+                        question[k] = html_tags_unconverter(v)
+                    elif k == 'options' or k == 'tags':
+                        question[k] = [html_tags_unconverter(option) for option in v]
             
             return questions
 
@@ -116,9 +116,9 @@ class QuestionService:
                     if k == '_id':
                         question[k] = str(v)
                     elif k == 'correct_answer' or k == 'question_text':
-                        question[k] = html_tags_converter(v)
-                    elif k == 'options':
-                        question[k] = [html_tags_converter(option) for option in v]
+                        question[k] = html_tags_unconverter(v)
+                    elif k == 'options' or k == 'tags':
+                        question[k] = [html_tags_unconverter(option) for option in v]
       
             return questions
 
@@ -137,7 +137,6 @@ class QuestionService:
             assessment_result = AssessmentResult.find_by_question_id(question_id)
         if assessment_result is not None:
             AssessmentResult.update_question(updated_question)
-        print(f"updated question >>> {updated_question}")
         return updated_question
     
     @staticmethod

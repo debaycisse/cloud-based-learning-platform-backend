@@ -8,6 +8,7 @@ from app.services.question import QuestionService
 from app.utils.auth import admin_required
 from app.utils.validation import validate_json, sanitize_input
 
+
 questions_bp = Blueprint('questions', __name__)
 
 @questions_bp.route('/<question_id>', methods=['GET'])
@@ -348,13 +349,14 @@ def create_questions(assessment_id):
 def update_question(question_id):
     try:
         data = sanitize_input(request.get_json())
-        question = data.get('question')
-        question_text = question.get('question_text')
-        options = question.get('options')
-        correct_answer = question.get('correct_answer')
-        tags = question.get('tags', [])
+        question = data.get('question', '')
+        question_text = question.get('question_text', '')
+        options = question.get('options', '')
+        correct_answer = question.get('correct_answer', '')
+        tags = question.get('tags', [''])
+
+        # print(f'question_text: {question_text}, options: {options}, correct_answer: {correct_answer}, tags: {tags}')    
         
-        # print(f"question updated successfully ::: {question}")
         # Validate input
         if question_text is None or options is None or correct_answer is None:
             return jsonify({"error": "Question text, options, and correct answer are required"}), 400
