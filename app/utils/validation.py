@@ -130,7 +130,7 @@ Returns:
 '''
 def sanitize_input(data):
     if isinstance(data, str):
-        return html.escape(data)  # converts < to &lt;, > to &gt;, etc.
+        return html.escape(html.unescape(data))  # converts < to &lt;, > to &gt;, etc.
     elif isinstance(data, dict):
         return {k: sanitize_input(v) for k, v in data.items()}
     elif isinstance(data, list):
@@ -148,9 +148,25 @@ Returns:
 '''
 def html_tags_converter(text: str) -> str:
     if isinstance(text, str):
-        return html.unescape(text)
+        return html.escape(text)
     
     raise TypeError("html_tags_converter expects a string input")
+
+
+'''
+Unonverts HTML-escaped text (like &lt;h1&gt;) into actual HTML tags as a string.
+
+Parameters:
+    text (str): Escaped HTML string.
+
+Returns:
+    str: Unescaped HTML as a plain string.
+'''
+def html_tags_unconverter(text: str) -> str:
+    if isinstance(text, str):
+        return html.unescape(text)
+    
+    raise TypeError("html_tags_unconverter expects a string input")
 
 '''
 Validates the course content structure
