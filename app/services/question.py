@@ -91,7 +91,7 @@ class QuestionService:
         """Find questions by assessment ID"""
         questions = Question.find_by_assessment_id(assessment_id)
 
-        if questions is not None or len(questions) > 0:
+        if len(questions) > 0:
             for question in questions:
                 for k, v in question.items():
                     if k == '_id':
@@ -100,7 +100,6 @@ class QuestionService:
                         question[k] = html_tags_unconverter(v)
                     elif k == 'options' or k == 'tags':
                         question[k] = [html_tags_unconverter(option) for option in v]
-            
             return questions
 
         return []

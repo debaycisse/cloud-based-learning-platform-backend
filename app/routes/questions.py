@@ -173,15 +173,11 @@ def get_questions_by_tags():
 def get_questions_by_assessment(assessment_id):
     try:
             
-        limit = int(request.args.get('limit', 20))
-        skip = int(request.args.get('skip', 0))
+        # limit = int(request.args.get('limit', 20))
+        # skip = int(request.args.get('skip', 0))
         questions = QuestionService.find_questions_by_assessment_id(assessment_id)
-        # questions = []
-        # for question in cursor:
-        #     question['_id'] = str(question['_id'])
-        #     questions.append(question)
         
-        if not questions:
+        if questions is None or len(questions) < 1:
             return jsonify({"error": "No questions found for the given assessment ID"}), 404
         
         return jsonify({
@@ -355,8 +351,6 @@ def update_question(question_id):
         correct_answer = question.get('correct_answer', '')
         tags = question.get('tags', [''])
 
-        # print(f'question_text: {question_text}, options: {options}, correct_answer: {correct_answer}, tags: {tags}')    
-        
         # Validate input
         if question_text is None or options is None or correct_answer is None:
             return jsonify({"error": "Question text, options, and correct answer are required"}), 400
@@ -394,7 +388,6 @@ def update_question(question_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        print(f'Error occured ::: {str(e)}')
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @questions_bp.route('/<question_id>', methods=['DELETE'])
