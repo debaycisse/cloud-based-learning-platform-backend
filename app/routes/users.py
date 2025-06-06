@@ -221,7 +221,6 @@ def get_progress():
             'in_progress_courses': [],
             'completed_assessments': []
         })
-        # progress['_id'] = str(progress['_id'])
         
         return jsonify({
             "progress": progress,
@@ -232,6 +231,7 @@ def get_progress():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
+        print(f"Error in get_progress: {e}")
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 

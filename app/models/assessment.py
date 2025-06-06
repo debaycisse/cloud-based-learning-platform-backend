@@ -131,6 +131,9 @@ class AssessmentResult:
             results = []
             for assessment_result in assessment_results_cursor:
                 assessment_result['_id'] = str(assessment_result['_id'])
+                for question in assessment_result.get('questions', []):
+                    if isinstance(question.get('_id', ''), ObjectId):
+                        question['_id'] = str(question['_id'])
                 results.append(assessment_result)
             return results
         except Exception as e:
