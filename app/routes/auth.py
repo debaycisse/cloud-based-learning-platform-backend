@@ -124,6 +124,7 @@ def login():
         # Check password
         if not user or not User.check_password(user, password):
             return jsonify({"error": "Invalid email or password"}), 401
+        
 
         # Generate access token
         access_token = create_access_token(identity=str(user['_id']))

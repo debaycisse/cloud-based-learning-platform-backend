@@ -58,10 +58,13 @@ def get_learning_paths():
         skip = int(request.args.get('skip', 0))
         skill = request.args.get('skill')
         
-        if skill:
-            paths = LearningPath.find_by_skill(skill, limit, skip)
+        if skill is not None:
+            paths = LearningPath.find_by_skill(skill=skill, limit=limit, skip=skip)
         else:
-            paths = LearningPath.find_all(limit, skip)
+            paths = LearningPath.find_all(limit=limit, skip=skip)
+
+        for path in paths:
+            path['_id'] = str(path['_id'])
         
         return jsonify({
             "learning_paths": paths,
@@ -73,6 +76,7 @@ def get_learning_paths():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
+        print(f"Error fetching learning paths: {str(e)}")
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @learning_paths_bp.route('', methods=['POST'])

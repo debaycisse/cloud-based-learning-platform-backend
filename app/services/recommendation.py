@@ -5,6 +5,10 @@ from app.models.course import Course
 from app.models.learning_path import LearningPath
 from app.models.user import User
 from collections import Counter
+from app.utils.validation import (
+    html_tags_converter,
+    html_tags_unconverter
+)
 
 
 '''
@@ -348,50 +352,33 @@ class RecommendationService:
             # Extract knowledge gaps and strengths
             knowledge_gaps = []
             strengths = []
-            # print(f"results : {results}")
             
             for result in results:
-                if not result.get('passed', False):
-                    # Extract knowledge gaps from failed assessments
-                    for question, answer in zip(result.get('questions', []), result.get('answers', [])):
-                        if answer != question.get('correct_answer'):
-                            knowledge_gaps.append(question.get('tags', []))
-                        else:
-                            strengths.extend(question.get('tags', []))
+                # Extract knowledge gaps from failed assessments
+                for question, answer in zip(result.get('questions', []), result.get('answers', [])):
+                    if answer != question.get('correct_answer'):
+                        for concept in question.get('tags', []):
+                            if len(concept) > 0:
+                                knowledge_gaps.append(html_tags_unconverter(concept))
+                    else:
+                        for concept in question.get('tags', []):
+                            if len(concept) > 0:
+                                strengths.append(html_tags_unconverter(concept))
 
-                # else:
-                #     # Extract strengths from passed assessments
-                #     # Strengths are concepts the user has demonstrated proficiency in
-                #     strengths.extend(result.get('demonstrated_strengths', []))
-                    
-                #     # If the assessment doesn't have demonstrated_strengths,
-                #     # extract them from the questions the user answered correctly
-                #     if not result.get('demonstrated_strengths') and 'answers' in result:
-                #         # Get the assessment to access questions and correct answers
-                #         assessment = Assessment.find_by_id(result.get('assessment_id'))
-                #         if assessment and 'questions' in assessment:
-                #             questions = assessment.get('questions', [])
-                #             answers = result.get('answers', [])
-                            
-                #             # For each correct answer, add the associated concepts to strengths
-                #             for i, question in enumerate(questions):
-                #                 if i < len(answers) and answers[i] == question.get('correct_answer'):
-                #                     strengths.extend(question.get('concepts', []))
-            
             # Remove duplicates
             knowledge_gaps = list(set(knowledge_gaps))
             strengths = list(set(strengths))
-            # print(f"knowledge gaps {knowledge_gaps} and strength {strengths}")
             
             # Get user's goals from preferences
             user_goals = user.get('preferences', {}).get('goals', [])
+            # print(f"User Goals :::: {user_goals}")
             
             # Find learning paths that address these knowledge gaps
             # or build on strengths or match goals
             recommended_paths = []
             
             # Find paths that match the knowledge gaps (highest priority)
-            if knowledge_gaps:
+            if len(knowledge_gaps) > 0:
                 for gap in knowledge_gaps:
                     matching_paths = LearningPath.find_by_skill(gap, limit=2)
                     recommended_paths.extend(matching_paths)

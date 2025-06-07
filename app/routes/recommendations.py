@@ -67,7 +67,7 @@ def get_personalized_recommendations():
         
         # Get personalized recommendations
         recommended_courses = RecommendationService.get_personalized_recommendations(
-            user_id, data, limit
+            user_id=user_id, preference_data=data, limit=limit
         )
         
         return jsonify({

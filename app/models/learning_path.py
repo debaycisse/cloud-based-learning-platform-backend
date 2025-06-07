@@ -17,7 +17,7 @@ class LearningPath:
             'updated_at': datetime.now(timezone.utc).isoformat()
         }
         result = learning_paths_collection.insert_one(path)
-        path['_id'] = result.inserted_id
+        path['_id'] = str(result.inserted_id)
         return path
     
     @staticmethod
@@ -25,8 +25,11 @@ class LearningPath:
         """Find all learning paths"""
         limit = int(limit)
         skip = int(skip)
+
         cursor = learning_paths_collection.find(filters).skip(skip).limit(limit)
+        
         results = []
+        
         for course in cursor:
             course['_id'] = str(course['_id'])
             results.append(course)

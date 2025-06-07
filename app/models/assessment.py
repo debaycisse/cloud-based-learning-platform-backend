@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from bson import ObjectId
 from app import db
+from app.utils.validation import html_tags_unconverter
 
 assessments_collection = db.assessments
 results_collection = db.results
@@ -134,10 +135,14 @@ class AssessmentResult:
                 for question in assessment_result.get('questions', []):
                     if isinstance(question.get('_id', ''), ObjectId):
                         question['_id'] = str(question['_id'])
+                    for field in question:
+                        if field == 'question_text' or field == 'correct_answer':
+                            question[field] = html_tags_unconverter(question[field])
+                        elif field == 'options' or field == 'tags':
+                            question[field] = [html_tags_unconverter(option) for option in question[field]]
                 results.append(assessment_result)
             return results
         except Exception as e:
-            print(f"Error in find_by_user: {e}")
             return None
     
     @staticmethod
@@ -205,11 +210,7 @@ class AssessmentResult:
     @staticmethod
     def update_question(updated_question):
         """Update a question in the assessment result if it exists"""
-        print(f"Object to use for updating question: {updated_question}\n")
-        # result = results_collection.replace_one(
-        #     {'questions._id': updated_question.get('_id')},
-        #     updated_question
-        # )
+
         question_obj = {
             'question_text': updated_question.get('question_text'),
             'options': updated_question.get('options'),
@@ -223,7 +224,6 @@ class AssessmentResult:
             {'questions._id': updated_question.get('_id')},
             {'$set': {'questions.$': question_obj}}
         )
-        print(f"Number of replacement, done is : {result.modified_count}\n")
         return result
     
     @staticmethod
@@ -231,4 +231,12 @@ class AssessmentResult:
         """Find assessment results by question ID"""
         if not isinstance(question_id, ObjectId):
             question_id = ObjectId(question_id)
-        return results_collection.find_one({'questions._id': question_id})
+        found_question = results_collection.find_one({'questions._id': question_id}) 
+        if found_question is not None:
+            found_question['id'] = str(found_question['_id'])
+            for field in found_question:
+                if field == 'question_text' or field == 'correct_answer':
+                    found_question[field] = html_tags_unconverter(found_question[field])
+                elif field == 'options' or field == 'tags':
+                    found_question[field] = [html_tags_unconverter(option) for option in found_question[field]]
+        return found_question
