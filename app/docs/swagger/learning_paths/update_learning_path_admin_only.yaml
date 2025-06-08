@@ -1,0 +1,89 @@
+summary: Updates a learning path (Admin Only)
+description: Updates the details of a learning path. This endpoint is restricted to admin users only.
+tags:
+  - Learning Paths
+security:
+  - Bearer: []
+parameters:
+  - name: pathId
+    in: path
+    required: true
+    type: string
+    description: The ID of the learning path to update
+requestBody:
+  required: true
+  schema:
+    type: object
+    properties:
+      title:
+        type: string
+        description: The title of the learning path
+        example: "Advanced Data Science"
+      description:
+        type: string
+        description: A brief description of the learning path
+        example: "An in-depth learning path for advanced data science techniques"
+      courses:
+        type: array
+        items:
+          type: object
+          properties:
+            _id:
+              type: string
+              description: The ID of the course to include in the learning path
+              example: "5f8d0d55b54764421b7156a4"
+            title:
+              type: string
+              description: The title of the course
+              example: "Machine Learning with Python"
+            description:
+              type: string
+              description: A brief description of the course
+              example: "Learn machine learning algorithms using Python"
+      target_skills:
+        type: array
+        items:
+          type: string
+          description: Skills that the learning path aims to develop
+          example: "data science, machine learning"
+responses:
+  200:
+    description: Learning path updated successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Learning path updated successfully"
+  400:
+    description: Bad request, invalid input data
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid input data"
+  401:
+    description: Unauthorized, admin access required
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Unauthorized access, admin privileges required"
+  404:
+    description: Learning path not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Learning path not found with the provided ID"
+  500:
+    description: Internal server error
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "An unexpected error occurred while updating the learning path"
