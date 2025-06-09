@@ -1,0 +1,75 @@
+summary: Updates both course_progress and in_progress_courses of a user
+description: |
+  This endpoint updates the `course_progress` and `in_progress_courses` fields of a user.
+  It is used to reflect changes in a user's course progress and the courses they are currently enrolled in.
+tags:
+  - Users
+security:
+  - Bearer: []
+parameters:
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      properties:
+        course_id:
+          type: string
+          example: "course123"
+          description: ID of the course to update progress for
+        percentage:
+          type: number
+          format: number
+          example: 75
+          description: Percentage of course completion
+responses:
+  200:
+    description: Course progress updated successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Course progress updated successfully"
+        progress:
+          type: object
+          properties:
+            course_id:
+              type: string
+              example: "course123"
+            percentage:
+              type: number
+              format: number
+              example: 75
+  400:
+    description: Invalid input
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid input data"
+  404:
+    description: Course not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Course not found"
+  500:
+    description: Internal server error
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "An unexpected error occurred"
+  503:
+    description: Service unavailable
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Service is currently unavailable, please try again later"

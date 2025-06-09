@@ -691,7 +691,10 @@ class Course:
         # Add the course to the in_progress of the user
         updated_user = users_collection.update_one(
             {'_id': ObjectId(user_id)},
-            {'$addToSet': {'progress.in_progress_courses': str(course_id)}}
+            {
+                '$addToSet': {'progress.in_progress_courses': str(course_id)},
+                '$set': {'course_progress': {str(course_id): 0}}
+            }
         )
 
         if updated_user.modified_count == 0:
@@ -771,3 +774,4 @@ class Course:
             course['_id'] = str(course['_id'])
             results.append(course)
         return results
+    

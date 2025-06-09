@@ -221,9 +221,12 @@ def get_progress():
             'in_progress_courses': [],
             'completed_assessments': []
         })
+
+        course_progress = user.get('course_progress', {})
         
         return jsonify({
             "progress": progress,
+            "course_progress": course_progress,
             "assessment_results": assessment_results
         }), 200
 
@@ -234,6 +237,53 @@ def get_progress():
         print(f"Error in get_progress: {e}")
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
+'''
+Updates both course_progress and in_progress_courses
+- PUT /api/users/progress
+- Request body: JSON with course_id and percentage
+- Response: JSON with success message and updated progress
+- JWT required
+'''
+@users_bp.route('/progress', methods=['PUT'])
+@jwt_required()
+@validate_json()
+@yaml_from_file('docs/swagger/users/update_progress.yaml')
+def update_progress():
+    try:
+            
+        user_id = get_jwt_identity()
+        data = sanitize_input(request.get_json())
+        
+        course_id = data.get('course_id')
+        percentage = data.get('percentage', 0)
+        
+        if not course_id or not isinstance(percentage, (int, float)):
+            return jsonify({"error": "Invalid input"}), 400
+        
+        progress_data = {
+            'course_id': course_id,
+            'percentage': percentage
+        }
+
+        # Update course progress
+        updated_user = User.update_course_progress(user_id, progress_data)
+        
+        if updated_user is None:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Get updated progress
+        progress = updated_user.get('course_progress', {})
+        
+        return jsonify({
+            "message": "Progress updated successfully",
+            "progress": progress
+        }), 200
+
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
+    except Exception as e:
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
 Retrieves user preferences
