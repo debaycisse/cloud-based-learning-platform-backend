@@ -222,11 +222,9 @@ def get_progress():
             'completed_assessments': []
         })
 
-        course_progress = user.get('course_progress', {})
         
         return jsonify({
             "progress": progress,
-            "course_progress": course_progress,
             "assessment_results": assessment_results
         }), 200
 
@@ -238,7 +236,7 @@ def get_progress():
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
-Updates both course_progress and in_progress_courses
+Updates course progress for a user
 - PUT /api/users/progress
 - Request body: JSON with course_id and percentage
 - Response: JSON with success message and updated progress
@@ -272,7 +270,7 @@ def update_progress():
             return jsonify({"error": "User not found"}), 404
         
         # Get updated progress
-        progress = updated_user.get('course_progress', {})
+        progress = updated_user.get('progress', {})
         
         return jsonify({
             "message": "Progress updated successfully",

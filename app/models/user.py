@@ -22,10 +22,6 @@ class User:
                 'in_progress_courses': [],
                 'completed_assessments': []
             },
-            'course_progress': {
-                'course_id': '',
-                'percentage': 0
-            },
             'preferences': {
                 'categories': [],
                 'skills': [],
@@ -84,18 +80,20 @@ class User:
     @staticmethod
     def update_course_progress(user_id, progress_data):
         """Update user course progress"""
+        course_progress = {
+            'course_id': str(progress_data.get('course_id', '')),
+            'percentage': progress_data.get('percentage', 0)
+        }
+        course_id = str(progress_data.get('course_id', ''))
         result = users_collection.update_one(
             {'_id': ObjectId(user_id)},
             {
                 '$set': {
-                    'updated_at': datetime.now(timezone.utc).isoformat(), 
-                    'course_progress': {
-                          'course_id': str(progress_data.get('course_id', '')),
-                          'percentage': progress_data.get('percentage', 0),
-                    },
+                    'updated_at': datetime.now(timezone.utc).isoformat(),
                 },
                 '$addToSet': {
-                    'progress.in_progress_courses': progress_data.get('course_id', ''),
+                    'progress.in_progress_courses': course_id,
+                    'progress.completed_courses': course_progress
                 }
             }
         )
