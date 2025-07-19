@@ -1,9 +1,10 @@
 from datetime import datetime, timezone
 from bson import ObjectId
 from app import db
+from app.models.user import User
+from app.utils.validation import html_tags_unconverter
 
 courses_collection = db.courses
-users_collection = db.users
 
 '''
 Course Model.
@@ -102,9 +103,9 @@ class Course:
         """Find courses by category"""
         limit = int(limit)
         skip = int(skip)
-        cursor = courses_collection.find({'category': category}).skip(skip).limit(limit)
-        for course in cursor:
-            course['_id'] = str(course['_id'])
+        cursor = courses_collection.find(
+            {'category': category}
+        ).skip(skip).limit(limit)
         results = []
         for course in cursor:
             course['_id'] = str(course['_id'])
@@ -237,7 +238,7 @@ class Course:
         
         deleted_course = courses_collection.delete_one({'_id': course_id})
 
-        return deleted_course.modified_count > 0
+        return deleted_course.deleted_count > 0
 
     
     '''
@@ -299,15 +300,24 @@ class Course:
             course_id = ObjectId(course_id)
             
         update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
-        
-        courses_collection.update_one(
-            {'_id': ObjectId(course_id), 'content.sections.section_id': section_id},
-            {'$set': {
-                'content.sections.$.title': update_data.get('title'),   # $ - placeholder for the matched section
-                'content.sections.$.order': update_data.get('order'),
-                'updated_at': datetime.now(timezone.utc).isoformat()
-            }}
-        )
+
+        if 'title' in update_data and 'order' in update_data:          
+            courses_collection.update_one(
+                {'_id': ObjectId(course_id), 'content.sections.section_id': section_id},
+                {'$set': {
+                    'content.sections.$.title': update_data.get('title'),   # $ - placeholder for the matched section
+                    'content.sections.$.order': update_data.get('order'),
+                    'updated_at': datetime.now(timezone.utc).isoformat()
+                }}
+            )
+        if 'title' in update_data and 'order' not in update_data:          
+            courses_collection.update_one(
+                {'_id': ObjectId(course_id), 'content.sections.section_id': section_id},
+                {'$set': {
+                    'content.sections.$.title': update_data.get('title'),   # $ - placeholder for the matched section
+                    'updated_at': datetime.now(timezone.utc).isoformat()
+                }}
+            )
         return courses_collection.find_one({'_id': ObjectId(course_id)})
     
     '''
@@ -399,25 +409,44 @@ class Course:
         """Updates a subsection"""
         if isinstance(course_id, str):
             course_id = ObjectId(course_id)
-            
-        courses_collection.update_one(
-            {
-                '_id': ObjectId(course_id),
-                'content.sections.section_id': section_id,
-                'content.sections.sub_sections.subsection_id': subsection_id
-            },
-            {
-                '$set': {
-                    'content.sections.$[section].sub_sections.$[subsection].title': update_data.get('title'),
-                    'content.sections.$[section].sub_sections.$[subsection].order': update_data.get('order'),
-                    'updated_at': datetime.now(timezone.utc).isoformat()
-                }
-            },
-            array_filters=[
-                {'section.section_id': section_id},
-                {'subsection.subsection_id': subsection_id}
-            ]
-        )
+
+        if 'order' in update_data:
+            courses_collection.update_one(
+                {
+                    '_id': ObjectId(course_id),
+                    'content.sections.section_id': section_id,
+                    'content.sections.sub_sections.subsection_id': subsection_id
+                },
+                {
+                    '$set': {
+                        'content.sections.$[section].sub_sections.$[subsection].title': update_data.get('title'),
+                        'content.sections.$[section].sub_sections.$[subsection].order': update_data.get('order'),
+                        'updated_at': datetime.now(timezone.utc).isoformat()
+                    }
+                },
+                array_filters=[
+                    {'section.section_id': section_id},
+                    {'subsection.subsection_id': subsection_id}
+                ]
+            )
+        else:
+            courses_collection.update_one(
+                {
+                    '_id': ObjectId(course_id),
+                    'content.sections.section_id': section_id,
+                    'content.sections.sub_sections.subsection_id': subsection_id
+                },
+                {
+                    '$set': {
+                        'content.sections.$[section].sub_sections.$[subsection].title': update_data.get('title'),
+                        'updated_at': datetime.now(timezone.utc).isoformat()
+                    }
+                },
+                array_filters=[
+                    {'section.section_id': section_id},
+                    {'subsection.subsection_id': subsection_id}
+                ]
+            )
         '''array_filters allows us to filter the array elements that we want to update.
         Both $[section] and $[subsection] are placeholders that reference the two objects,
         specified in the array_filters (i.e {'section.section_id': section_id} and 
@@ -536,27 +565,154 @@ class Course:
             course_id = ObjectId(course_id)
             
         # Update the data object
-        result = courses_collection.update_one(
-            {
-                '_id': ObjectId(course_id),
-                'content.sections.section_id': section_id,
-                'content.sections.sub_sections.subsection_id': subsection_id,
-                'content.sections.sub_sections.data.data_id': data_id
-            },
-            {
-                '$set': {
-                    'content.sections.$[section].sub_sections.$[subsection].data.$[data].content': update_data.get('content'),
-                    'content.sections.$[section].sub_sections.$[subsection].data.$[data].order': update_data.get('order'),
-                    'content.sections.$[section].sub_sections.$[subsection].data.$[data].type': update_data.get('type'),
-                    'updated_at': datetime.now(timezone.utc).isoformat()
-                }
-            },
-            array_filters=[
-                {'section.section_id': section_id},
-                {'subsection.subsection_id': subsection_id},
-                {'data.data_id': data_id}
-            ]
-        )
+        if 'order' in update_data and\
+            'alt_text' in update_data and\
+            'caption' in update_data and\
+            'url' in update_data:
+            result = courses_collection.update_one(
+                {
+                    '_id': ObjectId(course_id),
+                    'content.sections.section_id': section_id,
+                    'content.sections.sub_sections.subsection_id': subsection_id,
+                    'content.sections.sub_sections.data.data_id': data_id
+                },
+                {
+                    '$set': {
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].content': update_data.get('content'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].order': update_data.get('order'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].type': update_data.get('type'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].alt_text': update_data.get('alt_text'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].caption': update_data.get('caption'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].url': update_data.get('url'),
+                        'updated_at': datetime.now(timezone.utc).isoformat()
+                    }
+                },
+                array_filters=[
+                    {'section.section_id': section_id},
+                    {'subsection.subsection_id': subsection_id},
+                    {'data.data_id': data_id}
+                ]
+            )
+        elif 'order' in update_data and\
+            'language' in update_data:
+            result = courses_collection.update_one(
+                {
+                    '_id': ObjectId(course_id),
+                    'content.sections.section_id': section_id,
+                    'content.sections.sub_sections.subsection_id': subsection_id,
+                    'content.sections.sub_sections.data.data_id': data_id
+                },
+                {
+                    '$set': {
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].content': update_data.get('content'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].order': update_data.get('order'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].type': update_data.get('type'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].language': update_data.get('language'),
+                        'updated_at': datetime.now(timezone.utc).isoformat()
+                    }
+                },
+                array_filters=[
+                    {'section.section_id': section_id},
+                    {'subsection.subsection_id': subsection_id},
+                    {'data.data_id': data_id}
+                ]
+            )
+        elif 'order' in update_data:
+            result = courses_collection.update_one(
+                {
+                    '_id': ObjectId(course_id),
+                    'content.sections.section_id': section_id,
+                    'content.sections.sub_sections.subsection_id': subsection_id,
+                    'content.sections.sub_sections.data.data_id': data_id
+                },
+                {
+                    '$set': {
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].content': update_data.get('content'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].order': update_data.get('order'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].type': update_data.get('type'),
+                        'updated_at': datetime.now(timezone.utc).isoformat()
+                    }
+                },
+                array_filters=[
+                    {'section.section_id': section_id},
+                    {'subsection.subsection_id': subsection_id},
+                    {'data.data_id': data_id}
+                ]
+            )
+        elif 'order' not in update_data and\
+            'alt_text' in update_data and\
+            'caption' in update_data and\
+            'url' in update_data:
+            result = courses_collection.update_one(
+                {
+                    '_id': ObjectId(course_id),
+                    'content.sections.section_id': section_id,
+                    'content.sections.sub_sections.subsection_id': subsection_id,
+                    'content.sections.sub_sections.data.data_id': data_id
+                },
+                {
+                    '$set': {
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].content': update_data.get('content'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].order': update_data.get('order'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].type': update_data.get('type'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].alt_text': update_data.get('alt_text'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].caption': update_data.get('caption'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].url': update_data.get('url'),
+                        'updated_at': datetime.now(timezone.utc).isoformat()
+                    }
+                },
+                array_filters=[
+                    {'section.section_id': section_id},
+                    {'subsection.subsection_id': subsection_id},
+                    {'data.data_id': data_id}
+                ]
+            )
+        elif 'order' not in update_data and\
+            'language' in update_data:
+            result = courses_collection.update_one(
+                {
+                    '_id': ObjectId(course_id),
+                    'content.sections.section_id': section_id,
+                    'content.sections.sub_sections.subsection_id': subsection_id,
+                    'content.sections.sub_sections.data.data_id': data_id
+                },
+                {
+                    '$set': {
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].content': update_data.get('content'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].order': update_data.get('order'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].type': update_data.get('type'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].language': update_data.get('language'),
+                        'updated_at': datetime.now(timezone.utc).isoformat()
+                    }
+                },
+                array_filters=[
+                    {'section.section_id': section_id},
+                    {'subsection.subsection_id': subsection_id},
+                    {'data.data_id': data_id}
+                ]
+            )
+        elif 'order' not in update_data:
+            result = courses_collection.update_one(
+                {
+                    '_id': ObjectId(course_id),
+                    'content.sections.section_id': section_id,
+                    'content.sections.sub_sections.subsection_id': subsection_id,
+                    'content.sections.sub_sections.data.data_id': data_id
+                },
+                {
+                    '$set': {
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].content': update_data.get('content'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].order': update_data.get('order'),
+                        'content.sections.$[section].sub_sections.$[subsection].data.$[data].type': update_data.get('type'),
+                        'updated_at': datetime.now(timezone.utc).isoformat()
+                    }
+                },
+                array_filters=[
+                    {'section.section_id': section_id},
+                    {'subsection.subsection_id': subsection_id},
+                    {'data.data_id': data_id}
+                ]
+            )
         
         return result.modified_count > 0
     
@@ -687,17 +843,16 @@ class Course:
         
         if str(user_id) not in course['enrolled_users']:
             return False
-        
-        # Add the course to the in_progress of the user
-        updated_user = users_collection.update_one(
-            {'_id': ObjectId(user_id)},
-            {
-                '$addToSet': {'progress.in_progress_courses': str(course_id)},
-                '$set': {'course_progress': {str(course_id): 0}}
+
+        updated_user = User.update_course_progress(
+            user_id=user_id,
+            progress_data={
+                'course_id': str(course_id),
+                'percentage': 0
             }
         )
 
-        if updated_user.modified_count == 0:
+        if updated_user is None:
             return False
         
         return True
@@ -734,12 +889,11 @@ class Course:
         )
         if result.modified_count == 0:
             return False
-        
-        updated_user = users_collection.update_one(
-            {'_id': ObjectId(user_id)},
-            {
-                '$pull': {'progress.in_progress_courses': str(course_id)},
-                '$addToSet': {'progress.completed_courses': str(course_id)},
+
+        updated_user = User.update_course_progress(
+            user_id=user_id,
+            progress_data={
+                'completed_course_id': str(course_id) 
             }
         )
 
@@ -755,8 +909,9 @@ class Course:
 
         Args:
             limit (int): Maximum number of courses to return. Default is 20.
-            sort (str): Sorting criteria. Default is 'popular'. Popularity is based on number of enrollments
-                        Other possible values could be 'recent', etc.
+            sort (str): Sorting criteria. Default is 'popular'. Popularity is
+            based on number of enrollments. Other possible values could be
+            'recent', etc.
 
         Returns:
             list: A list of popular courses.
@@ -775,3 +930,38 @@ class Course:
             results.append(course)
         return results
     
+    @staticmethod
+    def find_by_category_and_title(
+        category, title, limit=10, skip=0
+    ):
+        cursor = courses_collection.find(
+            {
+                'category': html_tags_unconverter(category),
+                'title': {
+                    '$regex': html_tags_unconverter(title)
+                }
+            }
+        ).limit(limit).skip(skip)
+        # Convert the cursor to a list and return it
+        results = []
+        for course in cursor:
+            course['_id'] = str(course['_id'])
+            results.append(course)
+        return results
+    
+    @staticmethod
+    def find_by_title(
+        title, limit=10, skip=0
+    ):
+        cursor = courses_collection.find(
+            {
+                'title': {
+                    '$regex': html_tags_unconverter(title)
+                }
+            }
+        ).limit(limit).skip(skip)
+        results = []
+        for course in cursor:
+            course['_id'] = str(course['_id'])
+            results.append(course)
+        return results
