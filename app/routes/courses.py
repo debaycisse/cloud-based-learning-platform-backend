@@ -8,6 +8,11 @@ from app.services.content_service import ContentService
 from app.utils.auth import admin_required
 from app.utils.validation import validate_json, sanitize_input, validate_content_structure
 from app.utils.swagger_utils import yaml_from_file
+from app.utils.validation import (
+    transform_sanitized_course,
+    transform_sanitized_course_list
+)
+from app.utils.cooldown_manager import manage_cooldown
 
 courses_bp = Blueprint('courses', __name__)
 
@@ -16,13 +21,32 @@ courses_bp = Blueprint('courses', __name__)
 @yaml_from_file('docs/swagger/courses/get_courses.yaml')
 def get_courses():
     try:
-            
         limit = int(request.args.get('limit', 20))
         skip = int(request.args.get('skip', 0))
         category = request.args.get('category', None)
+        title = request.args.get('search', None)
 
-        if category:
-            courses = Course.find_by_category(category, limit, skip)
+        if category and title:
+            # DONE: implemented
+            courses = Course.find_by_category_and_title(
+                category=category,
+                title=title,
+                limit=limit,
+                skip=skip
+            )
+        elif category:
+            courses = Course.find_by_category(
+                category=category,
+                limit=limit,
+                skip=skip
+            )
+        elif title:
+            # DONE: implemented
+            courses = Course.find_by_title(
+                title=title,
+                limit=limit,
+                skip=skip
+            )
         else:
             courses = Course.find_all(limit, skip)
         return jsonify({
@@ -47,6 +71,9 @@ def get_course(course_id):
         if not course:
             return jsonify({"error": "Course not found"}), 404
         course['_id'] = str(course['_id'])
+        
+        course = transform_sanitized_course(course_object=course)
+
         return jsonify({"course": course}), 200
     except requests.RequestException as e:
         return jsonify({'error': f'Network error: {str(e)}'}), 503
@@ -61,9 +88,22 @@ def get_course(course_id):
 def get_recommended_courses():
     try:
         user_id = get_jwt_identity()
+
+        manage_cooldown(user_id=user_id)
         
         # Get personalized course recommendations
         recommended_courses = RecommendationService.get_course_recommendations(user_id)
+
+        # Tranform all sanitized courses data
+        recommended_courses = transform_sanitized_course_list(recommended_courses)
+
+        if len(recommended_courses) == 0:
+            return jsonify(
+                {
+                    "recommended_courses": [],
+                    "count": 0,
+                }
+            ), 200
         
         return jsonify({
             "recommended_courses": recommended_courses,
@@ -90,7 +130,17 @@ def get_popular_courses():
 
         # If no courses are found, return a 404 response
         if not courses:
-            return jsonify({"error": "No popular courses found"}), 404
+            return jsonify(
+                {
+                    "courses": [],
+                    "count": 0,
+                    "limit": limit,
+                    "sort": sort
+                }
+            )
+        
+        # Tranform the sanitized data of all courses
+        courses = transform_sanitized_course_list(course_list=courses)
 
         # Return the list of popular courses
         return jsonify({
@@ -210,7 +260,6 @@ def add_course_section(course_id):
 @yaml_from_file('docs/swagger/courses/get_course_section.yaml')
 def get_section(course_id, section_id):
     try:
-
         section = Course.get_section(course_id, section_id)
         
         if not section:
@@ -231,7 +280,6 @@ def get_section(course_id, section_id):
 @yaml_from_file('docs/swagger/courses/update_course_section_admin_only.yaml')
 def update_section(course_id, section_id):
     try:
-            
         data = sanitize_input(request.get_json())
         
         updated_course = Course.update_section(
@@ -479,7 +527,6 @@ def delete_subsection(course_id, section_id, subsection_id):
 @yaml_from_file('docs/swagger/courses/create_course_section_subsection_content_admin_only.yaml')
 def add_content_data(course_id, section_id, subsection_id):
     try:
-            
         data = sanitize_input(request.get_json())
         
         # Validate content data type
@@ -493,13 +540,12 @@ def add_content_data(course_id, section_id, subsection_id):
             'order': data.get('order')
         }
         
-        # Add additional fields based on type
         if data.get('type') == 'image':
-            data_object['url'] = data.get('url')
-            data_object['alt_text'] = data.get('alt_text')
-            data_object['caption'] = data.get('caption')
+            data_object['url'] = data.get('url', '')
+            data_object['alt_text'] = data.get('alt_text', '')
+            data_object['caption'] = data.get('caption', '')
         elif data.get('type') == 'code':
-            data_object['language'] = data.get('language')
+            data_object['language'] = data.get('language', '')
         
         success = Course.add_content_data(
             course_id=course_id,
@@ -524,6 +570,7 @@ def add_content_data(course_id, section_id, subsection_id):
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>/content/<data_id>', methods=['PUT'])
 @jwt_required()
 @admin_required
+@validate_json('type', 'content')
 @yaml_from_file('docs/swagger/courses/update_course_section_subsection_content_admin_only.yaml')
 def update_content_data(course_id, section_id, subsection_id, data_id):
     try:
@@ -556,7 +603,6 @@ def update_content_data(course_id, section_id, subsection_id, data_id):
 @yaml_from_file('docs/swagger/courses/delete_course_section_subsection_content_admin_only.yaml')
 def delete_content_data(course_id, section_id, subsection_id, data_id):
     try:
-            
         success = Course.delete_content_data(
             course_id=course_id,
             section_id=section_id,
@@ -577,17 +623,18 @@ def delete_content_data(course_id, section_id, subsection_id, data_id):
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # POST /api/courses/enroll
-@courses_bp.route('/enroll', methods=['POST'], endpoint='enroll_course')
+@courses_bp.route('/enroll', methods=['POST'])
 @jwt_required()
 @validate_json('course_id')
 @yaml_from_file('docs/swagger/courses/enroll_user_in_a_course.yaml')
 def enroll_user_in_course():
     try:
-            
         data = sanitize_input(request.get_json())
         
         user_id = get_jwt_identity()
         course_id = data.get('course_id')
+
+        manage_cooldown(user_id=user_id)
         
         # Check if user's in_progress_courses length is 0
         user = User.find_by_id(user_id)
@@ -611,6 +658,7 @@ def enroll_user_in_course():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
+        print(f'\nError Message:: {e}\n')
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 # POST /api/courses/complete
@@ -625,6 +673,8 @@ def mark_course_as_completed():
         
         user_id = get_jwt_identity()
         course_id = data.get('course_id')
+
+        manage_cooldown(user_id=user_id)
         
         # Mark the course as completed for the user
         success = Course.mark_course_as_completed(course_id=course_id, user_id=user_id)
