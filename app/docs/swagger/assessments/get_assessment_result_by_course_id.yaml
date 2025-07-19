@@ -1,0 +1,36 @@
+summary: Gets an assessment's result, based on the course ID
+description: 
+  This endpoint retrieves an assessment, based on the given course ID
+-tags:
+  - Assessments
+request:
+  parameters:
+    -name: course_id
+    in: path
+    required: true
+    description: 
+      The course ID with which the assessment result is searched
+    schema:
+      type: string
+responses:
+  '200':
+    description: The assessment result record
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            result:
+              type: object
+              description: The assessment's result object
+            count:
+              type: number
+              description: 
+                The number of object that is going to be returned
+  '404':
+    description:
+      The assessment result with the given course ID was not found
+  '500':
+    description:
+      An internal server error occured while processing the request 
+
