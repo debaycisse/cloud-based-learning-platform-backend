@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 import requests
 from app.services.recommendation import RecommendationService
 from app.utils.validation import validate_json, sanitize_input
+from app.utils.cooldown_manager import manage_cooldown
 from app.utils.swagger_utils import yaml_from_file
 
 recommendations_bp = Blueprint('recommendations', __name__)
@@ -15,13 +16,19 @@ def get_course_recommendations():
         """Get personalized course recommendations"""
         user_id = get_jwt_identity()
         limit = int(request.args.get('limit', 4))
+
+        manage_cooldown(user_id=user_id)
         
         # Get course recommendations
         recommended_courses = RecommendationService.get_course_recommendations(user_id, limit)
+        parsed_rec_cos =[]
+        for rec_course in recommended_courses:
+            rec_course['_id'] = str(rec_course['_id'])
+            parsed_rec_cos.append(rec_course)
         
         return jsonify({
-            "recommended_courses": recommended_courses,
-            "count": len(recommended_courses)
+            "recommended_courses": parsed_rec_cos,
+            "count": len(parsed_rec_cos)
         }), 200
     
     except requests.RequestException as e:
@@ -35,10 +42,11 @@ def get_course_recommendations():
 @yaml_from_file('docs/swagger/recommendations/get_learning_paths_recommendations.yaml')
 def get_learning_path_recommendations():
     try:
-            
         """Get personalized learning path recommendations"""
         user_id = get_jwt_identity()
         limit = int(request.args.get('limit', 3))
+
+        manage_cooldown(user_id=user_id)
                 
         # Get learning path recommendations
         recommended_paths = RecommendationService.get_learning_path_recommendations(user_id, limit)
@@ -59,11 +67,12 @@ def get_learning_path_recommendations():
 @yaml_from_file('docs/swagger/recommendations/get_personalized_recommendations.yaml')
 def get_personalized_recommendations():
     try:
-            
         """Get recommendations based on user preferences"""
         user_id = get_jwt_identity()
         data = sanitize_input(request.get_json() or {})
         limit = int(request.args.get('limit', 4))
+
+        manage_cooldown(user_id=user_id)
         
         # Get personalized recommendations
         recommended_courses = RecommendationService.get_personalized_recommendations(
