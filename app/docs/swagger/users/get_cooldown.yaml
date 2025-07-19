@@ -1,0 +1,63 @@
+summary: Get a user's cooldown
+description: Returns the cooldown of a typical user
+tags:
+  - Users
+security:
+  - Bearer: []
+responses:
+  200:
+    description: User has cooldown field and it's retrieved successfully
+    schema:
+      type: object
+      properties:
+        course_id:
+          type: string
+          example: "685193680a898f0b43c682cd"
+        duration:
+          type: string
+          example: "2025-06-24T15:36:39.346576+00:00"
+        concepts:
+          type: array
+          items:
+            type: string
+            example: "understanding <meta> tag"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "error"
+        message:
+          type: string
+          example: "User Authorization header is missing"
+  404:
+    description: User not found
+    schema:
+      type: object
+      properties:
+      error:
+        type: string
+        example: "error"
+      message:
+        type: string
+        example: "User not found"
+  503:
+    description: Network server error
+    schema:
+      error:
+        type: string
+        example: "error"
+      message:
+        type: string
+        example: "Network Server error"
+500:
+  description: Internal server error
+  schema:
+    error:
+      type: string
+      example: "error"
+    message:
+      type: string
+      example: "Internal Server error"
