@@ -1,0 +1,61 @@
+summary: Deletes a concept object
+description: Deletes a concept object from the database
+tags:
+  - Concepts
+security:
+  - Bearer: []
+parameters:
+  - name: concept_link_id
+    in: path
+    required: true
+    type: string
+    description: ID of the concept
+responses:
+  200:
+    description: Concept deleted successfully
+    schema:
+      type: object
+      properties:
+        message:
+              type: string
+              example: "concept deleted successfully"
+  400:
+    description: Invalid or missing input
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid or missing input"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  403:
+    description: Forbidden - Admin privileges required
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Admin privileges required"
+  500:
+    description: Internal error
+    schema:
+      type: object
+      properties:
+        error:
+        type: string
+        example: "Internal server error"
+  503:
+    description: Network error
+    schema:
+      type: object
+      properties:
+        error:
+        type: string
+        example: "Network error"

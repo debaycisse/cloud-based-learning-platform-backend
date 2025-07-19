@@ -1,0 +1,85 @@
+summary: Retrieves a concept
+description: Retrieves a concept object from the database
+tags:
+  - Concepts
+security:
+  - Bearer: []
+parameters:
+  - name: concept_link_id
+    in: path
+    required: true
+    type: string
+    description: ID of the concept
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - concept
+      properties:
+        concept:
+          type: string
+          example: "benefits of using <meta> element"
+responses:
+  200:
+    description: Concept retrieved successfully
+    schema:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "e4250d55b54764421b715de3"
+        concepts:
+          type: array
+          items:
+            type: string
+            example: "benefits of using <meta> element"
+        links:
+          type: array
+          items:
+            type: string
+            example: "https://www.mdn.org/meta_element.html"
+        description:
+          type: string
+          example: "This concepts explains the usage of the <meta> tag or element of an HTML document"
+  400:
+    description: Invalid or missing input
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid or missing input"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Missing Authorization Header"
+  403:
+    description: Forbidden - Admin privileges required
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Admin privileges required"
+  500:
+    description: Internal error
+    schema:
+      type: object
+      properties:
+        error:
+        type: string
+        example: "Internal server error"
+  503:
+    description: Network error
+    schema:
+      type: object
+      properties:
+        error:
+        type: string
+        example: "Network error"

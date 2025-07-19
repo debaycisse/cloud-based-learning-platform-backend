@@ -1,0 +1,71 @@
+summary: Searches a concept
+description: Searches for a concept object in the database
+tags:
+  - Concepts
+security:
+  - Bearer: []
+parameters:
+  - name: query
+    in: query
+    required: true
+    type: string
+    description: Search query for the concept
+responses:
+  200:
+    description: Concept search results
+    schema:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+                example: "e4250d55b54764421b715de3"
+              concepts:
+                type: array
+                items:
+                  type: string
+                  example: "benefits of using <meta> element"
+              links:
+                type: array
+                items:
+                  type: string
+                  example: "https://www.mdn.org/meta_element.html"
+              description:
+                type: string
+                example: "This concepts explains the usage of the <meta> tag or element of an HTML document"
+  400:
+    description: Invalid or missing input
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid or missing input"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: "Unauthorized access. Please provide a valid token."
+  404:
+    description: No concepts found matching the search query
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "No concepts found matching the search query"
+  500:
+    description: Internal server error
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Internal server error"
