@@ -81,6 +81,10 @@ def setup_swagger(app):
             {
                 "name": "Images",
                 "description": "Images upload managements"
+            },
+            {
+                "name": "Concepts",
+                "description": "Concept's link management"
             }
         ]
     }
