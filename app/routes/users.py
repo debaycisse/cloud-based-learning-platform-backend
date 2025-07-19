@@ -5,6 +5,7 @@ from app.models.user import User
 from app.models.assessment import AssessmentResult
 from app.utils.validation import validate_json, sanitize_input
 from app.utils.swagger_utils import yaml_from_file
+from app.utils.cooldown_manager import manage_cooldown
 from app.utils.auth import admin_required
 
 users_bp = Blueprint('users', __name__)
@@ -27,7 +28,6 @@ Retrieves all users
 @yaml_from_file('docs/swagger/users/get_all_users.yaml')
 def get_all_users():
     try:
-            
         limit = request.args.get('limit', 100)
         skip = request.args.get('skip', 0)
 
@@ -43,7 +43,7 @@ def get_all_users():
 
         return jsonify({
             "users": users,
-            "count": len(user),
+            "count": len(users),
             "limit": limit,
             "skip": skip
             }), 200
@@ -118,12 +118,13 @@ Retrieves user's profile
 @yaml_from_file('docs/swagger/users/get_profile.yaml')
 def get_profile():
     try:
-            
         user_id = get_jwt_identity()
         user = User.find_by_id(user_id)
         
         if not user:
             return jsonify({"error": "User not found"}), 404
+        
+        manage_cooldown(user_id=user_id)
         
         # Remove sensitive information
         user.pop('password_hash', None)
@@ -147,6 +148,42 @@ def get_profile():
 
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
+    
+'''
+Retrives user's cooldown field
+- GET /api/users/cooldown
+- Response: cooldown data in JSON format
+- JWT required 
+'''
+@users_bp.route('/cooldown', methods=['GET'])
+@jwt_required()
+@yaml_from_file('docs/swagger/users/get_cooldown.yaml')
+def get_cooldown():
+    try:
+        user_id = get_jwt_identity()
+        
+        manage_cooldown(user_id=user_id)
+
+        user = User.find_by_id(user_id=user_id)
+
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        user_cooldwon = user.get('cooldown', {})
+
+        if user_cooldwon:   
+            return jsonify({
+                'course_id': user_cooldwon.get('course_id', ''),
+                'duration': user_cooldwon.get('duration', ''),
+                'concepts': user_cooldwon.get('concepts', []),
+            }), 200
+        
+        return jsonify({'message': 'No cooldown data found for this user'}), 200
+
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+    except Exception as e:
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
 Updates user profile
@@ -161,18 +198,16 @@ Updates user profile
 @yaml_from_file('docs/swagger/users/update_profile.yaml')
 def update_profile():
     try:
-            
         user_id = get_jwt_identity()
         data = sanitize_input(request.get_json())
-        
-        # Prevent updating sensitive fields
-        data.pop('password_hash', None)
-        data.pop('role', None)
-        data.pop('_id', None)
+
+        manage_cooldown(user_id=user_id)
 
         # Update user profile
-        updated_user = User.update_profile(user_id, data)
-
+        updated_user = User.update_profile(
+            user_id=user_id,
+            update_data=data
+        )
         
         if not updated_user:
             return jsonify({"error": "User not found"}), 404
@@ -208,6 +243,8 @@ def get_progress():
             
         user_id = get_jwt_identity()
         user = User.find_by_id(user_id)
+
+        manage_cooldown(user_id=user_id)
         
         if not user:
             return jsonify({"error": "User not found"}), 404
@@ -232,7 +269,6 @@ def get_progress():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        print(f"Error in get_progress: {e}")
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
@@ -244,13 +280,14 @@ Updates course progress for a user
 '''
 @users_bp.route('/progress', methods=['PUT'])
 @jwt_required()
-@validate_json()
+@validate_json('course_id', 'percentage')
 @yaml_from_file('docs/swagger/users/update_progress.yaml')
 def update_progress():
     try:
-            
         user_id = get_jwt_identity()
         data = sanitize_input(request.get_json())
+
+        manage_cooldown(user_id=user_id)
         
         course_id = data.get('course_id')
         percentage = data.get('percentage', 0)
@@ -294,9 +331,10 @@ Retrieves user preferences
 @yaml_from_file('docs/swagger/users/get_preferences.yaml')
 def get_preferences():
     try:
-            
         user_id = get_jwt_identity()
         user = User.find_by_id(user_id)
+
+        manage_cooldown(user_id=user_id)
         
         if not user:
             return jsonify({"error": "User not found"}), 404
@@ -333,10 +371,11 @@ Updates user preferences
 @validate_json()
 @yaml_from_file('docs/swagger/users/update_preferences.yaml')
 def update_preferences():
-    try:
-            
+    try:    
         user_id = get_jwt_identity()
         data = sanitize_input(request.get_json())
+
+        manage_cooldown(user_id=user_id)
         
         # Update user preferences
         updated_user = User.update_preferences(user_id, data)
