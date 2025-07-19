@@ -6,6 +6,7 @@ from app.services.recommendation import RecommendationService
 from app.utils.auth import admin_required
 from app.utils.validation import validate_json, sanitize_input
 from app.utils.swagger_utils import yaml_from_file
+from app.utils.cooldown_manager import manage_cooldown
 
 learning_paths_bp = Blueprint('learning_paths', __name__)
 
@@ -16,6 +17,8 @@ def get_recommended_paths():
     try:
 
         user_id = get_jwt_identity()
+
+        manage_cooldown(user_id=user_id)
         
         # Get personalized learning path recommendations
         recommended_paths = RecommendationService.get_learning_path_recommendations(user_id)
