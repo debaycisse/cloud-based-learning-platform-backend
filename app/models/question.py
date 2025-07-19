@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from bson import ObjectId
 from app import db
+from app.utils.validation import html_tags_converter
 
 questions_collection = db.questions
 
@@ -78,8 +79,19 @@ class Question:
         
         skip = int(skip)
 
+        query = {
+            '$or': [
+                {
+                    'tags': {
+                        '$regex': html_tags_converter(tag),
+                        '$options': 'i'
+                    }
+                } for tag in tags
+            ]
+        }
+
         cursor = questions_collection.find(
-            {'tags': {'$in': tags}}
+            query
         ).skip(skip).limit(limit)
         
         results = []
