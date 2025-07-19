@@ -139,7 +139,6 @@ def get_questions():
 @yaml_from_file('docs/swagger/questions/get_questions_by_tags.yaml')
 def get_questions_by_tags():
     try:
-            
         tags = request.args.getlist('tags')
         limit = int(request.args.get('limit', 20))
         skip = int(request.args.get('skip', 0))
@@ -172,16 +171,14 @@ def get_questions_by_tags():
 @yaml_from_file('docs/swagger/questions/get_questions_by_assessment.yaml')
 def get_questions_by_assessment(assessment_id):
     try:
-            
-        # limit = int(request.args.get('limit', 20))
-        # skip = int(request.args.get('skip', 0))
         questions = QuestionService.find_questions_by_assessment_id(assessment_id)
         
         if questions is None or len(questions) < 1:
             return jsonify({"error": "No questions found for the given assessment ID"}), 404
         
         return jsonify({
-            "questions": questions
+            "questions": questions,
+            "counts": len(questions)
         }), 200
 
     except requests.RequestException as e:
@@ -239,7 +236,7 @@ def get_questions_by_assessment_and_tags(assessment_id):
 @questions_bp.route('', methods=['POST'])
 @jwt_required()
 @admin_required
-@validate_json('question')
+@validate_json('question_text', 'options', 'correct_answer')
 @yaml_from_file('docs/swagger/questions/create_question.yaml')
 def create_question():
     try:
@@ -340,15 +337,14 @@ def create_questions(assessment_id):
 @questions_bp.route('/<question_id>', methods=['PUT'])
 @jwt_required()
 @admin_required
-@validate_json('question')
+@validate_json('question_text', 'options', 'correct_answer')
 @yaml_from_file('docs/swagger/questions/update_question.yaml')
 def update_question(question_id):
     try:
         data = sanitize_input(request.get_json())
-        question = data.get('question', '')
-        question_text = question.get('question_text', '')
-        options = question.get('options', '')
-        correct_answer = question.get('correct_answer', '')
+        question_text = data.get('question_text')
+        options = data.get('options')
+        correct_answer = data.get('correct_answer')
         tags = question.get('tags', [''])
 
         # Validate input
@@ -450,7 +446,6 @@ def add_question_to_assessment(question_id, assessment_id):
 @yaml_from_file('docs/swagger/questions/remove_question_from_assessment.yaml')
 def remove_question_from_assessment(question_id, assessment_id):
     try:
-            
         # Remove question from assessment
         result = QuestionService.remove_question_from_assessment(question_id, assessment_id)
         
