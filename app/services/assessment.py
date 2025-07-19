@@ -3,6 +3,9 @@ from datetime import datetime, timedelta, timezone
 from app import db
 from app.models.assessment import Assessment, AssessmentResult
 from app.models.question import Question
+from app.models.concept_link import ConceptLinks
+from app.utils.validation import html_tags_unconverter
+from app.utils.json_conversion import json_converter
 from config import Config
 
 class AssessmentService:
@@ -25,15 +28,19 @@ class AssessmentService:
         
         if latest_result is None:
             return True, None
-        
+
         if latest_result.get('passed', False):
             return False, "You have already passed this assessment"
         
         cooldown_hours = Config.ASSESSMENT_COOLDOWN_HOURS
-        cooldown_time = latest_result['created_at'] + timedelta(hours=cooldown_hours)
+        cooldown_time = datetime.fromisoformat(
+            latest_result['created_at']
+        ) + timedelta(hours=cooldown_hours)
         
         if datetime.now(timezone.utc) < cooldown_time:
-            hours_remaining = (cooldown_time - datetime.now(timezone.utc)).total_seconds() / 3600
+            hours_remaining = (
+                cooldown_time - datetime.now(timezone.utc)
+            ).total_seconds() / 3600
             return False, f"You can retake this assessment in {int(hours_remaining)} hours"
         
         return True, None
@@ -61,16 +68,22 @@ class AssessmentService:
             question = Question.find_by_id(question_id=question)
             if i < len(answers) and answers[i] == question.get('correct_answer'):
                 correct_answers += 1
-                # Add the concepts related to this question to demonstrated strengths
-                # Tags contain the concerned concepts
                 demonstrated_strengths.extend(question.get('tags', []))
             else:
-                # Add the concepts related to this question to knowledge gaps
                 knowledge_gaps.extend(question.get('tags', []))
         
         # Remove duplicates
-        knowledge_gaps = list(set(knowledge_gaps))
-        demonstrated_strengths = list(set(demonstrated_strengths))
+        knowledge_gaps = list(
+            set(
+                [html_tags_unconverter(kw_gap) for kw_gap in knowledge_gaps]
+            )
+        )
+        
+        demonstrated_strengths = list(
+            set(
+                [html_tags_unconverter(ds) for ds in demonstrated_strengths]
+            )
+        )
         
         score = correct_answers / total_questions if total_questions > 0 else 0
         passed = score >= Config.ASSESSMENT_PASS_THRESHOLD
@@ -101,7 +114,6 @@ class AssessmentService:
         questions = [Question.find_by_id(question_id) for question_id in questions_id]
 
         # Store the result
-
         assessment_result = AssessmentResult.create(
             user_id=user_id,
             assessment_id=assessment_id,
@@ -144,3 +156,51 @@ class AssessmentService:
         if updated_assessment:
             return True
         return False
+
+    @staticmethod
+    def obtain_advice_links(knowledge_gaps):
+        """
+        Obtains advice links for knowledge gaps using each
+        given knowledge gap in the list.
+        Args:
+            knowledge_gaps: A list of knowledge gaps to find resources for.
+        Returns:
+            A list of dictionaries containing the description, URL, title,
+            and tags for each knowledge gap. Returns None if an error occurs.
+        """
+        links = []
+        try:
+            for gap in knowledge_gaps:
+                link_data = ConceptLinks.search(
+                    query=gap,
+                    skip=0,
+                    limit=1
+                )
+                link_data_formatted = {}
+                if link_data:
+                    for k, v in link_data.items():
+                        if isinstance(v, str):
+                            link_data_formatted[k] = html_tags_unconverter(v)
+                        elif isinstance(v, list):
+                            link_data_formatted[k] = [
+                                html_tags_unconverter(item) for item in v
+                            ]
+                        else:
+                            link_data_formatted[k] = str(v)
+                    link_obj = {
+                        'description': link_data_formatted.get('description', ''),
+                        'url': link_data_formatted.get('links', ['']),
+                        'title': gap,
+                        'tags': link_data_formatted.get('concepts', [])
+                    }
+                    links.append(link_obj)
+                else:
+                    links.append({
+                        'description': f'No resources found for {gap}',
+                        'url': '',
+                        'title': gap,
+                        'tags': [gap]
+                    })
+            return links
+        except Exception as e:
+            return None
