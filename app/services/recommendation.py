@@ -5,10 +5,7 @@ from app.models.course import Course
 from app.models.learning_path import LearningPath
 from app.models.user import User
 from collections import Counter
-from app.utils.validation import (
-    html_tags_converter,
-    html_tags_unconverter
-)
+from app.utils.validation import html_tags_unconverter
 
 
 '''
@@ -48,7 +45,7 @@ class RecommendationService:
 
             if not results:
                 return []
-            
+
             # Extract knowledge gaps from failed assessments
             knowledge_gaps = []
             for result in results:
@@ -84,14 +81,13 @@ class RecommendationService:
             
             # Add content-based recommendations with lower priority
             all_recommendations.extend([(course, 1) for course in content_based_recs])
-            
+
             # Remove duplicates, keeping the highest priority
             unique_recommendations = {}
             for course, priority in all_recommendations:
                 course_id = str(course.get('_id'))
                 if course_id not in unique_recommendations or priority > unique_recommendations[course_id][1]:
                     unique_recommendations[course_id] = (course, priority)
-            
 
             # Sort by priority (descending) and return the courses
             sorted_recommendations = sorted(
@@ -102,21 +98,24 @@ class RecommendationService:
 
             # Extract just the courses from the (course, priority) tuples
             recommended_courses = [rec[0] for rec in sorted_recommendations]
-            
+
             # Filter out courses the user has already completed or is taking
+            completed_courses_list = [
+                field 
+                for course_progress in completed_courses 
+                for field in course_progress if isinstance(field, str)
+            ]
+
             filtered_recommendations = [
                 course for course in recommended_courses 
-                if str(course.get('_id')) not in completed_courses 
+                if str(course.get('_id')) not in completed_courses_list
                 and str(course.get('_id')) not in in_progress_courses
             ]
-            
+
             return filtered_recommendations[:limit]
 
-        except requests.RequestException as e:
-            return jsonify({'error': f'Network error: {str(e)}'}), 503
-
         except Exception as e:
-            return jsonify({'error': 'Internal server error'}), 500
+            raise e
     
     '''
     Recommends courses that address specific knowledge gaps.
@@ -176,18 +175,17 @@ class RecommendationService:
         try:
             # Find users who have taken similar courses
             similar_users = []
-            
+
             # Combine completed and in-progress courses
-            user_courses = completed_courses + in_progress_courses
+            user_courses = completed_courses + [in_progress_courses]
             
             unique_user_courses = None
 
-            if len(user_courses) > 0:
+            if len(user_courses) > 1:
                 unique_user_courses = set(user_courses)
-                unique_user_courses = [course for course in unique_user_courses]
             
             if not unique_user_courses:
-                return []            
+                return []
 
             # Find users who have completed or are taking the same courses
             for course_id in unique_user_courses:
@@ -224,12 +222,12 @@ class RecommendationService:
                     
                 similar_user_courses = (
                     similar_user.get('progress', {}).get('completed_courses', []) +
-                    similar_user.get('progress', {}).get('in_progress_courses', [])
+                    [similar_user.get('progress', {}).get('in_progress_courses', '')]
                 )
                 
                 # Add courses, which the similar user has taken but this user hasn't yet
                 for course_id in similar_user_courses:
-                    if course_id not in unique_user_courses:
+                    if course_id and course_id not in unique_user_courses:
                         recommended_course_ids.add(course_id)
                         
                         if len(recommended_course_ids) >= limit:
@@ -248,11 +246,8 @@ class RecommendationService:
             
             return recommended_courses[:limit]
 
-        except requests.RequestException as e:
-            return jsonify({'error': f'Network error: {str(e)}'}), 503
-
         except Exception as e:
-            return jsonify({'error': 'Internal server error'}), 500
+            raise e
     
     '''
     Recommends courses based on content-based filtering.
@@ -268,9 +263,8 @@ class RecommendationService:
     @staticmethod
     def _get_content_based_recommendations(user_id, completed_courses, in_progress_courses, limit=3):
         try:
-
             # Combine completed and in-progress courses
-            user_courses = completed_courses + in_progress_courses
+            user_courses = completed_courses + [in_progress_courses]
             
             if not user_courses:
                 return []
@@ -320,11 +314,9 @@ class RecommendationService:
                 recommended_courses.extend(popular_courses)
             
             return recommended_courses[:limit]
-        except requests.RequestException as e:
-            return jsonify({'error': f'Network error: {str(e)}'}), 503
 
         except Exception as e:
-            return jsonify({'error': 'Internal server error'}), 500
+            raise e
     
     '''
     Generates personalized learning path recommendations based on:
@@ -371,7 +363,6 @@ class RecommendationService:
             
             # Get user's goals from preferences
             user_goals = user.get('preferences', {}).get('goals', [])
-            # print(f"User Goals :::: {user_goals}")
             
             # Find learning paths that address these knowledge gaps
             # or build on strengths or match goals
@@ -440,12 +431,8 @@ class RecommendationService:
             
             return recommended_paths[:limit]
 
-        except requests.RequestException as e:
-            return jsonify({'error': f'Network error: {str(e)}'}), 503
-
         except Exception as e:
-            return jsonify({'error': 'Internal server error'}), 500
-    
+            raise e
     '''
     Generates personalized course recommendations based on user preferences.
     Args:
@@ -489,11 +476,8 @@ class RecommendationService:
             # Get recommendations based on course history
             return RecommendationService.get_course_recommendations(user_id, limit)
 
-        except requests.RequestException as e:
-            return jsonify({'error': f'Network error: {str(e)}'}), 503
-
         except Exception as e:
-            return jsonify({'error': 'Internal server error'}), 500
+            raise e
     
     @staticmethod
     def _get_preference_based_recommendations(user_id, preference_data, limit=4):
@@ -588,11 +572,8 @@ class RecommendationService:
             
             return recommended_courses[:limit]
 
-        except requests.RequestException as e:
-            return jsonify({'error': f'Network error: {str(e)}'}), 503
-
         except Exception as e:
-            return jsonify({'error': 'Internal server error'}), 500
+            raise e
     
     @staticmethod
     def get_similar_courses(course_id, limit=3):
@@ -639,8 +620,5 @@ class RecommendationService:
             
             return similar_courses[:limit]
 
-        except requests.RequestException as e:
-            return jsonify({'error': f'Network error: {str(e)}'}), 503
-
         except Exception as e:
-            return jsonify({'error': 'Internal server error'}), 500
+            raise e
