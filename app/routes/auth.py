@@ -24,6 +24,7 @@ from app.utils.email import (
     send_reset_email, 
     send_login_email
 )
+from app.utils.cooldown_manager import manage_cooldown
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -120,6 +121,8 @@ def login():
 
         # Find user by email
         user = User.find_by_email(email)
+
+        manage_cooldown(user_id=user.get('_id', ''))
         
         # Check password
         if not user or not User.check_password(user, password):
@@ -192,6 +195,8 @@ def get_user():
         if not user:
             return jsonify({"error": "User not found"}), 404
         
+        manage_cooldown(user_id=user_id)
+        
         return jsonify({
             "user": {
                 "_id": str(user['_id']),
@@ -238,6 +243,8 @@ def reset_password():
         if not user:
             return jsonify({"error": "User not found"}), 404
         
+        manage_cooldown(user_id=user.get('_id', ''))
+        
         # Generate reset token
         reset_token = create_access_token(identity=str(user['_id']), expires_delta=timedelta(hours=1))
 
@@ -251,11 +258,9 @@ def reset_password():
             return jsonify({
                 'error': 'Internal server error'
             }), 500
-
         
         return jsonify({
             "message": "Reset token is sent to user's email",
-            # "reset_token": reset_token
         }), 200
     except requests.RequestException as e:
         return jsonify({'error': f'Network error: {str(e)}'}), 503
