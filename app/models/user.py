@@ -70,6 +70,15 @@ class User:
     @staticmethod
     def update_profile(user_id, update_data):
         """Update user profile"""
+
+        # Prevent updating sensitive fields
+        update_data.pop('password_hash', None)
+        update_data.pop('created_at', None)
+        update_data.pop('progress', None)
+        update_data.pop('course_progress', None)
+        update_data.pop('role', None)
+        update_data.pop('_id', None)
+
         update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
         users_collection.update_one(
             {'_id': ObjectId(user_id)},
@@ -82,21 +91,41 @@ class User:
         """Update user course progress"""
         course_progress = {
             'course_id': str(progress_data.get('course_id', '')),
-            'percentage': progress_data.get('percentage', 0)
+            'percentage': progress_data.get('percentage', 0),
+            'completed_course_id': progress_data.get('completed_course', '')
         }
-        course_id = str(progress_data.get('course_id', ''))
-        result = users_collection.update_one(
-            {'_id': ObjectId(user_id)},
-            {
-                '$set': {
-                    'updated_at': datetime.now(timezone.utc).isoformat(),
-                },
-                '$addToSet': {
-                    'progress.in_progress_courses': course_id,
-                    'progress.completed_courses': course_progress
+
+        if course_progress.get('completed_course_id'):
+            result = users_collection.update_one(
+                {'_id': ObjectId(user_id)},
+                {
+                    '$pull': {
+                        'progress.in_progress_courses': str(
+                            course_progress.get('completed_course_id')
+                        )
+                    },
+                    '$addToSet': {
+                        'progress.completed_courses': str(
+                            course_progress.get('completed_course_id')
+                        )
+                    }
                 }
-            }
-        )
+            )
+        else:
+            course_id = progress_data.get('course_id')
+            result = users_collection.update_one(
+                {'_id': ObjectId(user_id)},
+                {
+                    '$set': {
+                        'updated_at': datetime.now(timezone.utc).isoformat(),
+                        'progress.in_progress_courses': course_id,
+                    },
+                    '$addToSet': {
+                        'course_progress': course_progress
+                    }
+                }
+            )
+
         if result.modified_count > 0:
             return users_collection.find_one({'_id': ObjectId(user_id)})
         return None
@@ -107,27 +136,28 @@ class User:
         # Ensure we only update valid preference fields
         valid_preferences = {}
         
-        if 'categories' in preferences_data and isinstance(preferences_data['categories'], list):
-            valid_preferences['preferences.categories'] = preferences_data['categories']
+        if 'categories' in preferences_data and isinstance(preferences_data.get('categories'), list):
+            valid_preferences['preferences.categories'] = preferences_data.get('categories')
             
-        if 'skills' in preferences_data and isinstance(preferences_data['skills'], list):
-            valid_preferences['preferences.skills'] = preferences_data['skills']
+        if 'skills' in preferences_data and isinstance(preferences_data.get('skills'), list):
+            valid_preferences['preferences.skills'] = preferences_data.get('skills')
             
         if 'difficulty' in preferences_data:
-            valid_preferences['preferences.difficulty'] = preferences_data['difficulty']
+            valid_preferences['preferences.difficulty'] = preferences_data.get('difficulty')
             
         if 'learning_style' in preferences_data:
-            valid_preferences['preferences.learning_style'] = preferences_data['learning_style']
+            valid_preferences['preferences.learning_style'] = preferences_data.get('learning_style')
             
         if 'time_commitment' in preferences_data:
-            valid_preferences['preferences.time_commitment'] = preferences_data['time_commitment']
+            valid_preferences['preferences.time_commitment'] = preferences_data.get('time_commitment')
             
-        if 'goals' in preferences_data and isinstance(preferences_data['goals'], list):
-            valid_preferences['preferences.goals'] = preferences_data['goals']
+        if 'goals' in preferences_data and isinstance(preferences_data.get('goals'), list):
+            valid_preferences['preferences.goals'] = preferences_data.get('goals')
         
-        # Only update if we have valid preferences
+        # Only update if preferences data is valid
         if valid_preferences:
-            valid_preferences['updated_at'] = datetime.now(timezone.utc).isoformat()
+            valid_preferences['updated_at'] = datetime\
+                .now(timezone.utc).isoformat()
             
             users_collection.update_one(
                 {'_id': ObjectId(user_id)},
@@ -135,7 +165,7 @@ class User:
             )
         
         return users_collection.find_one({'_id': ObjectId(user_id)})
-    
+
     @staticmethod
     def check_password(user, password):
         """Check if password is correct"""
@@ -155,3 +185,11 @@ class User:
             }}
         )
         return users_collection.find_one({'_id': user['_id']})
+    
+    @staticmethod
+    def remove_cooldown_field(user_id):
+        """Removes the cooldown field in a given user's record"""
+        users_collection.update_one(
+            {'_id': ObjectId(user_id)},
+            {'$unset': {'cooldown': ''}}
+        )
