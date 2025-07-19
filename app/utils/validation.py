@@ -120,6 +120,17 @@ def validate_json(*required_fields):
     return decorator
 
 '''
+Validates that a valid email is given
+Args:
+    email - the email to be validated
+Returns:
+    True if it is a vliad email, false otherwise.
+'''
+def validate_website_link(link):
+    pattern = r'^(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(/[\w\-._~:/?#\[\]@!$&\'()*+,;=]*)?$'
+    return re.match(pattern, link) is not None
+
+'''
 Sanitizes input data to prevent injection attacks
 - Removes HTML tags
 - Escapes special characters
@@ -244,3 +255,67 @@ def is_valid_image(file_stream):
         # Clean up temp file
         if os.path.exists(temp_path):
             os.remove(temp_path)
+
+def transform_sanitized_course(course_object):
+    """
+    Transforms the sanitized course's data to their original form
+    -Args:
+        course_object - the course object whose data is to be transformed
+    -Returns:
+        the transformed course or none if empty course object is passed
+    """
+    if course_object and isinstance(course_object, dict):
+        for key, value in course_object.items():
+                if key == 'title' or key == 'description':
+                    course_object[key] = html_tags_unconverter(value)
+                elif key == 'content' and isinstance(value, dict):
+                    for section in value.get('sections', []):
+                        section['title'] = html_tags_unconverter(section.get('title', ''))
+                        for subsection in section.get('sub_sections', []):
+                            subsection['title'] = html_tags_unconverter(subsection.get('title', ''))
+                            for content_data in subsection.get('data', []):
+                                if isinstance(content_data, dict):
+                                    if content_data.get('type') == 'text':
+                                        content_data['content'] = html_tags_unconverter(content_data.get('content', ''))
+                                    elif content_data.get('type') == 'image':
+                                        content_data['caption'] = html_tags_unconverter(content_data.get('caption', ''))
+                                        content_data['alt_text'] = html_tags_unconverter(content_data.get('alt_text', ''))
+                                    elif content_data.get('type') == 'video':
+                                        content_data['description'] = html_tags_unconverter(content_data.get('description', ''))
+                                    elif content_data.get('type') == 'code':
+                                        content_data['code'] = html_tags_unconverter(content_data.get('code', ''))
+        return course_object
+    return None
+
+def transform_sanitized_course_list(course_list):
+    """
+    Transforms the sanitized list of courses' data to their original form
+    - Args:
+        course_list - the list that contains multiple course objects whose data are to be transformed
+    - Returns:
+        the transformed list or none if no (empty) list of course is passed
+    """
+    if isinstance(course_list, list) and len(course_list) > 0:
+        for course_object in course_list:
+            for key, value in course_object.items():
+                    if key == 'title' or key == 'description':
+                        course_object[key] = html_tags_unconverter(value)
+                    elif key == 'content' and isinstance(value, dict):
+                        for section in value.get('sections', []):
+                            section['title'] = html_tags_unconverter(section.get('title', ''))
+                            for subsection in section.get('sub_sections', []):
+                                subsection['title'] = html_tags_unconverter(subsection.get('title', ''))
+                                for content_data in subsection.get('data', []):
+                                    if isinstance(content_data, dict):
+                                        if content_data.get('type') == 'text':
+                                            content_data['content'] = html_tags_unconverter(content_data.get('content', ''))
+                                        elif content_data.get('type') == 'image':
+                                            content_data['caption'] = html_tags_unconverter(content_data.get('caption', ''))
+                                            content_data['alt_text'] = html_tags_unconverter(content_data.get('alt_text', ''))
+                                        elif content_data.get('type') == 'video':
+                                            content_data['description'] = html_tags_unconverter(content_data.get('description', ''))
+                                        elif content_data.get('type') == 'code':
+                                            content_data['code'] = html_tags_unconverter(content_data.get('code', ''))
+        return course_list
+    return None
+
