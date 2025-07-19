@@ -1,0 +1,34 @@
+summary: Get learning resources link for the knowledge area in the assessment
+description: |
+  This endpoint retrieves the learning resources link for a specific knowledge area in the assessment.
+-tags:
+  - Assessments
+requests:
+  parameters:
+    - name: assessmentResultId
+      in: path
+      required: true
+      description: The ID of the assessment result where the knowledge gaps are.
+      schema:
+        type: string
+responses:
+  '200':
+    description: |
+      The learning resources link for the knowledge area in the assessment.
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            knowledgeAreaId:
+              type: string
+              description: The ID of the knowledge area.
+            learningResourcesLink:
+              type: string
+              description: The link to the learning resources for the knowledge area.
+  '404':
+    description: |
+      The assessment result with the specified ID was not found.
+  '500':
+    description: |
+      An internal server error occurred while processing the request.
