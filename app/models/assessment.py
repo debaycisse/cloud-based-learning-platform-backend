@@ -108,7 +108,11 @@ class AssessmentResult:
             'created_at': datetime.now(timezone.utc).isoformat(),
             'completed_at': datetime.now(timezone.utc).isoformat(),
             'started_at': datetime.fromisoformat(started_at).isoformat(),
-            'time_spent': (datetime.now(timezone.utc) - datetime.fromisoformat(started_at)).total_seconds() / 60,
+            'time_spent': 30 - (
+                (
+                    datetime.now(timezone.utc) - datetime.fromisoformat(started_at)
+                ).total_seconds() / 60
+            ),
             'questions': questions,
         }
 
@@ -132,6 +136,7 @@ class AssessmentResult:
             results = []
             for assessment_result in assessment_results_cursor:
                 assessment_result['_id'] = str(assessment_result['_id'])
+                questions = []
                 for question in assessment_result.get('questions', []):
                     if isinstance(question.get('_id', ''), ObjectId):
                         question['_id'] = str(question['_id'])
@@ -140,11 +145,61 @@ class AssessmentResult:
                             question[field] = html_tags_unconverter(question[field])
                         elif field == 'options' or field == 'tags':
                             question[field] = [html_tags_unconverter(option) for option in question[field]]
+                    questions.append(question)
+                answers = []
+                for answer in assessment_result.get('answers', []):
+                    if isinstance(answer, str):
+                        answer = html_tags_unconverter(answer)
+                    answers.append(answer)
+                assessment_result['answers'] = answers
+                assessment_result['questions'] = questions
                 results.append(assessment_result)
             return results
         except Exception as e:
             return None
+        
+    @staticmethod
+    def find_by_course_and_user_id(course_id, user_id):
+        "Finds Assessment result by course id"
+        try:
+            assessment = (Assessment.find_by_course_id(course_id=course_id))[0]
+
+            assessment_id = assessment.get('_id')
+
+            result = results_collection.find_one({
+                'user_id': str(user_id),
+                'assessment_id': str(assessment_id)
+            })
+            result['answers'] = [html_tags_unconverter(answer) for answer in result.get('answers', [])]
+            questions = []
+            for question in result.get('questions', []):
+                question['_id'] = str(question.get('_id'))
+                question['question_text'] = html_tags_unconverter(question.get('question_text'))
+                question['tags'] = [html_tags_unconverter(tag) for tag in question.get('tags', [])]
+                question['options'] = [html_tags_unconverter(opt) for opt in question.get('options', [])]
+                questions.append(question)
+            result['questions'] = questions
+            result['_id'] = str(result.get('_id'))
+            return result
+        except Exception as e:
+            return None
+    '''
+    {
+    '_id': ObjectId('685179140a898f0b43c682be'),
+    'question_text': 'What is the purpose of the &lt;head&gt; element in an HTML document?', 
+    'options': ['To display headings on the webpage', 'To store metadata and links to external resources', 'To contain all the main content', 'To execute JavaScript directly'], 
+    'correct_answer': 'To store metadata and links to external resources', 
+    'tags': ['the &lt;head&gt; element in an HTML document'], 
+    'assessment_ids': ['685179140a898f0b43c682bd'], 
+    'created_at': '2025-06-17T14:17:56.938665+00:00', 
+    'updated_at': '2025-06-17T14:17:56.938680+00:00'
+    }
     
+    '''
+
+
+
+
     @staticmethod
     def find_by_assessment(assessment_id, limit=20, skip=0):
         """Find results for a specific assessment"""
