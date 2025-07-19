@@ -1,12 +1,17 @@
 from dateutil import parser
+from datetime import datetime, timedelta, timezone
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import requests
 from app.utils.swagger_utils import yaml_from_file
+from app.utils.cooldown_manager import manage_cooldown
 from app.models.assessment import Assessment, AssessmentResult
+from app.models.cooldown_history import CooldownHistory
+from app.models.user import User
 from app.services.assessment import AssessmentService
 from app.utils.auth import admin_required
 from app.utils.validation import validate_json, sanitize_input
+from config import Config
 
 assessments_bp = Blueprint('assessments', __name__)
 
@@ -15,15 +20,14 @@ assessments_bp = Blueprint('assessments', __name__)
 @yaml_from_file('docs/swagger/assessments/get_assessment.yaml')
 def get_an_assessment(assessment_id):
     try:
+        user_id = get_jwt_identity()
+        if user_id:
+            manage_cooldown(user_id=user_id)
+
         assessments = Assessment.find_by_id(assessment_id)
         
         if not assessments:
             return jsonify({"error": "No assessments found for the given ID"}), 404
-        
-        # For security, remove correct answers from the response
-        # for assessment in assessments:
-        #     for question in assessment.get('questions', []):
-        #         question.pop('correct_answer', None)
         
         return jsonify({
             "assessment": {
@@ -62,6 +66,10 @@ def get_assessments():
     try:
         limit = int(request.args.get('limit', 20))
         skip = int(request.args.get('skip', 0))
+
+        user_id = get_jwt_identity()
+        if user_id:
+            manage_cooldown(user_id=user_id)
         
         # Get all assessments with pagination
         assessments = Assessment.find_all(limit, skip)
@@ -84,6 +92,10 @@ def get_assessments():
 @yaml_from_file('docs/swagger/assessments/get_course_assessments.yaml')
 def get_assessment_for_course(course_id):
     try:
+        user_id = get_jwt_identity()
+        if user_id:
+            manage_cooldown(user_id=user_id)
+
         assessments = Assessment.find_by_course_id(course_id)
         
         if not assessments:
@@ -119,9 +131,50 @@ def submit_assessment(assessment_id):
         if error_message:
             return jsonify({"error": error_message}), 400
         
+        # Place cooldown object in the user's document if the score is less than 50%
+        if result['score'] < 50:
+            cool_down_hour = timedelta(hours=Config.ASSESSMENT_COOLDOWN_HOURS)
+            current_time = datetime.now(timezone.utc)
+            cooldown_duration = current_time + cool_down_hour
+            knowledge_gaps = result.get('knowledge_gaps', [])
+            assessment = Assessment.find_by_id(assessment_id)
+            course_id = assessment.get('course_id')
+
+            # Add the cooldown history for the user and add the cooldown object to the user's document
+            if CooldownHistory.find_by_user(user_id) is None:
+                cooldown_history = CooldownHistory.create(
+                    user_id=user_id,
+                    course_id=course_id,
+                    cooldown_duration=cooldown_duration,
+                    knowledge_gaps=knowledge_gaps
+                )
+
+                if cooldown_history is None:
+                    return jsonify({"error": "Failed to create cooldown history"}), 500
+
+            else:
+                cooldown_history = CooldownHistory.update_cooldown_history(
+                    user_id=user_id,
+                    course_id=course_id,
+                    knowledge_gaps=knowledge_gaps
+                )
+
+                if not cooldown_history:
+                    return jsonify({"error": "Failed to update cooldown history"}), 500
+
+            # Insert the cooldown object in the user document
+            User.update_profile(user_id=user_id, update_data={
+                'cooldown': {
+                    'duration': cooldown_duration.isoformat(),
+                    'course_id': course_id,
+                    'concepts': knowledge_gaps,
+                },
+            })
+        
         return jsonify({
             "message": "Assessment submitted successfully",
             "result": {
+                "_id": str(result['_id']),
                 "score": result['score'],
                 "passed": result['passed'],
                 "knowledge_gaps": result['knowledge_gaps']
@@ -139,19 +192,18 @@ def submit_assessment(assessment_id):
 @yaml_from_file('docs/swagger/assessments/get_assessment_results.yaml')
 def get_assessment_results():
     try:
+        
         user_id = get_jwt_identity()
         limit = int(request.args.get('limit', 20))
         skip = request.args.get('skip', 0)
         
         if not user_id:
             return jsonify({"error": "Invalid or missing user ID"}), 400
+        
+        manage_cooldown(user_id=user_id)
 
         # Get assessment results for the user
         results = AssessmentResult.find_by_user(user_id, limit, skip)
-        if results is None or len(results) < 1:
-            return jsonify({
-                'error': 'No result found'
-            }), 404
         
         return jsonify({
             "results": results,
@@ -166,18 +218,34 @@ def get_assessment_results():
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# # Get a single assessment result
-# @assessments_bp.route('/results/<assessment_result_id>', methods=['GET'])
-# @jwt_required()
-# @yaml_from_file('docs/swagger/assessments/get_assessment_result.yaml')
-# def get_assessment_result(assessment_result_id):
+@assessments_bp.route('/results/<course_id>', methods=['GET'])
+@jwt_required()
+@yaml_from_file('docs/swagger/assessments/get_assessment_result_by_course_id.yaml')
+def get_assessment_result_by_course_id(course_id):
+    try:
+        user_id = get_jwt_identity()
 
-#     result = AssessmentResult.find_by_id(assessment_result_id)
-    
-#     if not result:
-#         return jsonify({"error": "Assessment result not found"}), 404
-    
-#     return jsonify({"result": result}), 200
+        if not user_id:
+            return jsonify({"error": "Invalid or missing user ID"}), 400
+        
+        manage_cooldown(user_id=user_id)
+        
+        result = AssessmentResult.find_by_course_and_user_id(course_id=course_id, user_id=user_id)
+
+        if result is None:
+            return jsonify({
+                "result": None,
+                "count": 0
+            }), 200
+
+        return jsonify({
+            "result": result,
+            "count": len(result),
+        }), 200
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+    except Exception as e:
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @assessments_bp.route('', methods=['POST'])
 @jwt_required()
@@ -288,6 +356,49 @@ def get_assessment_average_score(assessment_id):
         return jsonify({
             "average_score": average_score
         }), 200
+    except requests.RequestException as e:
+        return jsonify({'error': f'Network error: {str(e)}'}), 503
+
+    except Exception as e:
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
+
+'''
+Gets link for each concept in the knowledge gaps of an assessment result
+- Parameters:
+    - course_id: course ID of the course that uses the assessment
+- Returns:
+    - links: List of links for each concept in the knowledge gaps
+'''    
+@assessments_bp.route('/<course_id>/advice', methods=['GET'])
+@jwt_required()
+@yaml_from_file('docs/swagger/assessments/get_assessment_advice.yaml')
+def get_assessment_advice(course_id):
+    try:
+        user_id = get_jwt_identity()
+
+        manage_cooldown(user_id=user_id)
+
+        # Get the assessment result
+        assessment_result = AssessmentResult.find_by_course_and_user_id(course_id=course_id, user_id=user_id)
+
+        if not assessment_result:
+            return jsonify({"error": "Assessment result not found"}), 404
+        
+        # Get the knowledge gaps from the assessment result
+        knowledge_gaps = assessment_result.get('knowledge_gaps', [])
+        
+        if not knowledge_gaps:
+            return jsonify({"message": "No knowledge gaps found"}), 200
+        
+        # Get advice links for the knowledge gaps
+        link_data_list = AssessmentService.obtain_advice_links(knowledge_gaps=knowledge_gaps)
+        if not link_data_list:
+            return jsonify({"message": "No links found for the knowledge gaps"}), 404
+        
+        return jsonify({
+            "links": link_data_list
+        }), 200
+
     except requests.RequestException as e:
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
