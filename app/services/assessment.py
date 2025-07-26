@@ -5,7 +5,6 @@ from app.models.assessment import Assessment, AssessmentResult
 from app.models.question import Question
 from app.models.concept_link import ConceptLinks
 from app.utils.validation import html_tags_unconverter
-from app.utils.json_conversion import json_converter
 from config import Config
 
 class AssessmentService:
