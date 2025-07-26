@@ -642,7 +642,12 @@ def enroll_user_in_course():
         if not user:
             return jsonify({"error": "User not found"}), 404
         
-        if len(user.get('progress', {}).get('in_progress_courses', [])) > 0:
+        if user.get('progress', {}).get('in_progress_courses', '') == course_id:
+            return jsonify({
+                "message": "User enrolled in course successfully"
+            }), 200
+        
+        if len(user.get('progress', {}).get('in_progress_courses', '')) > 0:
             return jsonify({"error": "Complete your in-progress course firstly"}), 400
         
         # Enroll user in the given course
