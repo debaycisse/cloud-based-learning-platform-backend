@@ -89,39 +89,42 @@ class User:
     @staticmethod
     def update_course_progress(user_id, progress_data):
         """Update user course progress"""
-        course_progress = {
-            'course_id': str(progress_data.get('course_id', '')),
-            'percentage': progress_data.get('percentage', 0),
-            'completed_course_id': progress_data.get('completed_course', '')
-        }
 
-        if course_progress.get('completed_course_id'):
+        # Check data availability
+        if not progress_data.get('percentage') or\
+              not progress_data.get('course_id'):
+            return None
+
+        if progress_data.get('completed_course_id'):
             result = users_collection.update_one(
-                {'_id': ObjectId(user_id)},
                 {
+                    '_id': ObjectId(user_id), 
+                    'course_progress.course_id': str(progress_data.get('course_id'))
+                },
+                {
+                    '$set': {
+                        'updated_at': datetime.now(timezone.utc).isoformat(),
+                        'course_progress.$.percentage': progress_data.get('percentage'),
+                        'course_progress.$.completed_course_id': progress_data.get('completed_course')
+                    },
                     '$pull': {
                         'progress.in_progress_courses': str(
-                            course_progress.get('completed_course_id')
-                        )
-                    },
-                    '$addToSet': {
-                        'progress.completed_courses': str(
-                            course_progress.get('completed_course_id')
+                            progress_data.get('completed_course_id')
                         )
                     }
                 }
             )
         else:
-            course_id = progress_data.get('course_id')
             result = users_collection.update_one(
-                {'_id': ObjectId(user_id)},
+                {
+                    '_id': ObjectId(user_id), 
+                    'course_progress.course_id': str(progress_data.get('course_id'))
+                },
                 {
                     '$set': {
                         'updated_at': datetime.now(timezone.utc).isoformat(),
-                        'progress.in_progress_courses': course_id,
-                    },
-                    '$addToSet': {
-                        'course_progress': course_progress
+                        'course_progress.$.percentage': progress_data.get('percentage'),
+                        'course_progress.$.completed_course_id': progress_data.get('completed_course')
                     }
                 }
             )
