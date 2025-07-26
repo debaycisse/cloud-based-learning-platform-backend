@@ -262,9 +262,12 @@ def get_progress():
         course_progress = user.get('course_progress', {
             'course_id': '',
             'percentage': 0,
-            'completed_course_id': ''
+            'completed_course_id': '',
+            'current_section_index': 0,
+            'current_subsection_index': 0,
+            'current_data_index': 0,
+            'completed_items': 0
         })
-
         
         return jsonify({
             "progress": progress,
@@ -287,7 +290,11 @@ Updates course progress for a user
 '''
 @users_bp.route('/progress', methods=['PUT'])
 @jwt_required()
-@validate_json('course_id', 'percentage')
+@validate_json(
+    'course_id', 'percentage', 'current_section_index',
+    'current_subsection_index', 'current_data_index',
+    'completed_items'
+)
 @yaml_from_file('docs/swagger/users/update_progress.yaml')
 def update_progress():
     try:
@@ -295,16 +302,14 @@ def update_progress():
         data = sanitize_input(request.get_json())
 
         manage_cooldown(user_id=user_id)
-        
-        course_id = data.get('course_id')
-        percentage = data.get('percentage', 0)
-        
-        if not course_id or not isinstance(percentage, (int, float)):
-            return jsonify({"error": "Invalid input"}), 400
-        
+
         progress_data = {
-            'course_id': course_id,
-            'percentage': percentage
+            'course_id': data.get('course_id'),
+            'percentage': data.get('percentage', 0),
+            'current_section_index': data.get('current_section_index', 0),
+            'current_subsection_index': data.get('current_subsection_index', 0),
+            'current_data_index': data.get('current_data_index', 0),
+            'completed_items': data.get('completed_items', 0)
         }
 
         # Update course progress

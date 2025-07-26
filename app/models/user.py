@@ -90,11 +90,6 @@ class User:
     def update_course_progress(user_id, progress_data):
         """Update user course progress"""
 
-        # Check data availability
-        if not progress_data.get('percentage') or\
-              not progress_data.get('course_id'):
-            return None
-
         if progress_data.get('completed_course_id'):
             result = users_collection.update_one(
                 {
@@ -104,13 +99,12 @@ class User:
                 {
                     '$set': {
                         'updated_at': datetime.now(timezone.utc).isoformat(),
-                        'course_progress.$.percentage': progress_data.get('percentage'),
-                        'course_progress.$.completed_course_id': progress_data.get('completed_course')
+                        'course_progress.$': progress_data,
+                        'course_progress.$.completed_course_id': progress_data.get('completed_course'),
+                        'progress.in_progress_courses': ''
                     },
-                    '$pull': {
-                        'progress.in_progress_courses': str(
-                            progress_data.get('completed_course_id')
-                        )
+                    '$addToSet': {
+                        'progress.completed_courses': progress_data.get('completed_course_id')
                     }
                 }
             )
@@ -123,8 +117,7 @@ class User:
                 {
                     '$set': {
                         'updated_at': datetime.now(timezone.utc).isoformat(),
-                        'course_progress.$.percentage': progress_data.get('percentage'),
-                        'course_progress.$.completed_course_id': progress_data.get('completed_course')
+                        'course_progress.$': progress_data,
                     }
                 }
             )

@@ -876,11 +876,14 @@ class Course:
         
         # Check if the user has already completed the course
         course = courses_collection.find_one(
-            {'_id': ObjectId(course_id), 'completed_users': user_id}
+            {
+                '_id': ObjectId(course_id),
+                'completed_users': {'$in': [user_id]}
+            }
         )
         
         if course is not None:
-            return  # User has already completed the course before, do nothing
+            return True  # User has already completed the course before, do nothing
         
         # Updates and checks if the course update was successful
         result = courses_collection.update_one(
@@ -889,7 +892,8 @@ class Course:
         )
         if result.modified_count == 0:
             return False
-
+        
+        # Apply the update also on user's course_progress
         updated_user = User.update_course_progress(
             user_id=user_id,
             progress_data={
