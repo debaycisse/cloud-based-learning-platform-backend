@@ -259,9 +259,16 @@ def get_progress():
             'completed_assessments': []
         })
 
+        course_progress = user.get('course_progress', {
+            'course_id': '',
+            'percentage': 0,
+            'completed_course_id': ''
+        })
+
         
         return jsonify({
             "progress": progress,
+            "course_progress": course_progress,
             "assessment_results": assessment_results
         }), 200
 
@@ -301,17 +308,15 @@ def update_progress():
         }
 
         # Update course progress
-        updated_user = User.update_course_progress(user_id, progress_data)
+        course_progress_update = User.update_course_progress(user_id, progress_data)
         
-        if updated_user is None:
-            return jsonify({"error": "User not found"}), 404
-        
-        # Get updated progress
-        progress = updated_user.get('progress', {})
-        
+        if course_progress_update is None:
+            return jsonify({"error": "Course update failure"}), 404
+
         return jsonify({
             "message": "Progress updated successfully",
-            "progress": progress
+            "progress": course_progress_update.get('progress', {}),
+            "course_progress": course_progress_update.get('course_progress', {})
         }), 200
 
     except requests.RequestException as e:
