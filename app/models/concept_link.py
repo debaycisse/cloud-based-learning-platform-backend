@@ -167,10 +167,15 @@ class ConceptLinks:
             return None
 
     @staticmethod
-    def get_document_count(query):
-        return concept_links_collection.count_documents({
-            'concepts': {'$regex': html_tags_converter(query)}
-        })
+    def get_document_count(query=None):
+        if not query:
+            return concept_links_collection.count_documents(
+                {}
+            )
+        elif isinstance(query, str):
+            return concept_links_collection.count_documents({
+                'concepts': {'$regex': html_tags_converter(query)}
+            })
     
     @staticmethod
     def search(query, skip=0, limit=10):
