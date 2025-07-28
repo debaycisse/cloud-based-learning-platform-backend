@@ -19,10 +19,10 @@ timeout = 120
 loglevel = "info"
 
 # Access log file
-accesslog = "logs/access.log"
+accesslog = "-"
 
 # Error log file
-errorlog = "logs/error.log"
+errorlog = "-"
 
 # Process name
 proc_name = "learning_platform"
