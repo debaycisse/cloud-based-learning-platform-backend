@@ -191,9 +191,9 @@ class RecommendationService:
             # Combine completed and in-progress courses
             user_courses = completed_courses + [in_progress_courses]
             print('B')
-            
+            print(f'user courses after B :: {user_courses}')
             unique_user_courses = None
-
+            print(f'unique user courses :: {unique_user_courses}')
             if len(user_courses) > 1:
                 unique_user_courses = set(user_courses)
             print('C')
