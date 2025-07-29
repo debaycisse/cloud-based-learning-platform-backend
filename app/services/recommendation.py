@@ -71,32 +71,43 @@ class RecommendationService:
             
             # Combine and rank recommendations
             all_recommendations = []
-            
+            print('1')
             # Add knowledge-based recommendations with highest priority
-            all_recommendations.extend([(course, 3) for course in knowledge_based_recs])
+            if len(knowledge_based_recs) > 0:
+                all_recommendations.extend([(course, 3) for course in knowledge_based_recs])
+            print('11')
             
             # Add collaborative recommendations with medium priority
-            all_recommendations.extend([(course, 2) for course in collaborative_recs])
+            if len(collaborative_recs) > 0:
+                all_recommendations.extend([(course, 2) for course in collaborative_recs])
+            print('111')
             
             # Add content-based recommendations with lower priority
-            all_recommendations.extend([(course, 1) for course in content_based_recs])
+            if len(content_based_recs) > 0:
+                all_recommendations.extend([(course, 1) for course in content_based_recs])
+            print('1111')
 
             # Remove duplicates, keeping the highest priority
             unique_recommendations = {}
-            for course, priority in all_recommendations:
-                course_id = str(course.get('_id'))
-                if course_id not in unique_recommendations or priority > unique_recommendations[course_id][1]:
-                    unique_recommendations[course_id] = (course, priority)
+            if len(all_recommendations) > 0:
+                for course, priority in all_recommendations:
+                    course_id = str(course.get('_id'))
+                    if course_id not in unique_recommendations or priority > unique_recommendations[course_id][1]:
+                        unique_recommendations[course_id] = (course, priority)
+            print('11111')
 
             # Sort by priority (descending) and return the courses
-            sorted_recommendations = sorted(
-                unique_recommendations.values(), 
-                key=lambda x: x[1], 
-                reverse=True
-            )
+            if len(unique_recommendations) > 0:
+                sorted_recommendations = sorted(
+                    unique_recommendations.values(), 
+                    key=lambda x: x[1], 
+                    reverse=True
+                )
+            print('111111')
 
             # Extract just the courses from the (course, priority) tuples
             recommended_courses = [rec[0] for rec in sorted_recommendations]
+            print('1111111')
 
             # Filter out courses the user has already completed or is taking
             completed_courses_list = [
@@ -104,12 +115,14 @@ class RecommendationService:
                 for course_progress in completed_courses 
                 for field in course_progress if isinstance(field, str)
             ]
+            print('11111111')
 
             filtered_recommendations = [
                 course for course in recommended_courses 
                 if str(course.get('_id')) not in completed_courses_list
                 and str(course.get('_id')) not in in_progress_courses
             ]
+            print('111111111')
 
             return filtered_recommendations[:limit]
         except Exception as e:
@@ -126,7 +139,6 @@ class RecommendationService:
     '''
     def _get_knowledge_gap_recommendations(knowledge_gaps, limit=3):
         try:
-
             if not knowledge_gaps:
                 return []
             
