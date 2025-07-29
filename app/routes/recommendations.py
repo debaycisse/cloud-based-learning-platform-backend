@@ -24,7 +24,7 @@ def get_course_recommendations():
         recommended_courses = RecommendationService.get_course_recommendations(user_id, limit)
         print(f'After recommended')
         parsed_rec_cos =[]
-        if len(recommended_courses) > 0:
+        if recommended_courses is not None and len(recommended_courses) > 0:
             for rec_course in recommended_courses:
                 rec_course['_id'] = str(rec_course['_id'])
                 parsed_rec_cos.append(rec_course)

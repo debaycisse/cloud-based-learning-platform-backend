@@ -32,7 +32,6 @@ class RecommendationService:
     '''
     @staticmethod
     def get_course_recommendations(user_id, limit=5):
-
         try:
             # Get user data
             user = User.find_by_id(user_id)
@@ -113,9 +112,9 @@ class RecommendationService:
             ]
 
             return filtered_recommendations[:limit]
-
         except Exception as e:
             raise e
+
     
     '''
     Recommends courses that address specific knowledge gaps.
@@ -127,7 +126,7 @@ class RecommendationService:
     '''
     def _get_knowledge_gap_recommendations(knowledge_gaps, limit=3):
         try:
-                
+
             if not knowledge_gaps:
                 return []
             
@@ -152,12 +151,9 @@ class RecommendationService:
                     break
             
             return recommended_courses[:limit]
-
-        except requests.RequestException as e:
-            return jsonify({'error': f'Network error: {str(e)}'}), 503
-
         except Exception as e:
-            return jsonify({'error': 'Internal server error'}), 500
+            raise e
+
     '''
     Recommends courses based on collaborative filtering.
     Collaborative filtering finds users with similar course consumption patterns
