@@ -187,17 +187,20 @@ class RecommendationService:
         try:
             # Find users who have taken similar courses
             similar_users = []
-
+            print('A')
             # Combine completed and in-progress courses
             user_courses = completed_courses + [in_progress_courses]
+            print('B')
             
             unique_user_courses = None
 
             if len(user_courses) > 1:
                 unique_user_courses = set(user_courses)
+            print('C')
             
             if not unique_user_courses:
                 return []
+            print('D')
 
             # Find users who have completed or are taking the same courses
             for course_id in unique_user_courses:
@@ -212,17 +215,20 @@ class RecommendationService:
                     limit=20
                 )
                 similar_users.extend(users_with_course)
+            print('E')
             
             if not similar_users:
                 return []
             
             # Count how many times each user appears (more overlap = more similar)
             user_counts = Counter([str(user.get('_id')) for user in similar_users])
+            print('F')
             
             # Get the most similar users
             most_similar_users = [
                 user_id for user_id, count in user_counts.most_common(10)
             ]
+            print('G')
             
             # Find courses these similar users have taken that this user hasn't yet
             recommended_course_ids = set()
@@ -247,6 +253,7 @@ class RecommendationService:
                 
                 if len(recommended_course_ids) >= limit:
                     break
+            print('H')
             
             # Fetch the full course objects
             recommended_courses = []
@@ -258,6 +265,7 @@ class RecommendationService:
             
             if len(recommended_courses) > 0:
                 return recommended_courses[:limit]
+            print('I')
             
             return []
 
