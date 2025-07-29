@@ -41,10 +41,10 @@ class RecommendationService:
 
             # Get user's assessment results
             results = AssessmentResult.find_by_user(user_id)
-
+            print(f'results is :: {results}')
             if not results:
                 return []
-
+            print('2')
             # Extract knowledge gaps from failed assessments
             knowledge_gaps = []
             for result in results:
@@ -68,7 +68,7 @@ class RecommendationService:
             content_based_recs = RecommendationService._get_content_based_recommendations(
                 user_id, completed_courses, in_progress_courses, limit=limit
             )
-            
+            print('22')
             # Combine and rank recommendations
             all_recommendations = []
             print('1')
