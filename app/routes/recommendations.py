@@ -20,11 +20,14 @@ def get_course_recommendations():
         manage_cooldown(user_id=user_id)
         
         # Get course recommendations
+        print(f'Before recommended')
         recommended_courses = RecommendationService.get_course_recommendations(user_id, limit)
+        print(f'After recommended')
         parsed_rec_cos =[]
-        for rec_course in recommended_courses:
-            rec_course['_id'] = str(rec_course['_id'])
-            parsed_rec_cos.append(rec_course)
+        if len(recommended_courses) > 0:
+            for rec_course in recommended_courses:
+                rec_course['_id'] = str(rec_course['_id'])
+                parsed_rec_cos.append(rec_course)
         
         return jsonify({
             "recommended_courses": parsed_rec_cos,
