@@ -35,6 +35,7 @@ def get_course_recommendations():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
+        print(f'Recommendation courses error :: {e}')
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @recommendations_bp.route('/learning_paths', methods=['GET'])

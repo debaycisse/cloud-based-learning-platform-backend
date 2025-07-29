@@ -148,6 +148,7 @@ def login():
             }
         }), 200
     except Exception as e:
+        print('Login error : ', e)
         return jsonify({"error": str(e)}), 500
 
 
