@@ -50,25 +50,29 @@ class RecommendationService:
             for result in results:
                 if not result.get('passed', False):
                     knowledge_gaps.extend(result.get('knowledge_gaps', []))
+            print('3')
 
             # Get user's completed and in-progress courses
             completed_courses = user.get('progress', {}).get('completed_courses', [])
-
+            print('4')
             in_progress_courses = user.get('progress', {}).get('in_progress_courses', [])
+            print('5')
             
             # Combine different recommendation strategies
             knowledge_based_recs = RecommendationService._get_knowledge_gap_recommendations(
                 knowledge_gaps, limit=limit
             )
+            print('6')
             
             collaborative_recs = RecommendationService._get_collaborative_recommendations(
                 user_id, completed_courses, in_progress_courses, limit=limit
             )
+            print('7')
             
             content_based_recs = RecommendationService._get_content_based_recommendations(
                 user_id, completed_courses, in_progress_courses, limit=limit
             )
-            print('22')
+            print('8')
             # Combine and rank recommendations
             all_recommendations = []
             print('1')
