@@ -256,7 +256,10 @@ class RecommendationService:
                     course['_id'] = str(course['_id'])
                     recommended_courses.append(course)
             
-            return recommended_courses[:limit]
+            if len(recommended_courses) > 0:
+                return recommended_courses[:limit]
+            
+            return []
 
         except Exception as e:
             raise e
