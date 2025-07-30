@@ -10,6 +10,18 @@ from app.utils.cooldown_manager import manage_cooldown
 
 learning_paths_bp = Blueprint('learning_paths', __name__)
 
+'''
+GET /api/learning_paths/recommended
+- Retrieves personalized learning path recommendations for the authenticated user.
+- Returns a list of recommended learning paths or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the learning paths, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the learning paths, returns an error message.
+'''
 @learning_paths_bp.route('/recommended', methods=['GET'])
 @jwt_required()
 @yaml_from_file('docs/swagger/learning_paths/get_recommended_paths.yaml')
@@ -34,6 +46,18 @@ def get_recommended_paths():
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
+'''
+GET /api/learning_paths/<path_id>
+- Retrieves a specific learning path by its ID.
+- Returns the learning path or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the learning path, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the learning path, returns an error message.
+'''
 @learning_paths_bp.route('/<path_id>', methods=['GET'])
 @yaml_from_file('docs/swagger/learning_paths/get_learning_path.yaml')
 def get_learning_path(path_id):
@@ -54,6 +78,13 @@ def get_learning_path(path_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
+'''
+GET /api/learning_paths
+- Retrieves all learning paths with optional filtering by skill.
+- Returns a list of learning paths or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+'''
 @learning_paths_bp.route('', methods=['GET'])
 @yaml_from_file('docs/swagger/learning_paths/get_learning_paths.yaml')
 def get_learning_paths():
@@ -81,9 +112,21 @@ def get_learning_paths():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        print(f"Error fetching learning paths: {str(e)}")
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
+'''
+POST /api/learning_paths
+- Creates a new learning path.
+- Expects a JSON payload with 'title', 'description', 'courses', and optional 'target_skills'.
+- Returns a success message or an error message if creation fails.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires admin privileges.
+- If the user is not authenticated, returns an error message.
+- If the user does not have admin privileges, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the learning paths, returns an error message.
+'''
 @learning_paths_bp.route('', methods=['POST'])
 @jwt_required()
 @admin_required
@@ -112,7 +155,20 @@ def create_learning_path():
 
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
-    
+
+'''
+PUT /api/learning_paths/<path_id>
+- Updates an existing learning path by its ID.
+- Expects a JSON payload with 'title', 'description', 'courses', and optional 'target_skills'.
+- Returns a success message or an error message if the update fails.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires admin privileges.
+- If the user is not authenticated, returns an error message.
+- If the user does not have admin privileges, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the learning paths, returns an error message.
+'''
 @learning_paths_bp.route('/<path_id>', methods=['PUT'])
 @jwt_required()
 @admin_required

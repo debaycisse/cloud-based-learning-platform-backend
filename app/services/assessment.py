@@ -7,13 +7,34 @@ from app.models.concept_link import ConceptLinks
 from app.utils.validation import html_tags_unconverter
 from config import Config
 
+'''
+This is the AssessmentService class that provides methods to handle
+assessments.
+It includes methods to get assessments, check if a user can take an
+assessment, score assessments, submit assessments, add questions to
+assessments, and obtain advice links for knowledge gaps.
+'''
 class AssessmentService:
-
+    '''
+    Retrieves the prerequisite assessment for a given course.
+    Args:
+        course_id (str): The ID of the course.
+    Returns:
+        dict: The assessment object if found, else None.
+    '''
     @staticmethod
     def get_assessment_for_course(course_id):
         """Get the prerequisite assessment for a course"""
         return Assessment.find_by_course_id(course_id)
     
+    '''
+    Determines if a user is eligible to take an assessment.
+    Args:
+        user_id (str): The user's ID.
+        assessment_id (str): The assessment's ID.
+    Returns:
+        tuple: (bool, str or None) - True if allowed, False and reason if not.
+    '''
     @staticmethod
     def can_take_assessment(user_id, assessment_id):
         """
@@ -43,7 +64,15 @@ class AssessmentService:
             return False, f"You can retake this assessment in {int(hours_remaining)} hours"
         
         return True, None
-    
+
+    '''
+    Scores an assessment based on submitted answers.
+    Args:
+        assessment_id (str): The assessment's ID.
+        answers (list): List of submitted answers.
+    Returns:
+        dict: Contains score, pass status, knowledge gaps, and strengths.
+    '''
     @staticmethod
     def score_assessment(assessment_id, answers):
         """
@@ -93,11 +122,22 @@ class AssessmentService:
             'knowledge_gaps': knowledge_gaps,
             'demonstrated_strengths': demonstrated_strengths
         }
-    
+
+    '''
+    Submit and score an assessment, then store the result.
+    Args:
+        user_id (str): The user's ID.
+        assessment_id (str): The assessment's ID.
+        answers (list): List of submitted answers.
+        started_at (str): ISO timestamp when assessment started.
+        questions_id (list): List of question IDs.
+    Returns:
+        tuple: (assessment_result, None) if successful, else (None, error message).
+    '''
     @staticmethod
     def submit_assessment(user_id, assessment_id, answers, started_at, questions_id):
         """
-        Submit and score an assessment
+        Submits and scores an assessment
         - Checks if the user can take the assessment
         - Scores the assessment
         - Stores the result
@@ -126,7 +166,15 @@ class AssessmentService:
         )
         
         return assessment_result, None
-    
+
+    '''
+    Adds a question to an assessment.
+    Args:
+        assessment_id (str): The assessment's ID.
+        question_id (str): The question's ID.
+    Returns:
+        bool: True if added successfully, False otherwise.
+    '''    
     @staticmethod
     def add_question(assessment_id, question_id):
         '''
@@ -156,6 +204,13 @@ class AssessmentService:
             return True
         return False
 
+    '''
+    Retrieves advice/resource links for each knowledge gap.
+    Args:
+        knowledge_gaps (list): List of knowledge gap strings.
+    Returns:
+        list: List of resource dictionaries for each gap, or None on error.
+    '''
     @staticmethod
     def obtain_advice_links(knowledge_gaps):
         """

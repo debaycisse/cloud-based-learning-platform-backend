@@ -1,5 +1,14 @@
 from flasgger import Swagger
 
+'''
+Configures and initializes Swagger UI for the Flask application.
+- Sets up API documentation endpoint and UI using Flasgger.
+- Defines API metadata, tags, security definitions, and routes for documentation.
+Args:
+    app (Flask): The Flask application instance to configure Swagger for.
+Returns:
+    None
+'''
 def setup_swagger(app):
     """Configure Swagger UI for the application"""
     swagger_config = {
@@ -89,5 +98,4 @@ def setup_swagger(app):
         ]
     }
     
-
     Swagger(app, config=swagger_config, template=swagger_template)

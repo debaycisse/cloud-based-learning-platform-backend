@@ -1,15 +1,15 @@
 from app.models.user import User
 from datetime import datetime, timezone
 
+'''
+Manages cooldown field in a user's or leaner's record.
+Args:
+    user_id (str): the user ID of the learner or user whose
+    record is to be chacked and updated, it required.
+Returns:
+    Nothing is returned.
+'''
 def manage_cooldown(user_id):
-    '''
-    Manages cooldown field in a user's or leaner's record.
-    Args:
-        user_id (str): the user ID of the learner or user whose
-        record is to be chacked and updated, it required.
-    Returns:
-        Nothing is returned.
-    '''
     user = User.find_by_id(user_id=user_id)
     
     if user is not None:

@@ -11,8 +11,22 @@ Authentication and authorization utilities for Flask application.
 These utilities include JWT verification, role-based access control,
 input validation, and rate limiting.
 '''
+
+'''
+Decorator to restrict access to admin users only.
+Ensures the incoming request contains a valid JWT and that the user has the 'admin' role.
+If the user is not an admin or the token is invalid, returns a 403 Forbidden response.
+Args:
+    fn (function): The Flask route handler to decorate.
+Returns:
+    function: The decorated function, accessible only to admin users.
+Usage:
+    @app.route('/api/admin_only', methods=['GET'])
+    @admin_required
+    def admin_only_endpoint():
+        return jsonify({"message": "Admin access granted"})
+'''
 def admin_required(fn):
-    """Decorator to require admin role"""
     @wraps(fn)
     def wrapper(*args, **kwargs):
         verify_jwt_in_request()
@@ -52,5 +66,3 @@ def rate_limit_by_ip(limit_string):
         
         return decorated_function
     return decorator
-
-

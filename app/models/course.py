@@ -19,8 +19,8 @@ class Course:
     Args:
         title (str): Title of the course.
         description (str): Description of the course.
-        category (str): Category of the course. Examples: "Programming", "Data Science", etc.
-        prerequisites (list): List of prerequisite courses. E.g. ["course_id1", "course_id2"].
+        category (str): Category of the course.
+        prerequisites (list): List of prerequisite courses.
         content (dict): Content of the course.
         difficulty (str): Difficulty level of the course.
         tags (list): Tags associated with the course.
@@ -49,7 +49,7 @@ class Course:
         result = courses_collection.insert_one(course)
         course['_id'] = str(result.inserted_id)
         return course
-    
+
     '''
     A static method that finds all available courses in the system.
     Args:
@@ -71,7 +71,7 @@ class Course:
             course['_id'] = str(course['_id'])
             results.append(course)
         return results
-    
+
     '''
     A static method that finds a specific course by its ID.
     Args:
@@ -88,7 +88,7 @@ class Course:
             except:
                 return None
         return courses_collection.find_one({'_id': ObjectId(course_id)})
-    
+
     '''
     A static method that finds courses by category.
     Args:
@@ -111,7 +111,7 @@ class Course:
             course['_id'] = str(course['_id'])
             results.append(course)
         return results
-    
+
     '''
     A static method that finds popular courses.
     Args:
@@ -124,13 +124,14 @@ class Course:
         limit = int(limit)
         """Find popular courses based on enrollment count"""
         # We will use the enrollment_count field to determine popularity
-        cursor = courses_collection.find().sort('enrollment_count', -1).limit(limit)
+        cursor = courses_collection.find().sort(
+            'enrollment_count', -1).limit(limit)
         results = []
         for course in cursor:
             course['_id'] = str(course['_id'])
             results.append(course)
         return results
-    
+
     '''
     A static method that finds courses by tags.
     Args:
@@ -153,7 +154,7 @@ class Course:
             course['_id'] = str(course['_id'])
             results.append(course)
         return results
-    
+
     '''
     A static method that finds courses by difficulty level.
     Args:
@@ -176,7 +177,16 @@ class Course:
             course['_id'] = str(course['_id'])
             results.append(course)
         return results
-    
+
+    '''
+    A static method that retrieves a user by their ID.
+    Args:
+        user_id (str): ID of the user to retrieve.
+        limit (int): Number of courses to return.
+        skip (int): Number of courses to skip.
+    Returns:
+        list: List of courses the user is enrolled in.
+    '''
     @staticmethod
     def get_user_by_id(user_id, limit=10, skip=0):
         """Finds courses by user's id"""
@@ -258,8 +268,11 @@ class Course:
             
         # Get the current highest order if not specified
         if order is None:
-            course = courses_collection.find_one({'_id': ObjectId(course_id)})
-            if course and 'content' in course and 'sections' in course['content']:
+            course = courses_collection.find_one(
+                {'_id': ObjectId(course_id)}
+            )
+            if course and 'content' in course and\
+            'sections' in course['content']:
                 sections = course['content']['sections']
                 order = max([s.get('order', 0) for s in sections] + [0]) + 1
             else:
@@ -279,7 +292,8 @@ class Course:
                         'sub_sections': []
                     }
                 },
-                '$set': {'updated_at': datetime.now(timezone.utc).isoformat()}
+                '$set': {'updated_at': datetime.now(
+                    timezone.utc).isoformat()}
             }
         )
         return section_id
@@ -303,9 +317,12 @@ class Course:
 
         if 'title' in update_data and 'order' in update_data:          
             courses_collection.update_one(
-                {'_id': ObjectId(course_id), 'content.sections.section_id': section_id},
+                {
+                    '_id': ObjectId(course_id),
+                    'content.sections.section_id': section_id
+                },
                 {'$set': {
-                    'content.sections.$.title': update_data.get('title'),   # $ - placeholder for the matched section
+                    'content.sections.$.title': update_data.get('title'),
                     'content.sections.$.order': update_data.get('order'),
                     'updated_at': datetime.now(timezone.utc).isoformat()
                 }}
@@ -314,7 +331,7 @@ class Course:
             courses_collection.update_one(
                 {'_id': ObjectId(course_id), 'content.sections.section_id': section_id},
                 {'$set': {
-                    'content.sections.$.title': update_data.get('title'),   # $ - placeholder for the matched section
+                    'content.sections.$.title': update_data.get('title'),
                     'updated_at': datetime.now(timezone.utc).isoformat()
                 }}
             )
@@ -340,7 +357,8 @@ class Course:
                 '$pull': {
                     'content.sections': {'section_id': section_id}
                 }, # $pull removes the section from the array
-                '$set': {'updated_at': datetime.now(timezone.utc).isoformat()} # $set updates the updated_at field of the course
+                '$set': {'updated_at': datetime.now(
+                    timezone.utc).isoformat()}
             }
         )
         return courses_collection.find_one({'_id': ObjectId(course_id)})
@@ -364,13 +382,22 @@ class Course:
         # Get the current highest order if not specified
         if order is None:
             course = courses_collection.find_one(
-                {'_id': ObjectId(course_id), 'content.sections.section_id': section_id}
+                {
+                    '_id': ObjectId(course_id),
+                    'content.sections.section_id': section_id
+                }
             )
             if course:
-                for section in course.get('content', {}).get('sections', []):
+                for section in course.get('content', {}).get(
+                'sections', []
+                ):
                     if section.get('section_id') == section_id:
-                        sub_sections = section.get('sub_sections', [])
-                        order = max([s.get('order', 0) for s in sub_sections] + [0]) + 1
+                        sub_sections = section.get(
+                            'sub_sections', []
+                        )
+                        order = max(
+                            [s.get('order', 0) for s in sub_sections] + [0]
+                        ) + 1
                         break
             else:
                 order = 1
@@ -379,7 +406,10 @@ class Course:
         
         # Add the new subsection
         courses_collection.update_one(
-            {'_id': ObjectId(course_id), 'content.sections.section_id': section_id},
+            {
+                '_id': ObjectId(course_id),
+                'content.sections.section_id': section_id
+            },
             {
                 '$push': {
                     'content.sections.$.sub_sections': {
@@ -389,7 +419,8 @@ class Course:
                         'data': []
                     }
                 }, # $push adds the subsection to the array
-                '$set': {'updated_at': datetime.now(timezone.utc).isoformat()} # $set updates the updated_at field of the course
+                '$set': {'updated_at': datetime.now(
+                    timezone.utc).isoformat()}
             }
         )
         return subsection_id
@@ -405,7 +436,9 @@ class Course:
         dict: Updated course object.
     '''
     @staticmethod
-    def update_subsection(course_id, section_id, subsection_id, update_data):
+    def update_subsection(
+        course_id, section_id, subsection_id, update_data
+    ):
         """Updates a subsection"""
         if isinstance(course_id, str):
             course_id = ObjectId(course_id)
@@ -906,20 +939,20 @@ class Course:
 
         return True
 
+    '''
+    Fetch popular courses based on the sort value and limit.
+
+    Args:
+        limit (int): Maximum number of courses to return. Default is 20.
+        sort (str): Sorting criteria. Default is 'popular'. Popularity is
+        based on number of enrollments. Other possible values could be
+        'recent', etc.
+
+    Returns:
+        list: A list of popular courses.
+    '''
     @staticmethod
     def find_popular(limit=20, sort='popular'):
-        """
-        Fetch popular courses based on the sort value and limit.
-
-        Args:
-            limit (int): Maximum number of courses to return. Default is 20.
-            sort (str): Sorting criteria. Default is 'popular'. Popularity is
-            based on number of enrollments. Other possible values could be
-            'recent', etc.
-
-        Returns:
-            list: A list of popular courses.
-        """
         limit = int(limit)
         # Determine the sorting field based on the sort parameter
         sort_field = 'enrollment_count' if sort == 'popular' else 'created_at'
@@ -934,6 +967,16 @@ class Course:
             results.append(course)
         return results
     
+    '''
+    Finds courses by category and title.
+    Args:
+        category (str): The category of the course.
+        title (str): The title of the course.
+        limit (int): Maximum number of courses to return. Default is 10.
+        skip (int): Number of courses to skip. Default is 0.
+    Returns:
+        list: A list of courses that match the category and title.
+    '''
     @staticmethod
     def find_by_category_and_title(
         category, title, limit=10, skip=0
@@ -953,6 +996,15 @@ class Course:
             results.append(course)
         return results
     
+    '''
+    Finds courses by title.
+    Args:
+        title (str): The title of the course.
+        limit (int): Maximum number of courses to return. Default is 10.
+        skip (int): Number of courses to skip. Default is 0.
+    Returns:
+        list: A list of courses that match the title.
+    '''
     @staticmethod
     def find_by_title(
         title, limit=10, skip=0

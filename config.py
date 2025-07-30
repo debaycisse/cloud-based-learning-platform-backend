@@ -1,6 +1,18 @@
 import os
 from datetime import timedelta
 
+'''
+Central configuration class for the Flask application.
+Loads environment variables and defines default settings for:
+- Security keys and JWT configuration
+- MongoDB and database connection
+- Rate limiting
+- Assessment thresholds and cooldowns
+- Image upload parameters and allowed file types
+- Mail server and email settings
+- Frontend domain and support email
+All configuration values can be overridden by environment variables.
+'''
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY')
     MONGO_URI = os.environ.get('MONGO_URI')

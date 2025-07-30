@@ -16,7 +16,11 @@ from app.utils.cooldown_manager import manage_cooldown
 
 courses_bp = Blueprint('courses', __name__)
 
-# GET /api/courses
+'''
+GET /api/courses
+- Returns a list of courses with optional filtering
+by category or title.
+'''
 @courses_bp.route('', methods=['GET'])
 @yaml_from_file('docs/swagger/courses/get_courses.yaml')
 def get_courses():
@@ -61,7 +65,10 @@ def get_courses():
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# GET /api/courses/<course_id>
+'''
+GET /api/courses/<course_id>
+- Returns the course details for the specified course ID.
+'''
 @courses_bp.route('/<course_id>', methods=['GET'])
 @yaml_from_file('docs/swagger/courses/get_course.yaml')
 def get_course(course_id):
@@ -81,7 +88,10 @@ def get_course(course_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# GET /api/courses/recommended
+'''
+ GET /api/courses/recommended
+- Returns personalized course recommendations for the authenticated user.
+'''
 @courses_bp.route('/recommended', methods=['GET'], endpoint='get_recommended_courses')
 @jwt_required()
 @yaml_from_file('docs/swagger/courses/get_recommended_courses.yaml')
@@ -115,7 +125,10 @@ def get_recommended_courses():
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# GET /api/courses/popular
+'''
+GET /api/courses/popular
+- Returns a list of popular courses based on the specified limit and sort order.
+'''
 @courses_bp.route('/popular', methods=['GET'], endpoint='get_popular_courses')
 @yaml_from_file('docs/swagger/courses/get_popular_courses.yaml')
 def get_popular_courses():
@@ -156,7 +169,12 @@ def get_popular_courses():
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# POST /api/courses
+'''
+POST /api/courses
+- Creates a new course with the provided details.
+- Expects a JSON payload with course details.
+- Returns the created course object or an error message.
+'''
 @courses_bp.route('', methods=['POST'])
 @jwt_required()
 @admin_required
@@ -202,7 +220,10 @@ def create_course():
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# GET /api/courses/<course_id>/sections
+'''
+GET /api/courses/<course_id>/sections
+- Returns a list of sections for the specified course ID.
+'''
 @courses_bp.route('/<course_id>/sections', methods=['GET'])
 @yaml_from_file('docs/swagger/courses/get_course_sections.yaml')
 def get_course_sections(course_id):
@@ -225,7 +246,12 @@ def get_course_sections(course_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# POST /api/courses/<course_id>/sections
+'''
+POST /api/courses/<course_id>/sections
+- Creates a new section for the specified course ID.
+- Expects a JSON payload with section details.
+- Returns the created section ID or an error message.
+'''
 @courses_bp.route('/<course_id>/sections', methods=['POST'])
 @jwt_required()
 @admin_required
@@ -255,7 +281,13 @@ def add_course_section(course_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# GET /api/courses/<course_id>/sections/<section_id>
+'''
+GET /api/courses/<course_id>/sections/<section_id>
+- Returns the details of a specific section for the specified course ID.
+- If the section is not found, returns a 404 error.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+'''
 @courses_bp.route('/<course_id>/sections/<section_id>', methods=['GET'])
 @yaml_from_file('docs/swagger/courses/get_course_section.yaml')
 def get_section(course_id, section_id):
@@ -272,7 +304,12 @@ def get_section(course_id, section_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# PUT /api/courses/<course_id>/sections/<section_id>
+'''
+PUT /api/courses/<course_id>/sections/<section_id>
+- Updates the details of a specific section for the specified course ID.
+- Expects a JSON payload with section details.
+- Returns a success message or an error message.
+'''
 @courses_bp.route('/<course_id>/sections/<section_id>', methods=['PUT'])
 @jwt_required()
 @admin_required
@@ -300,7 +337,12 @@ def update_section(course_id, section_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# PUT /api/courses/<course_id>
+'''
+PUT /api/courses/<course_id>
+- Updates the details of a specific course.
+- Expects a JSON payload with course details.
+- Returns the updated course object or an error message.
+'''
 @courses_bp.route('/<course_id>', methods=['PUT'], endpoint='update_course')
 @jwt_required()
 @admin_required
@@ -342,10 +384,13 @@ def update_course(course_id):
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        print(f'\nError Message:: {e}\n')
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# DELETE /api/courses/<course_id>
+'''
+DELETE /api/courses/<course_id>
+- Deletes a course with the specified course ID.
+- Returns a success message or an error message.
+'''
 @courses_bp.route('/<course_id>', methods=['DELETE'], endpoint='delete_course')
 @jwt_required()
 @admin_required
@@ -373,7 +418,10 @@ def delete_course(course_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# DELETE /api/courses/<course_id>/sections/<section_id>
+'''
+GET /api/courses/<course_id>/sections/<section_id>/subsections
+- Returns a list of subsections for the specified section ID.
+'''
 @courses_bp.route('/<course_id>/sections/<section_id>', methods=['DELETE'])
 @jwt_required()
 @admin_required
@@ -394,7 +442,10 @@ def delete_section(course_id, section_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# GET /api/courses/<course_id>/sections/<section_id>/subsections
+'''
+GET /api/courses/<course_id>/sections/<section_id>/subsections
+- Returns a list of subsections for the specified section ID.
+'''
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections', methods=['GET'])
 @yaml_from_file('docs/swagger/courses/get_course_section_subsections.yaml')
 def get_subsections(course_id, section_id):
@@ -417,7 +468,10 @@ def get_subsections(course_id, section_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# POST /api/courses/<course_id>/sections/<section_id>/subsections
+'''
+POST /api/courses/<course_id>/sections/<section_id>/subsections
+- Creates a new subsection for the specified section ID.
+'''
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections', methods=['POST'])
 @jwt_required()
 @admin_required
@@ -448,7 +502,10 @@ def add_subsection(course_id, section_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# GET /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>
+'''
+GET /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>
+- Returns the details of a specific subsection for the specified course ID.
+'''
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>', methods=['GET'])
 @yaml_from_file('docs/swagger/courses/get_course_section_subsection.yaml')
 def get_subsection(course_id, section_id, subsection_id):
@@ -465,7 +522,10 @@ def get_subsection(course_id, section_id, subsection_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# PUT /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>
+'''
+PUT /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>
+- Updates the details of a specific subsection for the specified course ID.
+'''
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>', methods=['PUT'])
 @jwt_required()
 @admin_required
@@ -494,7 +554,11 @@ def update_subsection(course_id, section_id, subsection_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# DELETE /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>
+'''
+DELETE /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>
+- Deletes a subsection with the specified subsection ID.
+- Returns a success message or an error message.
+'''
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>', methods=['DELETE'])
 @jwt_required()
 @admin_required
@@ -519,7 +583,12 @@ def delete_subsection(course_id, section_id, subsection_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# POST /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>/content
+'''
+POST /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>/content
+- Adds content data to a subsection.
+- Expects a JSON payload with content details.
+- Returns a success message or an error message.
+'''
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>/content', methods=['POST'])
 @jwt_required()
 @admin_required
@@ -566,7 +635,12 @@ def add_content_data(course_id, section_id, subsection_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# PUT /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>/content/<data_id>
+'''
+PUT /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>/content/<data_id>
+- Updates content data for a subsection.
+- Expects a JSON payload with updated content details.
+- Returns a success message or an error message.
+'''
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>/content/<data_id>', methods=['PUT'])
 @jwt_required()
 @admin_required
@@ -596,7 +670,11 @@ def update_content_data(course_id, section_id, subsection_id, data_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# DELETE /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>/content/<data_id>
+'''
+DELETE /api/courses/<course_id>/sections/<section_id>/subsections/<subsection_id>/content/<data_id>
+- Deletes content data for a subsection.
+- Returns a success message or an error message.
+'''
 @courses_bp.route('/<course_id>/sections/<section_id>/subsections/<subsection_id>/content/<data_id>', methods=['DELETE'])
 @jwt_required()
 @admin_required
@@ -622,7 +700,12 @@ def delete_content_data(course_id, section_id, subsection_id, data_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# POST /api/courses/enroll
+'''
+POST /api/courses/enroll
+- Enrolls the authenticated user in a course.
+- Expects a JSON payload with the course ID.
+- Returns a success message or an error message.
+'''
 @courses_bp.route('/enroll', methods=['POST'])
 @jwt_required()
 @validate_json('course_id')
@@ -663,10 +746,14 @@ def enroll_user_in_course():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
-        print(f'\nError Message:: {e}\n')
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# POST /api/courses/complete
+'''
+POST /api/courses/complete
+- Marks a course as completed for the authenticated user.
+- Expects a JSON payload with the course ID.
+- Returns a success message or an error message.
+'''
 @courses_bp.route('/complete', methods=['POST'], endpoint='complete_course')
 @jwt_required()
 @validate_json('course_id')

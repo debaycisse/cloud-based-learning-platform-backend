@@ -15,6 +15,17 @@ from app.utils.validation import (
 
 concept_bp = Blueprint('concepts', __name__)
 
+'''
+POST /api/concepts
+- Creates a new concept with associated links and description.
+- Expects a JSON payload with 'concepts', 'links', and 'description'.
+- Returns the created concept or an error message.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires admin privileges.
+- If the user is not authenticated, returns an error message.
+- If the user does not have admin privileges, returns an error message.
+'''
 @concept_bp.route('', methods=['POST'])
 @jwt_required()
 @admin_required
@@ -43,6 +54,17 @@ def create_concept():
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
     
+'''
+GET /api/concepts/<concept_link_id>
+- Retrieves a concept by its ID.
+- Returns the concept object with its ID and details.
+- If the concept is not found, returns an error message.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the concept, returns an error message.
+'''
 @concept_bp.route('/<concept_link_id>', methods=['GET'])
 @jwt_required()
 @yaml_from_file('docs/swagger/concepts/get_concept_by_id.yaml')
@@ -74,6 +96,18 @@ def get_by_id(concept_link_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
     
+'''
+GET /api/concepts
+- Retrieves a list of concepts with pagination.
+- Supports 'limit' and 'skip' query parameters for pagination.
+- Returns a list of concept objects with their IDs and details.
+- If no concepts are found, returns an empty list and count as 0.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the concepts, returns an error message.
+'''
 @concept_bp.route('', methods=['GET'])
 @jwt_required()
 @yaml_from_file('docs/swagger/concepts/get_concepts.yaml')
@@ -112,6 +146,17 @@ def get_concepts():
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
+'''
+PUT /api/concepts/<concept_link_id>
+- Updates a concept by its ID.
+- Expects a JSON payload with 'concepts', 'links', and 'description'.
+- Returns the updated concept or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires admin privileges.
+- If the user is not authenticated, returns an error message.
+- If the user does not have admin privileges, returns an error message.
+'''
 @concept_bp.route('/<concept_link_id>', methods=['PUT'])
 @jwt_required()
 @admin_required
@@ -157,6 +202,16 @@ def update_concept(concept_link_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
+'''
+DELETE /api/concepts/<concept_link_id>
+- Deletes a concept by its ID.
+- Returns a success message or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires admin privileges.
+- If the user is not authenticated, returns an error message.
+- If the user does not have admin privileges, returns an error message.
+'''
 @concept_bp.route('/concept_link_id', methods=['DELETE'])
 @jwt_required()
 @admin_required
@@ -178,6 +233,13 @@ def delete_concept(concept_link_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error'}), 500
 
+'''
+GET /api/concepts/search
+- Searches for concepts based on a query string.
+- Supports pagination with 'limit' and 'skip' query parameters.
+- Returns a list of concept objects matching the query.
+- If no concepts are found, returns an empty list and count as 0.
+'''
 @concept_bp.route('/search', methods=['GET'])
 @jwt_required()
 @yaml_from_file('docs/swagger/concepts/search_concepts.yaml')

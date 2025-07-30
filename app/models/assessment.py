@@ -19,25 +19,53 @@ Assessment Model
     - updated_at: Timestamp when the assessment was last updated
 '''
 class Assessment:
+    '''
+    This method is used for creating a new assessmsent.
+    It takes the title, course_id, and an optional time_limit parameter.
+    The time_limit defaults to 25 minutes if not provided.
+    It returns the created assessment document with its ID.
+    Args:
+        title (str): Title of the assessment
+        course_id (str): ID of the course associated with the assessment
+        time_limit (int, optional): Time limit for the assessment in minutes. Defaults to 25.
+    Returns:
+        dict: The created assessment document with its ID
+    '''
     @staticmethod
     def create(title, course_id, time_limit=25):
         """Create a new assessment"""
         assessment = {
             'title': title,
             'course_id': course_id,
-            'time_limit': time_limit,  # Default time limit in minutes
+            'time_limit': time_limit,
             'created_at': datetime.now(timezone.utc).isoformat(),
             'updated_at': datetime.now(timezone.utc).isoformat(),
         }
         result = assessments_collection.insert_one(assessment)
         assessment['_id'] = result.inserted_id
         return assessment
-    
+
+    '''
+    Finds an assessment by its ID.
+    Args:
+        assessment_id (str): ID of the assessment to find
+    Returns:
+        dict: The assessment document if found, None otherwise
+    '''
     @staticmethod
     def find_by_id(assessment_id):
         """Find an assessment by ID"""
-        return assessments_collection.find_one({'_id': ObjectId(assessment_id)})
-    
+        return assessments_collection.find_one(
+            {'_id': ObjectId(assessment_id)}
+        )
+
+    '''
+    Finds assessments by course ID.
+    Args:
+        course_id (str): ID of the course to find assessments for
+    Returns:
+        list: List of assessment documents for the specified course
+    '''
     @staticmethod
     def find_by_course_id(course_id):
         """Find assessments for a specific course"""
@@ -47,7 +75,15 @@ class Assessment:
             course['_id'] = str(course['_id'])
             results.append(course)
         return results
-    
+
+    '''
+    Finds all assessments with pagination.
+    Args:
+        limit (int): Maximum number of assessments to return
+        skip (int): Number of assessments to skip for pagination
+    Returns:
+        list: List of assessment documents with pagination applied
+    '''
     @staticmethod
     def find_all(limit=20, skip=0):
         """Find all assessments with pagination"""
@@ -59,7 +95,15 @@ class Assessment:
             course['_id'] = str(course['_id'])
             results.append(course)
         return results
-    
+
+    '''
+    Updates an assessment by its ID.
+    Args:
+        assessment_id (str): ID of the assessment to update
+        update_data (dict): Dictionary containing fields to update
+    Returns:
+        dict: The updated assessment document
+    '''
     @staticmethod
     def update(assessment_id, update_data):
         """Update an assessment"""
@@ -71,12 +115,20 @@ class Assessment:
         result = assessments_collection.find_one({'_id': ObjectId(assessment_id)})
         result['_id'] = str(result['_id'])
         return result
-    
+
+    '''
+    Deletes an assessment by its ID.
+    Args:
+        assessment_id (str): ID of the assessment to delete
+    Returns:
+        bool: True if the assessment was deleted, False otherwise
+    '''
     @staticmethod
     def delete(assessment_id):
         """Delete an assessment"""
         result = assessments_collection.delete_one({'_id': ObjectId(assessment_id)})
         return result.deleted_count > 0
+
 
 '''
 Assessment Result Model
@@ -92,6 +144,21 @@ Assessment Result Model
     - created_at: Timestamp when the result was created
 '''
 class AssessmentResult:
+    '''
+    Creates a new assessment result with demonstrated strengths.
+    Args:
+        user_id (str): ID of the user who took the assessment
+        assessment_id (str): ID of the assessment
+        answers (list): List of answers provided by the user
+        score (float): Score obtained by the user
+        passed (bool): Boolean indicating if the user passed the assessment
+        started_at (str): Timestamp when the assessment was started
+        questions (list): List of questions in the assessment
+        knowledge_gaps (list, optional): List of knowledge gaps identified in the assessment
+        demonstrated_strengths (list, optional): List of demonstrated strengths in the assessment
+    Returns:
+        dict: The created assessment result document with its ID
+    '''
     @staticmethod
     def create(user_id, assessment_id, answers, score, passed, started_at,
                questions, knowledge_gaps=None, demonstrated_strengths=None):
@@ -120,7 +187,16 @@ class AssessmentResult:
 
         result['_id'] = result_id
         return result
-    
+
+    '''
+    Finds assessment results for a specific user.
+    Args:
+        user_id (str): ID of the user to find results for
+        limit (int, optional): Maximum number of results to return. Defaults to 20.
+        skip (int, optional): Number of results to skip for pagination. Defaults to 0
+    Returns:
+        list: List of assessment result documents for the specified user
+    '''
     @staticmethod
     def find_by_user(user_id, limit=20, skip=0):
         """Find assessment results for a specific user"""
@@ -157,7 +233,15 @@ class AssessmentResult:
             return results
         except Exception as e:
             return None
-        
+
+    '''
+    Finds Assessment result by course id
+    Args:
+        course_id (str): ID of the course to find assessment results for
+        user_id (str): ID of the user to find assessment results for
+    Returns:
+        dict: Assessment result document for the specified course and user, or None if not found
+    '''
     @staticmethod
     def find_by_course_and_user_id(course_id, user_id):
         "Finds Assessment result by course id"
@@ -183,23 +267,16 @@ class AssessmentResult:
             return result
         except Exception as e:
             return None
+
     '''
-    {
-    '_id': ObjectId('685179140a898f0b43c682be'),
-    'question_text': 'What is the purpose of the &lt;head&gt; element in an HTML document?', 
-    'options': ['To display headings on the webpage', 'To store metadata and links to external resources', 'To contain all the main content', 'To execute JavaScript directly'], 
-    'correct_answer': 'To store metadata and links to external resources', 
-    'tags': ['the &lt;head&gt; element in an HTML document'], 
-    'assessment_ids': ['685179140a898f0b43c682bd'], 
-    'created_at': '2025-06-17T14:17:56.938665+00:00', 
-    'updated_at': '2025-06-17T14:17:56.938680+00:00'
-    }
-    
+    Finds results for a specific assessment
+    Args:
+        assessment_id (str): ID of the assessment to find results for
+        limit (int, optional): Maximum number of results to return. Defaults to 20.
+        skip (int, optional): Number of results to skip for pagination. Defaults to 0
+    Returns:
+        list: List of assessment result documents for the specified assessment
     '''
-
-
-
-
     @staticmethod
     def find_by_assessment(assessment_id, limit=20, skip=0):
         """Find results for a specific assessment"""
@@ -213,7 +290,15 @@ class AssessmentResult:
             course['_id'] = str(course['_id'])
             results.append(course)
         return results
-    
+
+    '''
+    Finds the latest result for a user and assessment
+    Args:
+        user_id (str): ID of the user to find the result for
+        assessment_id (str): ID of the assessment to find the result for
+    Returns:
+        dict: The latest assessment result document for the specified user and assessment, or None if not
+    '''
     @staticmethod
     def find_latest_by_user_and_assessment(user_id, assessment_id):
         """Find the latest result for a user and assessment"""
@@ -221,7 +306,7 @@ class AssessmentResult:
             {'user_id': user_id, 'assessment_id': assessment_id},
             sort=[('created_at', -1)]
         )
-    
+
     '''
     Finds the average score for a specific assessment
     Args:
@@ -241,8 +326,14 @@ class AssessmentResult:
         ]
         result = results_collection.aggregate(pipeline)
         return list(result)[0]['average_score'] if result else 0.0
-    
-    # Delete an assessment result
+
+    '''
+    Deletes an assessment result by its assessment ID.
+    Args:
+        assessment_id (str): ID of the assessment to delete results for
+    Returns:
+        bool: True if the assessment result was deleted, False otherwise
+    '''
     @staticmethod
     def delete_by_assessment_id(assessment_id):
         """Delete an assessment result"""
@@ -261,7 +352,14 @@ class AssessmentResult:
             return False
 
         return True
-    
+
+    '''
+    Updates a question in the assessment result if it exists
+    Args:
+        updated_question (dict): Dictionary containing the updated question data
+    Returns:
+        result: The result of the update operation
+    '''
     @staticmethod
     def update_question(updated_question):
         """Update a question in the assessment result if it exists"""
@@ -280,7 +378,14 @@ class AssessmentResult:
             {'$set': {'questions.$': question_obj}}
         )
         return result
-    
+
+    '''
+    Finds assessment results by question ID
+    Args:
+        question_id (str): ID of the question to find results for
+    Returns:
+        dict: Assessment result document containing the question, or None if not found
+    '''
     @staticmethod
     def find_by_question_id(question_id):
         """Find assessment results by question ID"""

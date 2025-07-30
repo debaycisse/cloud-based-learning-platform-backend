@@ -41,55 +41,47 @@ class RecommendationService:
 
             # Get user's assessment results
             results = AssessmentResult.find_by_user(user_id)
-            print(f'results is :: {results}')
+
             if not results:
                 return []
-            print('2')
+
             # Extract knowledge gaps from failed assessments
             knowledge_gaps = []
             for result in results:
                 if not result.get('passed', False):
                     knowledge_gaps.extend(result.get('knowledge_gaps', []))
-            print('3')
 
             # Get user's completed and in-progress courses
             completed_courses = user.get('progress', {}).get('completed_courses', [])
-            print('4')
+
             in_progress_courses = user.get('progress', {}).get('in_progress_courses', [])
-            print('5')
             
             # Combine different recommendation strategies
             knowledge_based_recs = RecommendationService._get_knowledge_gap_recommendations(
                 knowledge_gaps, limit=limit
             )
-            print('6')
             
             collaborative_recs = RecommendationService._get_collaborative_recommendations(
                 user_id, completed_courses, in_progress_courses, limit=limit
             )
-            print('7')
             
             content_based_recs = RecommendationService._get_content_based_recommendations(
                 user_id, completed_courses, in_progress_courses, limit=limit
             )
-            print('8')
+
             # Combine and rank recommendations
             all_recommendations = []
-            print('1')
             # Add knowledge-based recommendations with highest priority
             if len(knowledge_based_recs) > 0:
                 all_recommendations.extend([(course, 3) for course in knowledge_based_recs])
-            print('11')
             
             # Add collaborative recommendations with medium priority
             if len(collaborative_recs) > 0:
                 all_recommendations.extend([(course, 2) for course in collaborative_recs])
-            print('111')
             
             # Add content-based recommendations with lower priority
             if len(content_based_recs) > 0:
                 all_recommendations.extend([(course, 1) for course in content_based_recs])
-            print('1111')
 
             # Remove duplicates, keeping the highest priority
             unique_recommendations = {}
@@ -98,7 +90,6 @@ class RecommendationService:
                     course_id = str(course.get('_id'))
                     if course_id not in unique_recommendations or priority > unique_recommendations[course_id][1]:
                         unique_recommendations[course_id] = (course, priority)
-            print('11111')
 
             # Sort by priority (descending) and return the courses
             if len(unique_recommendations) > 0:
@@ -107,11 +98,9 @@ class RecommendationService:
                     key=lambda x: x[1], 
                     reverse=True
                 )
-            print('111111')
 
             # Extract just the courses from the (course, priority) tuples
             recommended_courses = [rec[0] for rec in sorted_recommendations]
-            print('1111111')
 
             # Filter out courses the user has already completed or is taking
             completed_courses_list = [
@@ -119,14 +108,12 @@ class RecommendationService:
                 for course_progress in completed_courses 
                 for field in course_progress if isinstance(field, str)
             ]
-            print('11111111')
 
             filtered_recommendations = [
                 course for course in recommended_courses 
                 if str(course.get('_id')) not in completed_courses_list
                 and str(course.get('_id')) not in in_progress_courses
             ]
-            print('111111111')
 
             return filtered_recommendations[:limit]
         except Exception as e:
@@ -187,20 +174,17 @@ class RecommendationService:
         try:
             # Find users who have taken similar courses
             similar_users = []
-            print('A')
+
             # Combine completed and in-progress courses
             user_courses = completed_courses + [in_progress_courses]
-            print('B')
-            print(f'user courses after B :: {user_courses}')
+
             unique_user_courses = None
-            print(f'unique user courses :: {unique_user_courses}')
+
             if len(user_courses) > 1:
                 unique_user_courses = set(user_courses)
-            print('C')
             
             if not unique_user_courses:
                 return []
-            print('D')
 
             # Find users who have completed or are taking the same courses
             for course_id in unique_user_courses:
@@ -215,20 +199,17 @@ class RecommendationService:
                     limit=20
                 )
                 similar_users.extend(users_with_course)
-            print('E')
             
             if not similar_users:
                 return []
             
             # Count how many times each user appears (more overlap = more similar)
             user_counts = Counter([str(user.get('_id')) for user in similar_users])
-            print('F')
             
             # Get the most similar users
             most_similar_users = [
                 user_id for user_id, count in user_counts.most_common(10)
             ]
-            print('G')
             
             # Find courses these similar users have taken that this user hasn't yet
             recommended_course_ids = set()
@@ -253,7 +234,6 @@ class RecommendationService:
                 
                 if len(recommended_course_ids) >= limit:
                     break
-            print('H')
             
             # Fetch the full course objects
             recommended_courses = []
@@ -265,7 +245,6 @@ class RecommendationService:
             
             if len(recommended_courses) > 0:
                 return recommended_courses[:limit]
-            print('I')
             
             return []
 
@@ -456,6 +435,7 @@ class RecommendationService:
 
         except Exception as e:
             raise e
+
     '''
     Generates personalized course recommendations based on user preferences.
     Args:
@@ -502,19 +482,19 @@ class RecommendationService:
         except Exception as e:
             raise e
     
+    '''
+    Recommend courses based on explicit user preferences
+    
+    Args:
+        user_id: The ID of the user
+        preference_data: Dictionary of user preferences
+        limit: Maximum number of recommendations to return
+        
+    Returns:
+        list: Recommended courses
+    '''
     @staticmethod
     def _get_preference_based_recommendations(user_id, preference_data, limit=4):
-        """
-        Recommend courses based on explicit user preferences
-        
-        Args:
-            user_id: The ID of the user
-            preference_data: Dictionary of user preferences
-            limit: Maximum number of recommendations to return
-            
-        Returns:
-            list: Recommended courses
-        """
 
         try:                
             # Get user data for additional context
@@ -597,19 +577,18 @@ class RecommendationService:
 
         except Exception as e:
             raise e
+    '''
+    Find courses similar to a given course
     
+    Args:
+        course_id: The ID of the course
+        limit: Maximum number of similar courses to return
+        
+    Returns:
+        list: Similar courses
+    '''
     @staticmethod
     def get_similar_courses(course_id, limit=3):
-        """
-        Find courses similar to a given course
-        
-        Args:
-            course_id: The ID of the course
-            limit: Maximum number of similar courses to return
-            
-        Returns:
-            list: Similar courses
-        """
 
         try :
                 

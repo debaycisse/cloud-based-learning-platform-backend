@@ -21,7 +21,8 @@ Validates full name format
 Args:
     name (str): The full name to validate
 Returns:
-    bool: True if valid, False otherwise'''
+    bool: True if valid, False otherwise
+'''
 def validate_full_name(name):
     """
     Validate full name
@@ -163,7 +164,6 @@ def html_tags_converter(text: str) -> str:
     
     raise TypeError("html_tags_converter expects a string input")
 
-
 '''
 Unonverts HTML-escaped text (like &lt;h1&gt;) into actual HTML tags as a string.
 
@@ -223,10 +223,16 @@ def validate_content_structure(content):
     
     return True
 
+'''
+Validates if the uploaded file is a valid image of an allowed type.
+- Saves the file temporarily and checks its MIME type.
+- Ensures the file is an image and matches allowed extensions.
+Args:
+    file_stream: The uploaded file stream (e.g., from Flask's request.files).
+Returns:
+    bool: True if the file is a valid image of an allowed type, False otherwise.
+'''
 def is_valid_image(file_stream):
-    """
-    Validate if the file is an actual image of allowed type
-    """
     # Save file temporarily
     temp_path = path.join('/tmp', secure_filename('temp_file'))
     file_stream.save(temp_path)
@@ -256,14 +262,14 @@ def is_valid_image(file_stream):
         if os.path.exists(temp_path):
             os.remove(temp_path)
 
+'''
+Transforms the sanitized course's data to their original form
+-Args:
+    course_object - the course object whose data is to be transformed
+-Returns:
+    the transformed course or none if empty course object is passed
+'''
 def transform_sanitized_course(course_object):
-    """
-    Transforms the sanitized course's data to their original form
-    -Args:
-        course_object - the course object whose data is to be transformed
-    -Returns:
-        the transformed course or none if empty course object is passed
-    """
     if course_object and isinstance(course_object, dict):
         for key, value in course_object.items():
                 if key == 'title' or key == 'description':
@@ -287,14 +293,14 @@ def transform_sanitized_course(course_object):
         return course_object
     return None
 
+'''
+Transforms the sanitized list of courses' data to their original form
+- Args:
+    course_list - the list that contains multiple course objects whose data are to be transformed
+- Returns:
+    the transformed list or none if no (empty) list of course is passed
+'''
 def transform_sanitized_course_list(course_list):
-    """
-    Transforms the sanitized list of courses' data to their original form
-    - Args:
-        course_list - the list that contains multiple course objects whose data are to be transformed
-    - Returns:
-        the transformed list or none if no (empty) list of course is passed
-    """
     if isinstance(course_list, list) and len(course_list) > 0:
         for course_object in course_list:
             for key, value in course_object.items():

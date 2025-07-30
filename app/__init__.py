@@ -22,6 +22,18 @@ limiter = Limiter(
 mongo_client = None
 db = None
 
+'''
+Application factory function for creating and configuring the Flask app.
+- Loads configuration from the provided config class.
+- Initializes Flask extensions (JWT, Mail, Limiter, CORS).
+- Sets up MongoDB connection and JWT token blacklist checking.
+- Registers all application blueprints for routing.
+- Configures Swagger UI for API documentation.
+Args:
+    config_class (class, optional): The configuration class to use. Defaults to Config.
+Returns:
+    Flask: The configured Flask application instance.
+'''
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)

@@ -34,11 +34,13 @@ These routes include input validation, rate limiting, and JWT token generation.
 '''
 
 '''
-Registers a new user
-- POST /api/auth/register
-- Request body: JSON with 'email', 'username', and 'password'
-- Response: JSON with success message, http status code and JWT access token
-- Rate limit: 5 requests per minute
+POST /api/auth/register
+- Registers a new user.
+- Expects a JSON payload with 'name', 'email', 'username', and 'password'.
+- Returns a success message or an error message.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Rate limit: 5 requests per minute.
 '''
 @auth_bp.route('/register', methods=['POST'])
 @limiter.limit("5 per minute")
@@ -103,11 +105,13 @@ def register():
         }), 400
 
 '''
-Logs in a user
-- POST /api/auth/login
-- Request body: JSON with 'email' and 'password'
-- Response: JSON with success message, http status code, JWT access token, and user details
-- Rate limit: 5 requests per minute
+POST /api/auth/login
+- Logs in a user.
+- Expects a JSON payload with 'email' and 'password'.
+- Returns a success message with an access token or an error message.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Rate limit: 5 requests per minute.
 '''
 @auth_bp.route('/login', methods=['POST'])
 @limiter.limit("5 per minute")
@@ -148,15 +152,17 @@ def login():
             }
         }), 200
     except Exception as e:
-        print('Login error : ', e)
         return jsonify({"error": str(e)}), 500
 
 
 '''
-Logs out a user
-- POST /api/auth/logout
-- Response: JSON with success message, http status code
-- Requires Access token
+POST /api/auth/logout
+- Logs out a user by blacklisting the JWT token.
+- Returns a success message or an error message.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
 '''
 @auth_bp.route('/logout', methods=['POST'])
 @jwt_required()
@@ -180,10 +186,14 @@ def logout():
 
 
 '''
-Retrieves the current user's profile
-- GET /api/auth/user
-- Response: JSON with user details, http status code
-- Requires Access token
+GET /api/auth/user
+- Retrieves the authenticated user's profile.
+- Returns the user's details or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the profile, returns an error message.
 '''
 @auth_bp.route('/user', methods=['GET'])
 @jwt_required()
@@ -217,12 +227,13 @@ def get_user():
         }), 400
 
 '''
-Resets the user's password by sending a token, which will
-be verified and used to update the password.
-- POST /api/auth/reset_password
-- Request body: JSON with 'email'
-- Response: JSON with success message, http status code, and reset token
-- Rate limit: 5 requests per minute
+POST /api/auth/reset_password
+- Initiates the password reset process by sending a reset token to the user's email.
+- Expects a JSON payload with 'email'.
+- Returns a success message or an error message.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Rate limit: 5 requests per minute.
 '''
 @auth_bp.route('/reset_password', methods=['POST'])
 @limiter.limit("5 per minute")
@@ -270,10 +281,12 @@ def reset_password():
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
-Verifies the reset token and returns true if valid
-- GET /api/auth/verify_reset_token/<token>
-- Response: JSON with success message, is_valid, http status code
-- Rate limit: 5 requests per minute
+GET /api/auth/verify_reset_token/<token>
+- Verifies the reset token.
+- Returns a success message if the token is valid or an error message if invalid.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Rate limit: 5 requests per minute.
 '''
 @auth_bp.route('/verify_reset_token/<token>', methods=['GET'])
 @limiter.limit("5 per minute")
@@ -298,11 +311,13 @@ def verify_reset_token(token):
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
-Updates the user\'s password whose reset token was verified, using the provided new password
-- PUT /api/auth/update_password/<token>
-- Request body: JSON with 'new_password'
-- Response: JSON with success message, http status code
-- Rate limit: 5 requests per minute
+PUT /api/auth/update_password/<token>
+- Updates the user's password using the reset token.
+- Expects a JSON payload with 'new_password'.
+- Returns a success message or an error message if the token is invalid or password update fails.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Rate limit: 5 requests per minute.
 '''
 @auth_bp.route('/update_password/<token>', methods=['PUT'])
 @limiter.limit("5 per minute")

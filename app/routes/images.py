@@ -15,24 +15,17 @@ from config import Config
 
 images_bp = Blueprint('images', __name__)
 
+'''
+POST /api/images/upload
+- Uploads an image to ImgBB.
+- Expects a multipart/form-data request with an image file.
+- Returns the image URL or an error message.
+'''
 @images_bp.route('/upload', methods=['POST'])
 @jwt_required()
 @admin_required
 @yaml_from_file('docs/swagger/images/upload_image_admin_only.yaml')
 def upload_image():
-    """
-    Endpoint to upload an image to ImgBB
-    
-    Requires:
-    - 'image' file in request
-    
-    Optional:
-    - 'expiry' in seconds (default: none)
-    - 'name' custom file name
-    
-    Returns:
-    - JSON with image URL or error details
-    """
     try:
         # Check if the post request has the file part
 

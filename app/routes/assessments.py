@@ -15,6 +15,16 @@ from config import Config
 
 assessments_bp = Blueprint('assessments', __name__)
 
+'''
+GET /api/assessments/<assessment_id>
+- Retrieves a specific assessment by its ID.
+- Returns the assessment details or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the assessment, returns an error message.
+'''
 @assessments_bp.route('/<assessment_id>', methods=['GET'])
 @jwt_required()
 @yaml_from_file('docs/swagger/assessments/get_assessment.yaml')
@@ -48,15 +58,16 @@ def get_an_assessment(assessment_id):
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
-Get all assessments with pagination
-- Parameters:
-    - limit: Number of assessments to return (default: 20)
-    - skip: Number of assessments to skip (default: 0)
-- Returns:
-    - assessments: List of assessments
-    - count: Total number of assessments
-    - skip: Number of assessments skipped
-    - limit: Number of assessments returned
+GET /api/assessments
+- Retrieves all assessments with pagination.
+- Returns a list of assessments or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires admin privileges.
+- If the user is not authenticated, returns an error message.
+- If the user does not have admin privileges, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the assessments, returns an error message.
 '''
 @assessments_bp.route('', methods=['GET'])
 @jwt_required()
@@ -87,6 +98,18 @@ def get_assessments():
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
+'''
+GET /api/assessments/course/<course_id>
+- Retrieves all assessments for a specific course ID.
+- Returns a list of assessments or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the assessments, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the course assessments, returns an error message.
+'''
 @assessments_bp.route('/course/<course_id>', methods=['GET'])
 @jwt_required()
 @yaml_from_file('docs/swagger/assessments/get_course_assessments.yaml')
@@ -111,6 +134,16 @@ def get_assessment_for_course(course_id):
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 
+'''
+POST /api/assessments/<assessment_id>/submit
+- Submits an assessment for the authenticated user.
+- Expects a JSON payload with 'answers', 'started_at', and 'questions_id'.
+- Returns a success message with the assessment result or an error message if submission fails.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the assessment, returns an error message.
+'''
 @assessments_bp.route('/<assessment_id>/submit', methods=['POST'])
 @jwt_required()
 @validate_json('answers', 'started_at', 'questions_id')
@@ -187,6 +220,18 @@ def submit_assessment(assessment_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
+'''
+GET /api/assessments/results
+- Retrieves assessment results for the authenticated user with pagination.
+- Expects query parameters 'limit' and 'skip'.
+- Returns a list of assessment results or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the assessment results, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the assessment results, returns an error message.
+'''
 @assessments_bp.route('/results', methods=['GET'])
 @jwt_required()
 @yaml_from_file('docs/swagger/assessments/get_assessment_results.yaml')
@@ -218,6 +263,18 @@ def get_assessment_results():
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
+'''
+GET /api/assessments/results/<course_id>
+- Retrieves assessment results for a specific course ID.
+- Returns the assessment result or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the assessment results, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the course assessment results, returns an error message.
+'''
 @assessments_bp.route('/results/<course_id>', methods=['GET'])
 @jwt_required()
 @yaml_from_file('docs/swagger/assessments/get_assessment_result_by_course_id.yaml')
@@ -247,6 +304,19 @@ def get_assessment_result_by_course_id(course_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
+'''
+POST /api/assessments
+- Creates a new assessment.
+- Expects a JSON payload with 'title', 'time_limit', and 'course_id'.
+- Returns a success message with the created assessment details or an error message if creation fails.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires admin privileges.
+- If the user is not authenticated, returns an error message.
+- If the user does not have admin privileges, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the assessments, returns an error message.
+'''
 @assessments_bp.route('', methods=['POST'])
 @jwt_required()
 @admin_required
@@ -274,6 +344,19 @@ def create_assessment():
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
+'''
+PUT /api/assessments/<assessment_id>
+- Updates an existing assessment by its ID.
+- Expects a JSON payload with 'title', 'time_limit', and 'course_id'.
+- Returns a success message with the updated assessment details or an error message if update fails.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires admin privileges.
+- If the user is not authenticated, returns an error message.
+- If the user does not have admin privileges, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the assessments, returns an error message.
+'''
 @assessments_bp.route('/<assessment_id>', methods=['PUT'])
 @jwt_required()
 @admin_required
@@ -310,6 +393,18 @@ def update_assessment(assessment_id):
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 
+'''
+DELETE /api/assessments/<assessment_id>
+- Deletes an assessment by its ID.
+- Returns a success message or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires admin privileges.
+- If the user is not authenticated, returns an error message.
+- If the user does not have admin privileges, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the assessments, returns an error message.
+'''
 @assessments_bp.route('/<assessment_id>', methods=['DELETE'])
 @jwt_required()
 @admin_required
@@ -335,11 +430,17 @@ def delete_assessment(assessment_id):
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
-Gets assessment result"s average score
-- Parameters:
-    - assessment_id: ID of the assessment result
-- Returns:
-    - average_score: Average score of the assessment result
+GET /api/assessments/<assessment_id>/average_score
+- Retrieves the average score for a specific assessment.
+- Returns the average score or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires admin privileges.
+- If the user is not authenticated, returns an error message.
+- If the user does not have admin privileges, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the assessment results, returns an error message.
+- If the user does not have access to the assessment, returns an error message.
 '''
 @assessments_bp.route('/<assessment_id>/average_score', methods=['GET'])
 @jwt_required()
@@ -363,11 +464,16 @@ def get_assessment_average_score(assessment_id):
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
-Gets link for each concept in the knowledge gaps of an assessment result
-- Parameters:
-    - course_id: course ID of the course that uses the assessment
-- Returns:
-    - links: List of links for each concept in the knowledge gaps
+GET /api/assessments/<course_id>/advice
+- Retrieves advice links for the knowledge gaps identified in the assessment results for a specific course.
+- Returns a list of advice links or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the assessment results, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the course assessment results, returns an error message.
 '''    
 @assessments_bp.route('/<course_id>/advice', methods=['GET'])
 @jwt_required()

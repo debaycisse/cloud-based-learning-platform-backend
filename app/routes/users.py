@@ -11,15 +11,15 @@ from app.utils.auth import admin_required
 users_bp = Blueprint('users', __name__)
 
 '''
-User Management routes for profile retrieval, update, and progress tracking.
-These routes include JWT authentication, input validation, and data sanitization.
-'''
-
-'''
-Retrieves all users
-- GET /api/users/all
-- Response: JSON with list of users
-- JWT required
+GET /api/users/all
+- Retrieves all users with optional pagination.
+- Expects query parameters 'limit' and 'skip'.
+- Returns a list of users or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the user list, returns an error message. 
 - Admin role required
 '''
 @users_bp.route('/all', methods=['GET'])
@@ -55,11 +55,17 @@ def get_all_users():
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
-Retrieves a specific user by ID
-- GET /api/users/<user_id>
-- Response: JSON with user information
-- JWT required
-- Admin role required
+GET /api/users/<user_id>
+- Retrieves a user by their ID.
+- Returns the user information or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the user information, returns an error message.
+- Admin role required.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the user information, returns an error message.
 '''
 @users_bp.route('/<user_id>', methods=['GET'])
 @jwt_required()
@@ -108,10 +114,16 @@ def get_user(user_id):
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
-Retrieves user's profile
-- GET /api/users/profile
-- Response: JSON with user profile information
-- JWT required
+GET /api/users/profile
+- Retrieves the profile of the authenticated user.
+- Returns the user profile information or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the profile, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the profile, returns an error message.
 '''
 @users_bp.route('/profile', methods=['GET'])
 @jwt_required()
@@ -150,10 +162,16 @@ def get_profile():
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
     
 '''
-Retrives user's cooldown field
-- GET /api/users/cooldown
-- Response: cooldown data in JSON format
-- JWT required 
+GET /api/users/cooldown
+- Retrieves the cooldown information for the authenticated user.
+- Returns the cooldown data or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the cooldown data, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the cooldown data, returns an error message.
 '''
 @users_bp.route('/cooldown', methods=['GET'])
 @jwt_required()
@@ -186,11 +204,17 @@ def get_cooldown():
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
-Updates user profile
-- PUT /api/users/profile
-- Request body: JSON with fields to update (excluding sensitive fields)
-- Response: JSON with success message and updated profile information
-- JWT required
+PUT /api/users/profile
+- Updates the profile of the authenticated user.
+- Expects a JSON request body with fields to update.
+- Returns a success message and the updated profile or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the profile, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the profile, returns an error message.
 '''
 @users_bp.route('/profile', methods=['PUT'])
 @jwt_required()
@@ -230,10 +254,16 @@ def update_profile():
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
-Retrieves user progress
-- GET /api/users/progress
-- Response: JSON with user progress information
-- JWT required
+GET /api/users/progress
+- Retrieves the progress of the authenticated user.
+- Returns the user's progress information or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the progress information, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the progress information, returns an error message.
 '''
 @users_bp.route('/progress', methods=['GET'])
 @jwt_required()
@@ -282,11 +312,17 @@ def get_progress():
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
-Updates course progress for a user
-- PUT /api/users/progress
-- Request body: JSON with course_id and percentage
-- Response: JSON with success message and updated progress
-- JWT required
+PUT /api/users/progress
+- Updates the progress of the authenticated user.
+- Expects a JSON request body with fields to update.
+- Returns a success message and the updated progress or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the progress information, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the progress information, returns an error message.
 '''
 @users_bp.route('/progress', methods=['PUT'])
 @jwt_required()
@@ -331,10 +367,16 @@ def update_progress():
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
-Retrieves user preferences
-- GET /api/users/preferences
-- Response: JSON with user preferences
-- JWT required
+GET /api/users/preferences
+- Retrieves the preferences of the authenticated user.
+- Returns the user preferences or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the preferences, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the preferences, returns an error message.
 '''
 @users_bp.route('/preferences', methods=['GET'])
 @jwt_required()
@@ -370,11 +412,17 @@ def get_preferences():
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
-Updates user preferences
-- PUT /api/users/preferences
-- Request body: JSON with fields to update
-- Response: JSON with success message and updated preferences
-- JWT required
+PUT /api/users/preferences
+- Updates the preferences of the authenticated user.
+- Expects a JSON request body with fields to update.
+- Returns a success message and the updated preferences or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the preferences, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the preferences, returns an error message.
 '''
 @users_bp.route('/preferences', methods=['PUT'])
 @jwt_required()

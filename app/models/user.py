@@ -5,7 +5,30 @@ from bson import ObjectId
 
 users_collection = db.users
 
+'''
+User model for managing user data and operations.
+This model provides methods for creating, finding, updating,
+and managing user profiles, including authentication and preferences.
+'''
 class User:
+    '''
+    Create a new user with the provided details.
+    Args:
+        name (str): The name of the user.
+        email (str): The email address of the user.
+        username (str): The username of the user.
+        password (str): The password for the user.
+    Returns:
+        dict: The created user object with an auto-generated ID.
+        The user object includes fields for name, email, username,
+        password hash, creation and update timestamps, role, progress,
+        and preferences.
+        The progress field includes completed and in-progress courses,
+        and completed assessments.
+        The preferences field includes categories, skills, difficulty,
+        learning style, time commitment, and goals.
+        The created_at and updated_at fields are set to the current UTC time.
+    '''
     @staticmethod
     def create(name, email, username, password):
         """Create a new user"""
@@ -35,21 +58,90 @@ class User:
         user['_id'] = result.inserted_id
         return user
     
+    '''
+    Find a user by email.
+    Args:
+        email (str): The email address of the user to find.
+    Returns:
+        dict: The user object if found, None otherwise.
+        The user object includes fields for name, email,
+        username, password hash, creation and
+        update timestamps, role, progress, and preferences.
+        The progress field includes completed and
+        in-progress courses, and completed assessments.
+        The preferences field includes categories, skills,
+        difficulty, learning style, time commitment, and goals.
+        The created_at and updated_at fields are set to
+        the current UTC time.
+    '''
     @staticmethod
     def find_by_email(email):
         """Find a user by email"""
         return users_collection.find_one({'email': email})
     
+    '''
+    Find a user by username.
+    Args:
+        username (str): The username of the user to find.
+    Returns:
+        dict: The user object if found, None otherwise.
+        The user object includes fields for name, email,
+        username, password hash, creation and
+        update timestamps, role, progress, and preferences.
+        The progress field includes completed and
+        in-progress courses, and completed assessments.
+        The preferences field includes categories, skills,
+        difficulty, learning style, time commitment, and goals.
+        The created_at and updated_at fields are set to
+        the current UTC time.
+    '''
     @staticmethod
     def find_by_username(username):
         """Find a user by username"""
         return users_collection.find_one({'username': username})
     
+    '''
+    Find a user by ID.
+    Args:
+        user_id (str): The ID of the user to find.
+    Returns:
+        dict: The user object if found, None otherwise.
+        The user object includes fields for name, email,
+        username, password hash, creation and
+        update timestamps, role, progress, and preferences.
+        The progress field includes completed and
+        in-progress courses, and completed assessments.
+        The preferences field includes categories, skills,
+        difficulty, learning style, time commitment, and goals.
+        The created_at and updated_at fields are set to
+        the current UTC time.
+    '''
     @staticmethod
     def find_by_id(user_id):
         """Find a user by ID"""
         return users_collection.find_one({'_id': ObjectId(user_id)})
     
+    '''
+    Find all users with optional filters, limit, and skip.
+    Args:
+        filters (dict): Optional filters to apply to the query.
+        limit (int): The maximum number of users to return.
+        skip (int): The number of users to skip before
+        returning results.
+    Returns:
+        list: A list of user objects matching the filters.
+        Each user object includes fields for name, email,
+        username, password hash, creation and
+        update timestamps, role, progress, and preferences.
+        The progress field includes completed and in-progress courses,
+        and completed assessments.
+        The preferences field includes categories, skills,
+        difficulty, learning style, time commitment, and goals.
+        The created_at and updated_at fields are set to
+        the current UTC time.
+        If no users match the filters, an empty list is returned.
+        The user IDs are converted to strings for easier handling.
+    '''
     @staticmethod
     def find_all_users(filters=None, limit=20, skip=0):
         """Find all users"""
@@ -67,6 +159,14 @@ class User:
 
         return results
     
+    '''
+    Update a user's profile by user ID.
+    Args:
+        user_id (str): The ID of the user to update.
+        update_data (dict): A dictionary containing the fields to update.
+    Returns:
+        dict: The updated user object if the update was successful
+    '''
     @staticmethod
     def update_profile(user_id, update_data):
         """Update user profile"""
@@ -86,6 +186,29 @@ class User:
         )
         return users_collection.find_one({'_id': ObjectId(user_id)})
     
+    '''
+    Update user course progress.
+    Args:
+        user_id (str): The ID of the user to update.
+        progress_data (dict): A dictionary containing the course
+        progress data.
+        The progress_data should include:
+            - course_id (str): The ID of the course.
+            - completed_course_id (str): The ID of the completed course.
+            - completed_course (str): The name of the completed course.
+    Returns:
+        dict: The updated user object if the update was successful.
+        If the course progress is updated, the completed_course_id
+        is added to the user's completed courses.
+        If the course is in progress, it updates the course_progress
+        field with the provided progress_data.
+        If the course is completed, it updates the course_progress
+        field and adds the completed_course_id to the user's
+        completed courses.
+        The updated_at field is set to the current UTC time.
+        If the update is successful, it returns the updated user object.
+        If no changes are made, it returns None.
+    '''
     @staticmethod
     def update_course_progress(user_id, progress_data):
         """Update user course progress"""
@@ -126,6 +249,29 @@ class User:
             return users_collection.find_one({'_id': ObjectId(user_id)})
         return None
     
+    '''
+    Update user learning preferences.
+    Args:
+        user_id (str): The ID of the user to update.
+        preferences_data (dict): A dictionary containing the learning
+        preferences data.
+        The preferences_data should include:
+            - categories (list): A list of preferred categories.
+            - skills (list): A list of preferred skills.
+            - difficulty (str): The preferred difficulty level.
+            - learning_style (str): The preferred learning style.
+            - time_commitment (str): The preferred time commitment.
+            - goals (list): A list of learning goals.
+    Returns:
+        dict: The updated user object if the update was successful.
+        The updated preferences are stored in the user's preferences field.
+        The updated_at field is set to the current UTC time.
+        If the preferences_data is valid, it updates the user's preferences
+        and returns the updated user object.
+        If no valid preferences are provided, it does not update the user.
+        If the update is successful, it returns the updated user object.
+        If no changes are made, it returns None.
+    '''
     @staticmethod
     def update_preferences(user_id, preferences_data):
         """Update user learning preferences"""

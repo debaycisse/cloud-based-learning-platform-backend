@@ -5,6 +5,14 @@ from app.utils.email import contact_support_email
 
 email_bp = Blueprint('email', __name__)
 
+'''
+POST /api/contact_support
+- Handles contact support requests.
+- Expects a JSON payload with 'email', 'subject', and 'message'.
+- Returns a success message or an error message.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+'''
 @email_bp.route('/contact_support', methods=['POST'])
 @validate_json('data')
 def contact_support():

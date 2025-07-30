@@ -8,6 +8,14 @@ from app.utils.validation import validate_json, sanitize_input
 
 cooldown_history_bp = Blueprint('cooldown_history', __name__)
 
+'''
+POST /api/cooldown_history
+- Creates a new cooldown history entry for the authenticated user.
+- Expects a JSON payload with 'course_id', 'cooldown_duration', and 'knowledge_gaps'.
+- Returns the created cooldown history entry or an error message.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+'''
 @cooldown_history_bp.route('', methods=['POST'])
 @jwt_required()
 @validate_json('course_id', 'cooldown_duration', 'knowledge_gaps')
@@ -39,6 +47,13 @@ def create_cooldown_history():
     except Exception as e:
         return jsonify({"error": f'Internal server error: {str(e)}'}), 500
     
+'''
+GET /api/cooldown_history/<user_id>
+- Retrieves cooldown history for a specific user ID.
+- Returns the cooldown history entry or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+'''
 @cooldown_history_bp.route('/<string:user_id>', methods=['GET'])
 @jwt_required()
 def get_cooldown_history_by_user_id(user_id):
@@ -60,6 +75,14 @@ def get_cooldown_history_by_user_id(user_id):
     except Exception as e:
         return jsonify({"error": f'Internal server error: {str(e)}'}), 500
     
+'''
+PUT /api/cooldown_history/<user_id>/<course_id>
+- Updates cooldown history for a specific user and course.
+- Expects a JSON payload with 'knowledge_gaps'.
+- Returns a success message or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+'''
 @cooldown_history_bp.route('/<string:user_id>/<string:course_id>', methods=['PUT'])
 @jwt_required()
 @validate_json('knowledge_gaps')
@@ -87,6 +110,13 @@ def update_cooldown_history(user_id, course_id):
     except Exception as e:
         return jsonify({"error": f'Internal server error: {str(e)}'}), 500
     
+'''
+DELETE /api/cooldown_history/<_id>
+- Deletes cooldown history by ID.
+- Returns a success message or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+'''
 @cooldown_history_bp.route('/<string:_id>', methods=['DELETE'])
 @jwt_required()
 @admin_required

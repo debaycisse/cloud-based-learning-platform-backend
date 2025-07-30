@@ -2,16 +2,16 @@ import os
 import yaml
 from flasgger import swag_from
 
-def yaml_from_file(file_path):
-    """
-    Load Swagger documentation from a YAML file
+'''
+Load Swagger documentation from a YAML file
+
+Args:
+    file_path (str): Relative path to the YAML file from the app directory
     
-    Args:
-        file_path (str): Relative path to the YAML file from the app directory
-        
-    Returns:
-        function: Decorated function with Swagger documentation
-    """
+Returns:
+    function: Decorated function with Swagger documentation
+'''
+def yaml_from_file(file_path):
     # Get the absolute path to the YAML file
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     yaml_path = os.path.join(base_dir, file_path)

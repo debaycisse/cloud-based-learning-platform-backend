@@ -11,6 +11,18 @@ from app.utils.validation import validate_json, sanitize_input
 
 questions_bp = Blueprint('questions', __name__)
 
+'''
+GET /api/questions/<question_id>
+- Retrieves a specific question by its ID.
+- Returns the question or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the question, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the question, returns an error message.
+'''
 @questions_bp.route('/<question_id>', methods=['GET'])
 @jwt_required()
 @yaml_from_file('docs/swagger/questions/get_question.yaml')
@@ -44,6 +56,17 @@ def get_a_question(question_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
+'''
+POST /api/questions/bulk
+- Fetches a list of questions by their IDs.
+- Expects a JSON payload with an array of question IDs.
+- Returns a list of questions or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the questions, returns an error message.
+'''
 @questions_bp.route('/bulk', methods=['POST'])
 @jwt_required()
 @admin_required
@@ -95,15 +118,17 @@ def get_questions_bulk():
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''
-Get all questions with pagination
-- Parameters:
-    - limit: Number of questions to return (default: 20)
-    - skip: Number of questions to skip (default: 0)
-- Returns:
-    - questions: List of questions
-    - count: Total number of questions
-    - skip: Number of questions skipped
-    - limit: Number of questions returned
+GET /api/questions
+- Retrieves all questions with pagination.
+- Expects query parameters 'limit' and 'skip'.
+- Returns a list of questions or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the questions, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the questions, returns an error message.
 '''
 @questions_bp.route('', methods=['GET'])
 @jwt_required()
@@ -134,6 +159,19 @@ def get_questions():
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
+'''
+GET /api/questions/tags
+- Retrieves questions filtered by tags with pagination.
+- Expects query parameters 'tags', 'limit', and 'skip'.
+- Returns a list of questions that match the tags or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the questions, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the questions, returns an error message.
+'''
 @questions_bp.route('/tags', methods=['GET'])
 @jwt_required()
 @yaml_from_file('docs/swagger/questions/get_questions_by_tags.yaml')
@@ -166,6 +204,18 @@ def get_questions_by_tags():
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
+'''
+GET /api/questions/assessment/<assessment_id>
+- Retrieves questions by assessment ID.
+- Returns a list of questions or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the assessment questions, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the assessment questions, returns an error message.
+'''
 @questions_bp.route('/assessment/<assessment_id>', methods=['GET'])
 @jwt_required()
 @yaml_from_file('docs/swagger/questions/get_questions_by_assessment.yaml')
@@ -187,15 +237,18 @@ def get_questions_by_assessment(assessment_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-'''Gets questions by assessment id and tags
-- Parameters:
-    - assessment_id: ID of the assessment
-    - tags: List of tags to filter questions
-- Returns:
-    - questions: List of questions that match the assessment ID and tags
-    - count: Total number of questions
-    - skip: Number of questions skipped
-    - limit: Number of questions returned
+'''
+GET /api/questions/assessment/<assessment_id>/tags
+- Retrieves questions by assessment ID and tags with pagination.
+- Expects query parameters 'tags', 'limit', and 'skip'.
+- Returns a list of questions that match the assessment ID and tags or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to the assessment questions, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to the assessment questions, returns an error message.
 '''
 @questions_bp.route('/assessment/<assessment_id>/tags', methods=['GET'])
 @jwt_required()
@@ -233,6 +286,19 @@ def get_questions_by_assessment_and_tags(assessment_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
+'''
+POST /api/questions
+- Creates a new question.
+- Expects a JSON payload with 'question_text', 'options', 'correct_answer', and optional 'tags'.
+- Returns the created question or an error message if validation fails.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to create questions, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to create questions, returns an error message.
+'''
 @questions_bp.route('', methods=['POST'])
 @jwt_required()
 @admin_required
@@ -279,7 +345,19 @@ def create_question():
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
-# endpoint that creates questions by interating over a list of questions
+'''
+POST /api/questions/bulk/<assessment_id>
+- Creates multiple questions for a specific assessment.
+- Expects a JSON payload with an array of question objects.
+- Returns a list of created questions or an error message if validation fails.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to create questions, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to create questions, returns an error message.
+'''
 @questions_bp.route('/bulk/<assessment_id>', methods=['POST'])
 @jwt_required()
 @admin_required
@@ -334,6 +412,19 @@ def create_questions(assessment_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
+'''
+PUT /api/questions/<question_id>
+- Updates an existing question by its ID.
+- Expects a JSON payload with 'question_text', 'options', 'correct_answer', and optional 'tags'.
+- Returns the updated question or an error message if validation fails.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to update questions, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to update questions, returns an error message.
+'''
 @questions_bp.route('/<question_id>', methods=['PUT'])
 @jwt_required()
 @admin_required
@@ -386,6 +477,18 @@ def update_question(question_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
+'''
+DELETE /api/questions/<question_id>
+- Deletes a question by its ID.
+- Returns a success message or an error message if not found.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to delete questions, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to delete questions, returns an error message.
+'''
 @questions_bp.route('/<question_id>', methods=['DELETE'])
 @jwt_required()
 @admin_required
@@ -409,6 +512,16 @@ def delete_question(question_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
+'''
+POST /api/questions/<question_id>/assessments/<assessment_id>
+- Adds a question to an assessment.
+- Expects the question ID and assessment ID in the URL.
+- Returns a success message or an error message if the question or assessment does not exist.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+'''
 @questions_bp.route('/<question_id>/assessments/<assessment_id>', methods=['POST'])
 @jwt_required()
 @admin_required
@@ -440,6 +553,19 @@ def add_question_to_assessment(question_id, assessment_id):
     except Exception as e:
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
+'''
+DELETE /api/questions/<question_id>/assessment/<assessment_id>
+- Removes a question from an assessment.
+- Expects the question ID and assessment ID in the URL.
+- Returns a success message or an error message if the question or assessment does not exist.
+- If the request fails, returns a network error message.
+- If an internal server error occurs, returns an error message.
+- Requires user authentication.
+- If the user is not authenticated, returns an error message.
+- If the user does not have access to remove questions from assessments, returns an error message.
+- If the user is authenticated, manages cooldown for the user.
+- If the user does not have access to remove questions from assessments, returns an error message.
+'''
 @questions_bp.route('/<question_id>/assessment/<assessment_id>', methods=['DELETE'])
 @jwt_required()
 @admin_required
