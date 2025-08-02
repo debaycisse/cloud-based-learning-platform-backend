@@ -31,12 +31,12 @@ class CooldownHistory:
         cooldown_entry = {
             'user_id': str(user_id),
             'cooldown_end': cooldown_duration,
-            'created_at': datetime.now(timezone.utc),
+            'created_at': datetime.now(timezone.utc).isoformat(),
             'cool_downs': [
                 {
                     'course_id': str(course_id),
                     'concepts': knowledge_gaps or [],
-                    'created_at': datetime.now(timezone.utc)
+                    'created_at': datetime.now(timezone.utc).isoformat()
                 }
             ]
         }
@@ -64,13 +64,13 @@ class CooldownHistory:
             {'user_id': str(user_id)},
             {
                 '$set': {
-                    'updated_at': datetime.now(timezone.utc)
+                    'updated_at': datetime.now(timezone.utc).isoformat()
                 },
                 '$push': {
                     'cool_downs': {
                         'course_id': str(course_id),
                         'concepts': knowledge_gaps or [],
-                        'created_at': datetime.now(timezone.utc)
+                        'created_at': datetime.now(timezone.utc).isoformat()
                     }
                 }
             }

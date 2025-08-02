@@ -59,11 +59,10 @@ GET /api/cooldown_history/<user_id>
 def get_cooldown_history_by_user_id(user_id):
     """Get cooldown history by user ID"""
     try:
-        user_id = get_jwt_identity()
         cooldown_history = CooldownHistory.find_by_user(user_id)
 
         if not cooldown_history:
-            return jsonify({"error": "No cooldown history found for this user"}), 404
+            return jsonify({"message": "No cooldown history found for this user"}), 200
 
         # Convert ObjectId to string for JSON serialization
         cooldown_history['_id'] = str(cooldown_history['_id'])

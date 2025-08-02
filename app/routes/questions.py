@@ -432,16 +432,17 @@ PUT /api/questions/<question_id>
 @yaml_from_file('docs/swagger/questions/update_question.yaml')
 def update_question(question_id):
     try:
+        print(1)
         data = sanitize_input(request.get_json())
         question_text = data.get('question_text')
         options = data.get('options')
         correct_answer = data.get('correct_answer')
-        tags = question.get('tags', [''])
+        tags = data.get('tags', [''])
 
         # Validate input
         if question_text is None or options is None or correct_answer is None:
             return jsonify({"error": "Question text, options, and correct answer are required"}), 400
-        
+
         # Update the question
         question = QuestionService.update_question(
             question_id=question_id,
@@ -452,10 +453,9 @@ def update_question(question_id):
                 'tags': tags
             }
         )
-        
+
         if question is None:
             return jsonify({"error": "No question found for the given ID"}), 404
-        
         
         return jsonify({
             "message": "Question updated successfully",

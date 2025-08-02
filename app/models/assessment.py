@@ -34,16 +34,19 @@ class Assessment:
     @staticmethod
     def create(title, course_id, time_limit=25):
         """Create a new assessment"""
-        assessment = {
-            'title': title,
-            'course_id': course_id,
-            'time_limit': time_limit,
-            'created_at': datetime.now(timezone.utc).isoformat(),
-            'updated_at': datetime.now(timezone.utc).isoformat(),
-        }
-        result = assessments_collection.insert_one(assessment)
-        assessment['_id'] = result.inserted_id
-        return assessment
+        try:
+            assessment = {
+                'title': title,
+                'course_id': course_id,
+                'time_limit': time_limit,
+                'created_at': datetime.now(timezone.utc).isoformat(),
+                'updated_at': datetime.now(timezone.utc).isoformat(),
+            }
+            result = assessments_collection.insert_one(assessment)
+            assessment['_id'] = result.inserted_id
+            return assessment
+        except Exception as e:
+            return None
 
     '''
     Finds an assessment by its ID.
@@ -55,9 +58,12 @@ class Assessment:
     @staticmethod
     def find_by_id(assessment_id):
         """Find an assessment by ID"""
-        return assessments_collection.find_one(
-            {'_id': ObjectId(assessment_id)}
-        )
+        try:
+            return assessments_collection.find_one(
+                {'_id': ObjectId(assessment_id)}
+            )
+        except Exception as e:
+            return None
 
     '''
     Finds assessments by course ID.
@@ -69,12 +75,15 @@ class Assessment:
     @staticmethod
     def find_by_course_id(course_id):
         """Find assessments for a specific course"""
-        cursor = assessments_collection.find({'course_id': course_id})
-        results = []
-        for course in cursor:
-            course['_id'] = str(course['_id'])
-            results.append(course)
-        return results
+        try:
+            cursor = assessments_collection.find({'course_id': course_id})
+            results = []
+            for course in cursor:
+                course['_id'] = str(course['_id'])
+                results.append(course)
+            return results
+        except Exception as e:
+            return None
 
     '''
     Finds all assessments with pagination.
@@ -87,14 +96,17 @@ class Assessment:
     @staticmethod
     def find_all(limit=20, skip=0):
         """Find all assessments with pagination"""
-        limit = int(limit)
-        skip = int(skip)
-        cursor = assessments_collection.find().sort('created_at', -1).skip(skip).limit(limit)
-        results = []
-        for course in cursor:
-            course['_id'] = str(course['_id'])
-            results.append(course)
-        return results
+        try:
+            limit = int(limit)
+            skip = int(skip)
+            cursor = assessments_collection.find().sort('created_at', -1).skip(skip).limit(limit)
+            results = []
+            for course in cursor:
+                course['_id'] = str(course['_id'])
+                results.append(course)
+            return results
+        except Exception as e:
+            return None
 
     '''
     Updates an assessment by its ID.
@@ -107,14 +119,17 @@ class Assessment:
     @staticmethod
     def update(assessment_id, update_data):
         """Update an assessment"""
-        update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
-        assessments_collection.update_one(
-            {'_id': ObjectId(assessment_id)},
-            {'$set': update_data}
-        )
-        result = assessments_collection.find_one({'_id': ObjectId(assessment_id)})
-        result['_id'] = str(result['_id'])
-        return result
+        try:
+            update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
+            assessments_collection.update_one(
+                {'_id': ObjectId(assessment_id)},
+                {'$set': update_data}
+            )
+            result = assessments_collection.find_one({'_id': ObjectId(assessment_id)})
+            result['_id'] = str(result['_id'])
+            return result
+        except Exception as e:
+            return None
 
     '''
     Deletes an assessment by its ID.
@@ -126,8 +141,11 @@ class Assessment:
     @staticmethod
     def delete(assessment_id):
         """Delete an assessment"""
-        result = assessments_collection.delete_one({'_id': ObjectId(assessment_id)})
-        return result.deleted_count > 0
+        try:
+            result = assessments_collection.delete_one({'_id': ObjectId(assessment_id)})
+            return result.deleted_count > 0
+        except Exception as e:
+            return None
 
 
 '''
@@ -163,30 +181,32 @@ class AssessmentResult:
     def create(user_id, assessment_id, answers, score, passed, started_at,
                questions, knowledge_gaps=None, demonstrated_strengths=None):
         """Create a new assessment result with demonstrated strengths"""
+        try:
+            result = {
+                'user_id': user_id,
+                'assessment_id': assessment_id,
+                'answers': answers,
+                'score': score,
+                'passed': passed,
+                'knowledge_gaps': knowledge_gaps or [],
+                'demonstrated_strengths': demonstrated_strengths or [],
+                'created_at': datetime.now(timezone.utc).isoformat(),
+                'completed_at': datetime.now(timezone.utc).isoformat(),
+                'started_at': datetime.fromisoformat(started_at).isoformat(),
+                'time_spent': 30 - (
+                    (
+                        datetime.now(timezone.utc) - datetime.fromisoformat(started_at)
+                    ).total_seconds() / 60
+                ),
+                'questions': questions,
+            }
 
-        result = {
-            'user_id': user_id,
-            'assessment_id': assessment_id,
-            'answers': answers,
-            'score': score,
-            'passed': passed,
-            'knowledge_gaps': knowledge_gaps or [],
-            'demonstrated_strengths': demonstrated_strengths or [],
-            'created_at': datetime.now(timezone.utc).isoformat(),
-            'completed_at': datetime.now(timezone.utc).isoformat(),
-            'started_at': datetime.fromisoformat(started_at).isoformat(),
-            'time_spent': 30 - (
-                (
-                    datetime.now(timezone.utc) - datetime.fromisoformat(started_at)
-                ).total_seconds() / 60
-            ),
-            'questions': questions,
-        }
+            result_id = results_collection.insert_one(result).inserted_id
 
-        result_id = results_collection.insert_one(result).inserted_id
-
-        result['_id'] = result_id
-        return result
+            result['_id'] = result_id
+            return result
+        except Exception as e:
+            return None
 
     '''
     Finds assessment results for a specific user.
@@ -209,6 +229,8 @@ class AssessmentResult:
             assessment_results_cursor = results_collection.find({'user_id': user_id}).sort(
                 'created_at', -1
             ).skip(skip).limit(limit)
+            if not assessment_results_cursor:
+                return None
             results = []
             for assessment_result in assessment_results_cursor:
                 assessment_result['_id'] = str(assessment_result['_id'])
@@ -250,10 +272,13 @@ class AssessmentResult:
 
             assessment_id = assessment.get('_id')
 
-            result = results_collection.find_one({
+            result = results_collection.find_one(
+                {
                 'user_id': str(user_id),
                 'assessment_id': str(assessment_id)
-            })
+                },
+                sort=[("created_at", -1)]
+            )
             result['answers'] = [html_tags_unconverter(answer) for answer in result.get('answers', [])]
             questions = []
             for question in result.get('questions', []):
@@ -280,16 +305,19 @@ class AssessmentResult:
     @staticmethod
     def find_by_assessment(assessment_id, limit=20, skip=0):
         """Find results for a specific assessment"""
-        limit = int(limit)
-        skip = int(skip)
-        cursor = results_collection.find({'assessment_id': assessment_id}).sort(
-            'created_at', -1
-        ).skip(skip).limit(limit)
-        results = []
-        for course in cursor:
-            course['_id'] = str(course['_id'])
-            results.append(course)
-        return results
+        try:
+            limit = int(limit)
+            skip = int(skip)
+            cursor = results_collection.find({'assessment_id': assessment_id}).sort(
+                'created_at', -1
+            ).skip(skip).limit(limit)
+            results = []
+            for course in cursor:
+                course['_id'] = str(course['_id'])
+                results.append(course)
+            return results
+        except Exception as e:
+            return None
 
     '''
     Finds the latest result for a user and assessment
@@ -302,10 +330,13 @@ class AssessmentResult:
     @staticmethod
     def find_latest_by_user_and_assessment(user_id, assessment_id):
         """Find the latest result for a user and assessment"""
-        return results_collection.find_one(
-            {'user_id': user_id, 'assessment_id': assessment_id},
-            sort=[('created_at', -1)]
-        )
+        try:
+            return results_collection.find_one(
+                {'user_id': user_id, 'assessment_id': assessment_id},
+                sort=[('created_at', -1)]
+            )
+        except Exception as e:
+            return None
 
     '''
     Finds the average score for a specific assessment
@@ -317,15 +348,18 @@ class AssessmentResult:
     @staticmethod
     def find_average_score(assessment_id):
         """Find the average score for a specific assessment"""
-        pipeline = [
-            {'$match': {'assessment_id': assessment_id}},
-            {'$group': {
-                '_id': None,
-                'average_score': {'$avg': '$score'}
-            }}
-        ]
-        result = results_collection.aggregate(pipeline)
-        return list(result)[0]['average_score'] if result else 0.0
+        try:
+            pipeline = [
+                {'$match': {'assessment_id': assessment_id}},
+                {'$group': {
+                    '_id': None,
+                    'average_score': {'$avg': '$score'}
+                }}
+            ]
+            result = results_collection.aggregate(pipeline)
+            return list(result)[0]['average_score'] if result else 0.0
+        except Exception as e:
+            return None
 
     '''
     Deletes an assessment result by its assessment ID.
@@ -337,21 +371,24 @@ class AssessmentResult:
     @staticmethod
     def delete_by_assessment_id(assessment_id):
         """Delete an assessment result"""
-        results_collection.delete_one({'assessment_id': str(assessment_id)})
+        try:
+            results_collection.delete_one({'assessment_id': str(assessment_id)})
 
-        # Update all questions that have the same assessment ID by removing the
-        # assessment id from the questions
-        questions = questions_collection.find({'assessment_ids': str(assessment_id)})
+            # Update all questions that have the same assessment ID by removing the
+            # assessment id from the questions
+            questions = questions_collection.find({'assessment_ids': str(assessment_id)})
 
-        clean_questions = questions_collection.update_many(
-            {'assessment_ids': str(assessment_id)},
-            {'$pull': {'assessment_ids': str(assessment_id)}}
-        )
+            clean_questions = questions_collection.update_many(
+                {'assessment_ids': str(assessment_id)},
+                {'$pull': {'assessment_ids': str(assessment_id)}}
+            )
 
-        if questions is not None and clean_questions.matched_count < 1:
-            return False
+            if questions is not None and clean_questions.matched_count < 1:
+                return False
 
-        return True
+            return True
+        except Exception as e:
+            return None
 
     '''
     Updates a question in the assessment result if it exists
@@ -363,21 +400,23 @@ class AssessmentResult:
     @staticmethod
     def update_question(updated_question):
         """Update a question in the assessment result if it exists"""
-
-        question_obj = {
-            'question_text': updated_question.get('question_text'),
-            'options': updated_question.get('options'),
-            'correct_answer': updated_question.get('correct_answer'),
-            'tags': updated_question.get('tags', []),
-            'assessment_ids': updated_question.get('assessment_ids', []),
-            'created_at': updated_question.get('created_at'),
-            'updated_at': updated_question.get('updated_at')
-        }
-        result = results_collection.update_one(
-            {'questions._id': updated_question.get('_id')},
-            {'$set': {'questions.$': question_obj}}
-        )
-        return result
+        try:
+            question_obj = {
+                'question_text': updated_question.get('question_text'),
+                'options': updated_question.get('options'),
+                'correct_answer': updated_question.get('correct_answer'),
+                'tags': updated_question.get('tags', []),
+                'assessment_ids': updated_question.get('assessment_ids', []),
+                'created_at': updated_question.get('created_at'),
+                'updated_at': updated_question.get('updated_at')
+            }
+            result = results_collection.update_one(
+                {'questions._id': updated_question.get('_id')},
+                {'$set': {'questions.$': question_obj}}
+            )
+            return result
+        except Exception as e:
+            return None
 
     '''
     Finds assessment results by question ID
@@ -389,14 +428,17 @@ class AssessmentResult:
     @staticmethod
     def find_by_question_id(question_id):
         """Find assessment results by question ID"""
-        if not isinstance(question_id, ObjectId):
-            question_id = ObjectId(question_id)
-        found_question = results_collection.find_one({'questions._id': question_id}) 
-        if found_question is not None:
-            found_question['id'] = str(found_question['_id'])
-            for field in found_question:
-                if field == 'question_text' or field == 'correct_answer':
-                    found_question[field] = html_tags_unconverter(found_question[field])
-                elif field == 'options' or field == 'tags':
-                    found_question[field] = [html_tags_unconverter(option) for option in found_question[field]]
-        return found_question
+        try:
+            if not isinstance(question_id, ObjectId):
+                question_id = ObjectId(question_id)
+            found_question = results_collection.find_one({'questions._id': question_id}) 
+            if found_question is not None:
+                found_question['id'] = str(found_question['_id'])
+                for field in found_question:
+                    if field == 'question_text' or field == 'correct_answer':
+                        found_question[field] = html_tags_unconverter(found_question[field])
+                    elif field == 'options' or field == 'tags':
+                        found_question[field] = [html_tags_unconverter(option) for option in found_question[field]]
+            return found_question
+        except Exception as e:
+            return None

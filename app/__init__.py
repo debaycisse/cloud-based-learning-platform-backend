@@ -79,6 +79,7 @@ def create_app(config_class=Config):
     from app.routes.images import images_bp
     from app.routes.contact_support import email_bp
     from app.routes.concept_link import concept_bp
+    from app.routes.cooldown_history import cooldown_history_bp
     
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(users_bp, url_prefix='/api/users')
@@ -90,6 +91,7 @@ def create_app(config_class=Config):
     app.register_blueprint(images_bp, url_prefix='/api/images')
     app.register_blueprint(email_bp, url_prefix='/api/email')
     app.register_blueprint(concept_bp, url_prefix='/api/concepts')
+    app.register_blueprint(cooldown_history_bp, url_prefix='/api/cooldown_history')
     
 
     # Setup Swagger UI

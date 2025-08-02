@@ -297,7 +297,7 @@ def get_assessment_result_by_course_id(course_id):
 
         return jsonify({
             "result": result,
-            "count": len(result),
+            "count": 1,
         }), 200
     except requests.RequestException as e:
         return jsonify({'error': f'Network error: {str(e)}'}), 503
