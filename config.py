@@ -25,6 +25,7 @@ class Config:
     DATABASE_NAME = os.environ.get('DATABASE_NAME')
     FLASK_ENV = os.environ.get('FLASK_ENV')
     ASSESSMENT_PASS_THRESHOLD = float(os.environ.get('ASSESSMENT_PASS_THRESHOLD', 0.5))  # 50%
+    CORS_ORIGINS = os.environ.get('CORS_ORIGINS')
 
     # For image uplaod parameters
     IMGBB_API_KEY = os.getenv('IMGBB_API_KEY')

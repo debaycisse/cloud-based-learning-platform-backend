@@ -37,6 +37,10 @@ Returns:
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    app.url_map.strict_slashes = False
+
+    raw_origins = app.config.get("CORS_ORIGINS", "")
+    allowed_origins = [o.strip() for o in raw_origins.split(",") if o.strip()]
 
     # Configure JWT to exempt OPTIONS requests from authentication
     app.config['JWT_EXEMPT_OPTIONS'] = True
@@ -44,11 +48,11 @@ def create_app(config_class=Config):
     # Initialize CORS with more specific settings
     CORS(app, 
          resources={r"/api/*": {
-             "origins": "*",
+             "origins": allowed_origins,
              "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
              "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"]
          }},
-         supports_credentials=True)
+         supports_credentials=False)
     
     # Initialize extensions with app
     jwt.init_app(app)
