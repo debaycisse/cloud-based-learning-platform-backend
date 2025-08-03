@@ -6,9 +6,7 @@ bind = "0.0.0.0:8000"
 
 # Number of worker processes
 # A common formula is: (2 x $num_cores) + 1
-# workers = multiprocessing.cpu_count() * 2 + 1 # This is to be used
-# workers = multiprocessing.cpu_count() * 1 + 1
-workers = 5
+workers = multiprocessing.cpu_count() * 2 + 1 # This is to be used
 
 # Worker class
 worker_class = "sync"
