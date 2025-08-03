@@ -32,7 +32,7 @@ class Config:
     MAX_CONTENT_LENGTH = 2 * 1024 * 1024  # 2MB max file size
     ALLOWED_EXTENSIONS = ['.jpeg', '.jpg', '.png', '.gif', '.webp']
 
-    FRONTEND_DOMAIN = "http://127.0.0.1:5173"
+    FRONTEND_DOMAIN = os.getenv('FRONTEND_DOMAIN')
 
     # For mail server configuration parameters
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
