@@ -69,7 +69,6 @@ GET /api/users/<user_id>
 '''
 @users_bp.route('/<user_id>', methods=['GET'])
 @jwt_required()
-@admin_required
 @yaml_from_file('docs/swagger/users/get_user.yaml')
 def get_user(user_id):
     try:
@@ -78,6 +77,7 @@ def get_user(user_id):
         
         if not user:
             return jsonify({"error": "User not found"}), 404
+        
         
         # Remove sensitive information
         user.pop('password_hash', None)
@@ -91,7 +91,7 @@ def get_user(user_id):
                 "role": user.get('role', 'user'),
                 "progress": user.get('progress', {
                     'completed_courses': [],
-                    'in_progress_courses': [],
+                    'in_progress_courses': '',
                     'completed_assessments': []
                 }),
                 "preferences": user.get('preferences', {
@@ -150,7 +150,7 @@ def get_profile():
                 "role": user.get('role', 'user'),
                 "created_at": user.get('created_at', None),
                 "updated_at": user.get('updated_at', None),
-                "progress": user.get('progress', [],),
+                "progress": user.get('progress', {},),
                 "preferences": user.get('preferences', [],),
             }
         }), 200
@@ -279,25 +279,30 @@ def get_progress():
         if not user:
             return jsonify({"error": "User not found"}), 404
         
+        
         # Get assessment results
         assessment_results = AssessmentResult.find_by_user(user_id)
         
         # Get user progress from user document
         progress = user.get('progress', {
             'completed_courses': [],
-            'in_progress_courses': [],
+            'in_progress_courses': '',
             'completed_assessments': []
         })
 
-        course_progress = user.get('course_progress', {
-            'course_id': '',
-            'percentage': 0,
-            'completed_course_id': '',
-            'current_section_index': 0,
-            'current_subsection_index': 0,
-            'current_data_index': 0,
-            'completed_items': 0
-        })
+        if isinstance(
+            user.get('progress', {}).get('in_progress_courses'),
+            list
+        ) and len(user['progress']['in_progress_courses']) > 0:
+            user['progress']['in_progress_courses'] = \
+                user['progress']['in_progress_courses'][0]
+        elif isinstance(
+            user.get('progress', {}).get('in_progress_courses'),
+            list
+        ):
+            user['progress']['in_progress_courses'] = ''
+
+        course_progress = user.get('course_progress', [])
         
         return jsonify({
             "progress": progress,
@@ -309,6 +314,7 @@ def get_progress():
         return jsonify({'error': f'Network error: {str(e)}'}), 503
 
     except Exception as e:
+        print(e)
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 '''

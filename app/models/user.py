@@ -42,7 +42,7 @@ class User:
             'role': 'user',
             'progress': {
                 'completed_courses': [],
-                'in_progress_courses': [],
+                'in_progress_courses': '',
                 'completed_assessments': []
             },
             'preferences': {
